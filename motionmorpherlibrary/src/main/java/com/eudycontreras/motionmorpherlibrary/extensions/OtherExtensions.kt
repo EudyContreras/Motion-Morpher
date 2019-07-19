@@ -1,11 +1,17 @@
 package com.eudycontreras.motionmorpherlibrary.extensions
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
+import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.utilities.RevealUtilityCircular
+
+
+
 
 /**
  * <h1>Class description!</h1>
@@ -64,4 +70,27 @@ fun MorphLayout.getBackgroundType(): MorphTransitionDrawable.DrawableType {
         this.hasBitmapDrawable() -> MorphTransitionDrawable.DrawableType.BITMAP
         else -> MorphTransitionDrawable.DrawableType.OTHER
     }
+}
+
+
+fun MorphActivity.openDialog(fragment: MorphDialog) {
+    val prev = supportFragmentManager.findFragmentByTag(fragment::class.java.simpleName)
+
+    val fragmentTransaction = supportFragmentManager.beginTransaction()
+
+    if (supportFragmentManager.fragments.contains(fragment) || prev != null) {
+        fragmentTransaction.remove(prev!!)
+    }
+
+    fragmentTransaction.addToBackStack(null)
+    fragment.show(fragmentTransaction, fragment::class.java.simpleName)
+}
+
+fun Context.getStatusBarHeight(): Int {
+    var result = 0
+    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+    if (resourceId > 0) {
+        result = resources.getDimensionPixelSize(resourceId)
+    }
+    return result
 }

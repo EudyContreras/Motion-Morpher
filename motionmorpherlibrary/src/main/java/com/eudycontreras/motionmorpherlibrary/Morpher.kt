@@ -35,7 +35,8 @@ class Morpher(private val context: Context) {
 
     private val curveTranslator = CurvedTranslationHelper()
 
-    private var transitionOffsetListener: TransitionOffsetListener = null
+    var backgroundDimListener: BackgroundDimListener = null
+    var transitionOffsetListener: TransitionOffsetListener = null
 
     private lateinit var startingView: MorphLayout
     private lateinit var endingView: MorphLayout
@@ -44,6 +45,9 @@ class Morpher(private val context: Context) {
     private lateinit var endingState: Properties
 
     private lateinit var mappings: List<MorphMap>
+
+    private var maxDim: Float = 1f
+    private var minDim: Float = 0.0f
 
     private var children: List<View>? = null
 
@@ -92,7 +96,7 @@ class Morpher(private val context: Context) {
         durationMultiplier = DEFAULT_CONCEAL_DURATION_MULTIPLIER,
         startStateProps = AnimationProperties.defaultOutPropsStart(),
         endStateProps = AnimationProperties.defaultOutPropsEnd(),
-        interpolator = DecelerateInterpolator()
+        interpolator = FastOutSlowInInterpolator()
     )
 
     var startStateMorphIntoDescriptor: AnimationDescriptor = AnimationDescriptor(
@@ -138,6 +142,7 @@ class Morpher(private val context: Context) {
             }
         }
 
+
         for (child in endingView.getChildren()) {
             if (child.visibility == View.GONE)
                 continue
@@ -152,6 +157,12 @@ class Morpher(private val context: Context) {
 
         applyProps(endingView, startingState)
 
+        endStateMorphIntoDescriptor.startStateProps.scaleX = (startingState.width) / (endingState.width)
+        endStateMorphIntoDescriptor.startStateProps.scaleY = (startingState.width) / (endingState.width)
+
+        endingView.getChildViewAt(0).pivotX = 0f
+        endingView.getChildViewAt(0).pivotY = 0f
+
       /*endingView.morphScaleX = startingState.width / endingState.width
         endingView.morphScaleY = startingState.height / endingState.height
 
@@ -161,17 +172,17 @@ class Morpher(private val context: Context) {
         endingView.morphVisibility = View.VISIBLE
         startingView.morphVisibility = View.INVISIBLE
 
-        val startX: Float = startingState.windowLocationX - (endingState.width / 2f - startingState.width / 2f)
-        val startY: Float = startingState.windowLocationY - (endingState.height / 2f - startingState.height / 2f)
+        val startX: Float = startingState.windowLocationX.toFloat() //- (endingState.width / 2f - startingState.width / 2f)
+        val startY: Float = startingState.windowLocationY.toFloat() //- (endingState.height / 2f - startingState.height / 2f)
 
         val endX: Float = endingState.windowLocationX.toFloat()
         val endY: Float = endingState.windowLocationY.toFloat()
 
         val translationX: Float = abs(endX - startX)
-        val translationY: Float = abs(endY - startY)
+        val translationY: Float = abs(endY - startY) - context.getStatusBarHeight()
 
-        startingState.translationX =  if (startX < endX) -translationX else translationX
-        startingState.translationY =  if (startY < endY) -translationY else translationY
+        startingState.translationX =  translationX //+ (endingState.width / 2f - startingState.width / 2f)
+        startingState.translationY =  translationY //+ (endingState.height / 2f - startingState.height / 2f)
 
         endingView.morphTranslationX = startingState.translationX
         endingView.morphTranslationY = startingState.translationY
@@ -206,6 +217,12 @@ class Morpher(private val context: Context) {
 
         if (isMorphing)
             return
+
+
+        endStateMorphIntoDescriptor.duration = duration
+        endStateMorphIntoDescriptor.delay = 0L
+        endStateMorphIntoDescriptor.durationMultiplier = 0f
+        endStateMorphFromDescriptor.animateOnOffset = 0f
 
         isMorphed = false
         isMorphing = true
@@ -299,6 +316,11 @@ class Morpher(private val context: Context) {
         if (isMorphing)
             return
 
+        endStateMorphFromDescriptor.duration = duration
+        endStateMorphFromDescriptor.delay = 0L
+        endStateMorphFromDescriptor.durationMultiplier = 0f
+        endStateMorphFromDescriptor.animateOnOffset = 0f
+
         if (!mappingsCreated) {
             createMappings()
             mappingsCreated = true
@@ -322,6 +344,13 @@ class Morpher(private val context: Context) {
             isMorphing = false
             isMorphed = true
         }
+
+
+        endStateMorphFromDescriptor.startStateProps.scaleX = 1f
+        endStateMorphFromDescriptor.startStateProps.scaleY = 1f
+
+        endStateMorphFromDescriptor.endStateProps.scaleX = (startingState.width) / (endingState.width)
+        endStateMorphFromDescriptor.endStateProps.scaleY = (startingState.width) / (endingState.width)
 
         curveTranslator.setStartPoint(endingState.getDeltaCoordinates())
         curveTranslator.setEndPoint(startingState.getDeltaCoordinates())
@@ -487,12 +516,14 @@ class Morpher(private val context: Context) {
                         childrenRevealed = true
                         animateChildren(endStateMorphIntoDescriptor, endingView, morphChildren, remainingDuration)
                     }
+                    backgroundDimListener?.invoke(minDim + (maxDim - minDim) * fraction)
                 }
                 AnimationType.CONCEAL -> {
                     if (animateChildren && childrenRevealed && fraction >= endStateMorphFromDescriptor.animateOnOffset) {
                         childrenRevealed = false
                         animateChildren(endStateMorphFromDescriptor, endingView, morphChildren, remainingDuration)
                     }
+                    backgroundDimListener?.invoke(maxDim + (minDim - maxDim) * fraction)
                 }
             }
 
@@ -566,14 +597,7 @@ class Morpher(private val context: Context) {
 
         val duration = animDescriptor.duration ?: inDuration
 
-        when (animDescriptor.type) {
-            AnimationType.REVEAL -> {
-                animateChildren(children, animDescriptor, duration)
-            }
-            AnimationType.CONCEAL -> {
-                animateChildren(children, animDescriptor, duration)
-            }
-        }
+        animateChildren(children, animDescriptor, duration)
     }
 
     private fun applyProps(view: MorphLayout, props: Properties) {
@@ -619,9 +643,6 @@ class Morpher(private val context: Context) {
 
         morphView.morphScaleX = startingProps.scaleX + (endingProps.scaleX - startingProps.scaleX) * fraction
         morphView.morphScaleY = startingProps.scaleY + (endingProps.scaleY - startingProps.scaleY) * fraction
-
-        //morphView.morphPivotX = startingProps.pivotX + (endingProps.pivotX - startingProps.pivotX) * fraction
-       // morphView.morphPivotY = startingProps.pivotY + (endingProps.pivotY - startingProps.pivotY) * fraction
 
         morphView.morphRotation = startingProps.rotation + (endingProps.rotation - startingProps.rotation) * fraction
 
@@ -721,7 +742,7 @@ class Morpher(private val context: Context) {
 
         val durationDelta = when (descriptor.type) {
             AnimationType.REVEAL -> (totalDuration + (totalDuration * offsetMultiplier)).roundToLong()
-            AnimationType.CONCEAL -> (totalDuration * offsetMultiplier).roundToLong()
+            AnimationType.CONCEAL -> (totalDuration + (totalDuration * offsetMultiplier)).roundToLong()
         }
 
         val children = if (descriptor.reversed) inChildren.reversed() else inChildren
@@ -751,22 +772,26 @@ class Morpher(private val context: Context) {
                 }
             }
         } else {
-            children.forEach {
-                it.visibility = startStateProps.visibility
-                it.translationY = startStateProps.translationY
-                it.scaleX = startStateProps.scaleX
-                it.scaleY = startStateProps.scaleY
-                it.alpha = startStateProps.alpha
-                it.animate()
-                    .setListener(null)
-                    .setDuration(durationDelta)
-                    .setStartDelay(startDelay)
-                    .alpha(endStateProps.alpha)
-                    .scaleX(endStateProps.scaleX)
-                    .scaleY(endStateProps.scaleY)
-                    .translationY(endStateProps.translationY)
-                    .setInterpolator(descriptor.interpolator)
-                    .start()
+            children.forEachIndexed { index, it ->
+
+                    it.visibility = startStateProps.visibility
+
+                    it.alpha = startStateProps.alpha
+                if(index == 0) {
+                    it.translationY = startStateProps.translationY
+                    it.scaleX = startStateProps.scaleX
+                    it.scaleY = startStateProps.scaleY
+                    it.animate()
+                        .setListener(null)
+                        .setDuration(durationDelta)
+                        .setStartDelay(startDelay)
+                        .alpha(endStateProps.alpha)
+                        .scaleX(endStateProps.scaleX)
+                        .scaleY(endStateProps.scaleY)
+                        .translationY(endStateProps.translationY)
+                        .setInterpolator(descriptor.interpolator)
+                        .start()
+                }
             }
         }
     }
@@ -778,11 +803,11 @@ class Morpher(private val context: Context) {
 
         const val DEFAULT_DURATION: Long = 350L
 
-        const val DEFAULT_CHILDREN_REVEAL_OFFSET: Float = 0.60f
+        const val DEFAULT_CHILDREN_REVEAL_OFFSET: Float = 0.0f
         const val DEFAULT_CHILDREN_CONCEAL_OFFSET: Float = 0.0f
 
-        const val DEFAULT_REVEAL_DURATION_MULTIPLIER: Float = 0.2f
-        const val DEFAULT_CONCEAL_DURATION_MULTIPLIER: Float = 0.4f
+        const val DEFAULT_REVEAL_DURATION_MULTIPLIER: Float = 0f
+        const val DEFAULT_CONCEAL_DURATION_MULTIPLIER: Float = 0f
     }
 
     private data class MorphMap(
@@ -841,7 +866,7 @@ class Morpher(private val context: Context) {
         var durationMultiplier: Float,
         var startStateProps: AnimationProperties,
         var endStateProps: AnimationProperties,
-        var interpolator: TimeInterpolator,
+        var interpolator: TimeInterpolator?,
         var stagger: AnimationStagger? = null,
         var reversed: Boolean = false,
         var duration: Long? = null,
@@ -877,36 +902,16 @@ class Morpher(private val context: Context) {
 
         companion object {
             fun defaultInPropsStart(): AnimationProperties {
-                return AnimationProperties(
-                   // alpha = 0f
-                    //scaleX = 0.8f,
-                    //scaleY = 0.8f
-                    //translationY = -(8.dp)
-                    )
+                return AnimationProperties()
             }
             fun defaultInPropsEnd(): AnimationProperties {
-                return AnimationProperties(
-                    alpha = 1f,
-                    scaleX = 1f,
-                    scaleY = 1f,
-                    translationY = 0f
-                )
+                return AnimationProperties()
             }
             fun defaultOutPropsStart(): AnimationProperties {
-                return AnimationProperties(
-                    alpha = 1f,
-                    scaleX = 1f,
-                    scaleY = 1f,
-                    translationY = 0f
-                )
+                return AnimationProperties()
             }
             fun defaultOutPropsEnd(): AnimationProperties {
-                return AnimationProperties(
-                    alpha = 0f,
-                    scaleX = 0.8f,
-                    scaleY = 0.8f,
-                    translationY = (5.dp)
-                )
+                return AnimationProperties()
             }
         }
     }

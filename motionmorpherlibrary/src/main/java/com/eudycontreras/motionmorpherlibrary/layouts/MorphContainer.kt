@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Path
 import android.util.AttributeSet
+import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
 
 /**
  * <h1>Class description!</h1>
@@ -18,7 +19,7 @@ import android.util.AttributeSet
  * @version 1.0
  * @since   2018-03-31
  */
-class MorphContainer : com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout {
+class MorphContainer : FrameLayout {
 
     constructor(context: Context) : super(context)
 
@@ -30,6 +31,7 @@ class MorphContainer : com.eudycontreras.motionmorpherlibrary.layouts.morphLayou
 
     init {
         clipToOutline = true
+
     }
 
 

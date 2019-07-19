@@ -3,17 +3,21 @@ package com.eudycontreras.motionmorpher.examples.demo1
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
+import android.view.ViewGroup
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Morpher
+import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
+import com.eudycontreras.motionmorpherlibrary.activities.MorphDialogImpl
+import com.eudycontreras.motionmorpherlibrary.extensions.openDialog
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import kotlinx.android.synthetic.main.activity_demo1.*
 
 
-class ActivityDemo1 : AppCompatActivity() {
+class ActivityDemo1 : MorphActivity() {
 
-    private lateinit var morpher: Morpher
+    lateinit var morpher: Morpher
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,12 +35,17 @@ class ActivityDemo1 : AppCompatActivity() {
         morpher.endStateMorphIntoDescriptor.animateOnOffset = 0f
 
         morpher.startView = toolbarMenuBor as MorphContainer
-        morpher.endView = detailsLayout as MorphContainer
 
-        fab.setOnClickListener  {
-            morpher.morphInto(
-                duration = 10000
-            )
+        fab.setOnClickListener {
+            val dialog = MorphDialogImpl.instance(
+                morpher,
+                R.layout.activity_demo1_details,
+                R.style.AppTheme_Dialog) { dialog, morphView ->
+                val details = DetailsDemo1(this, dialog, morphView)
+                morpher.endView = morphView
+                morpher.morphInto(1500)
+            }
+            openDialog(dialog)
         }
     }
 
@@ -54,4 +63,11 @@ class ActivityDemo1 : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    fun getView(layoutId: Int): MorphLayout {
+        return layoutInflater.inflate(layoutId, this.getRoot(), false) as MorphLayout
+    }
+
+    override fun getRoot(): ViewGroup {
+        return this.findViewById(R.id.root)
+    }
 }

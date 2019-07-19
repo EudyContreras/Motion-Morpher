@@ -10,17 +10,18 @@
         android:backgroundTint="@color/white"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
         app:mc_shapeType="RECTANGULAR"
-        app:mc_startLayout="id">
+        app:mc_startLayout="@id/detailsLayout"
+        app:mc_endLayout="@id/fabLayout">
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.LinearLayout
+            android:id="@+id/detailsLayout"
             android:orientation="vertical"
             android:clipChildren="true"
             android:clipToPadding="true"
-            android:elevation="10dp"
             android:backgroundTint="@color/white"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            app:ll_state="START"
             app:ll_shapeType="RECTANGULAR">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -95,4 +96,22 @@
         <include layout="@layout/activity_demo1_item"/>
         <include layout="@layout/activity_demo1_item"/>
     </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.LinearLayout>
+
+    <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
+            android:id="@+id/fabLayout"
+            android:visibility="invisible"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_gravity="end|bottom"
+            android:backgroundTint="@color/fab"
+            app:fl_shapeType="CIRCULAR">
+        <View
+                android:layout_gravity="center"
+                android:background="@drawable/ic_add"
+                android:backgroundTint="@color/white"
+                android:layout_width="24dp"
+                android:layout_height="24dp">
+
+        </View>
+    </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout>
 </com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer>

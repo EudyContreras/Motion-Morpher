@@ -19,5 +19,11 @@
         <item name="colorControlNormal">@color/icon</item>
     </style>
 
-
+    <style name="AppTheme.Dialog" parent="@style/Base.Theme.AppCompat.Light.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
 </resources>
