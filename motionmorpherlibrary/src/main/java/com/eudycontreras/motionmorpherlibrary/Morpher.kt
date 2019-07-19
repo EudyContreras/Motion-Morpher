@@ -35,9 +35,6 @@ class Morpher(private val context: Context) {
 
     private val curveTranslator = CurvedTranslationHelper()
 
-    var backgroundDimListener: BackgroundDimListener = null
-    var transitionOffsetListener: TransitionOffsetListener = null
-
     private lateinit var startingView: MorphLayout
     private lateinit var endingView: MorphLayout
 
@@ -51,6 +48,9 @@ class Morpher(private val context: Context) {
 
     private var children: List<View>? = null
 
+    var backgroundDimListener: BackgroundDimListener = null
+    var transitionOffsetListener: TransitionOffsetListener = null
+
     var morphIntoInterpolator: Interpolator? = null
     var morphFromInterpolator: Interpolator? = null
 
@@ -58,6 +58,9 @@ class Morpher(private val context: Context) {
     var useArcTranslator: Boolean = true
     var animateChildren: Boolean = true
     var morphChildren: Boolean = true
+
+    var morphIntoDuration: Long = DEFAULT_DURATION
+    var morphFromDuration: Long = DEFAULT_DURATION
 
     var childrenRevealed: Boolean = false
         private set
@@ -126,6 +129,11 @@ class Morpher(private val context: Context) {
         } else emptyList()
     }
 
+    fun cancelMorph() {
+
+    }
+
+
     private fun performSetup() {
         if (!mappingsCreated) {
             createMappings()
@@ -169,8 +177,8 @@ class Morpher(private val context: Context) {
         startingState.scaleX = endingView.morphScaleX
         startingState.scaleY = endingView.morphScaleY*/
 
-        endingView.morphVisibility = View.VISIBLE
-        startingView.morphVisibility = View.INVISIBLE
+        endingView.show(0) { View.VISIBLE }
+        startingView.hide(250)
 
         val startX: Float = startingState.windowLocationX.toFloat() //- (endingState.width / 2f - startingState.width / 2f)
         val startY: Float = startingState.windowLocationY.toFloat() //- (endingState.height / 2f - startingState.height / 2f)
@@ -179,7 +187,7 @@ class Morpher(private val context: Context) {
         val endY: Float = endingState.windowLocationY.toFloat()
 
         val translationX: Float = abs(endX - startX)
-        val translationY: Float = abs(endY - startY) - context.getStatusBarHeight()
+        val translationY: Float = abs(endY - startY)
 
         startingState.translationX =  translationX //+ (endingState.width / 2f - startingState.width / 2f)
         startingState.translationY =  translationY //+ (endingState.height / 2f - startingState.height / 2f)
@@ -209,7 +217,7 @@ class Morpher(private val context: Context) {
     }
 
     fun morphInto(
-        duration: Long = DEFAULT_DURATION,
+        duration: Long = morphIntoDuration,
         onStart: Action = null,
         onEnd: Action = null,
         offsetTrigger: OffsetTrigger? = null
@@ -307,7 +315,7 @@ class Morpher(private val context: Context) {
     }
 
     fun morphFrom(
-        duration: Long = DEFAULT_DURATION,
+        duration: Long = morphFromDuration,
         onStart: Action = null,
         onEnd: Action = null,
         offsetTrigger: OffsetTrigger? = null
@@ -332,8 +340,8 @@ class Morpher(private val context: Context) {
         val doOnEnd = {
             onEnd?.invoke()
 
-            startingView.morphVisibility = View.VISIBLE
-            endingView.morphVisibility = View.INVISIBLE
+            startingView.show(0) { View.VISIBLE }
+            endingView.hide(100) { View.INVISIBLE }
 
             applyProps(endingView, endingState)
 

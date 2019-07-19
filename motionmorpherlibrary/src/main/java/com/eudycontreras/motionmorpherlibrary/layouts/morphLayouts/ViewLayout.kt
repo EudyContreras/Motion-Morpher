@@ -176,6 +176,8 @@ class ViewLayout : View, MorphLayout {
 
     private var drawListener: DrawDispatchListener? = null
 
+    private var dimensionSnap: MorphLayout.DimensionSnap = MorphLayout.DimensionSnap.NONE
+
     private lateinit var mutableDrawable: GradientDrawable
 
     constructor(context: Context) : super(context)
@@ -200,6 +202,8 @@ class ViewLayout : View, MorphLayout {
             val topRight = typedArray.getDimension(R.styleable.ViewLayout_vl_topRightCornerRadius, radius)
             val bottomRight = typedArray.getDimension(R.styleable.ViewLayout_vl_bottomRightCornerRadius, radius)
             val bottomLeft = typedArray.getDimension(R.styleable.ViewLayout_vl_bottomLeftCornerRadius, radius)
+
+             dimensionSnap = MorphLayout.DimensionSnap.from(typedArray.getInt(R.styleable.ViewLayout_vl_snap_dimensions, -1))
 
             applyDrawable(shape, topLeft, topRight, bottomRight, bottomLeft)
         } finally {
@@ -248,6 +252,15 @@ class ViewLayout : View, MorphLayout {
 
         mutableDrawable = drawable
         background = drawable
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        when(dimensionSnap) {
+            MorphLayout.DimensionSnap.WIDTH -> setMeasuredDimension(measuredWidth, measuredWidth)
+            MorphLayout.DimensionSnap.HEIGHT -> setMeasuredDimension(measuredHeight, measuredHeight)
+            MorphLayout.DimensionSnap.NONE -> setMeasuredDimension(measuredWidth, measuredHeight)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

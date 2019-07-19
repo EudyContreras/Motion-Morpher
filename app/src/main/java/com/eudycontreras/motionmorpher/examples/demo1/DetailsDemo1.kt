@@ -27,10 +27,8 @@ class DetailsDemo1(
     private fun initialize(layout: View) {
         toolbar = layout.findViewById(R.id.toolbar)
 
-        //toolbar.inflateMenu(R.menu.menu_demo_1_details)
-
         toolbar.setNavigationOnClickListener {
-            activityDemo1.morpher.morphFrom(2500, onEnd = { dialog.dismiss() })
+            activityDemo1.morpher.morphFrom(onEnd = { dialog.dismiss() })
         }
 
         toolbar.setOnMenuItemClickListener {

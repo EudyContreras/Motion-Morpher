@@ -2,6 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.extensions
 
 import android.graphics.drawable.ColorDrawable
 import android.view.View
+import com.eudycontreras.motionmorpherlibrary.Action
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
@@ -37,28 +38,57 @@ fun View.getColor(default: Int = 0x000000): Int {
     return default
 }
 
-fun View.hide(duration: Long = 0L) {
+fun View.hide(duration: Long = 0L, onEnd: Action = null) {
     if (duration == 0L) {
         this.alpha = 0f
+        onEnd?.invoke()
         return
     }
     this.animate()
         .alpha(0f)
+        .withEndAction(onEnd)
         .setDuration(duration)
         .start()
 }
 
-fun View.show(duration: Long = 0L) {
+fun View.show(duration: Long = 0L, onEnd: Action = null) {
     if (duration == 0L) {
         this.alpha = 1f
+        onEnd?.invoke()
         return
     }
     this.animate()
         .alpha(1f)
+        .withEndAction(onEnd)
         .setDuration(duration)
         .start()
 }
 
+fun MorphLayout.hide(duration: Long = 0L, onEnd: Action = null) {
+    if (duration == 0L) {
+        this.morphAlpha = 0f
+        onEnd?.invoke()
+        return
+    }
+    this.animator()
+        .alpha(0f)
+        .withEndAction(onEnd)
+        .setDuration(duration)
+        .start()
+}
+
+fun MorphLayout.show(duration: Long = 0L, onEnd: Action = null) {
+    if (duration == 0L) {
+        this.morphAlpha = 1f
+        onEnd?.invoke()
+        return
+    }
+    this.animator()
+        .alpha(1f)
+        .withEndAction(onEnd)
+        .setDuration(duration)
+        .start()
+}
 
 fun MorphLayout.getProperties(): Morpher.Properties {
     val x = this.morphX

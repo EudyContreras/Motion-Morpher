@@ -20,11 +20,9 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
  
 class MorphDialogImpl: MorphDialog() {
 
-    private lateinit var morpher: Morpher
-    private lateinit var layout: ViewGroup
-
     companion object {
         fun instance(
+            activity: MorphActivity,
             morpher: Morpher,
             @LayoutRes layoutId: Int,
             @StyleRes layoutTheme: Int,
@@ -32,6 +30,7 @@ class MorphDialogImpl: MorphDialog() {
         ): MorphDialogImpl {
 
             val fragment = MorphDialogImpl()
+            fragment.activity = activity
             fragment.morpher = morpher
             fragment.layoutId = layoutId
             fragment.layoutTheme = layoutTheme

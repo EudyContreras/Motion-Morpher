@@ -76,6 +76,11 @@
         <attr name="vl_topRightCornerRadius" format="dimension" />
         <attr name="vl_bottomLeftCornerRadius" format="dimension" />
         <attr name="vl_bottomRightCornerRadius" format="dimension" />
+        <attr name="vl_snap_dimensions" format="enum">
+            <enum name="WIDTH" value="0"/>
+            <enum name="HEIGHT" value="1"/>
+            <enum name="NONE" value="-1"/>
+        </attr>
     </declare-styleable>
 
     <declare-styleable name="TextLayout">

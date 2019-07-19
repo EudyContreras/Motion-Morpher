@@ -86,6 +86,19 @@ interface MorphLayout {
     fun getMorphShape(): MorphShape
     fun setLayer(layer: Int)
 
+    enum class DimensionSnap(val value: Int) {
+        WIDTH(0), HEIGHT(1), NONE(-1);
+
+        companion object {
+           fun from(value: Int): DimensionSnap {
+               return when (value) {
+                   0 -> WIDTH
+                   1 -> HEIGHT
+                   else -> NONE
+               }
+           }
+        }
+    }
     companion object {
         const val CIRCULAR = 0
         const val RECTANGULAR = 1

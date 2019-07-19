@@ -11,7 +11,6 @@ import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.activities.MorphDialogImpl
 import com.eudycontreras.motionmorpherlibrary.extensions.openDialog
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import kotlinx.android.synthetic.main.activity_demo1.*
 
 
@@ -29,6 +28,9 @@ class ActivityDemo1 : MorphActivity() {
 
         morpher.useArcTranslator = false
 
+        morpher.morphIntoDuration = 1200
+        morpher.morphFromDuration = 1200
+
         morpher.morphIntoInterpolator = FastOutSlowInInterpolator()
         morpher.morphFromInterpolator = FastOutSlowInInterpolator()
 
@@ -38,12 +40,13 @@ class ActivityDemo1 : MorphActivity() {
 
         fab.setOnClickListener {
             val dialog = MorphDialogImpl.instance(
+                this,
                 morpher,
                 R.layout.activity_demo1_details,
                 R.style.AppTheme_Dialog) { dialog, morphView ->
                 val details = DetailsDemo1(this, dialog, morphView)
                 morpher.endView = morphView
-                morpher.morphInto(1500)
+                morpher.morphInto()
             }
             openDialog(dialog)
         }
@@ -61,10 +64,6 @@ class ActivityDemo1 : MorphActivity() {
         }
 
         return super.onOptionsItemSelected(item)
-    }
-
-    fun getView(layoutId: Int): MorphLayout {
-        return layoutInflater.inflate(layoutId, this.getRoot(), false) as MorphLayout
     }
 
     override fun getRoot(): ViewGroup {

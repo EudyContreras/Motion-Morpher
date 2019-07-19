@@ -3,7 +3,6 @@ package com.eudycontreras.motionmorpherlibrary.activities
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
@@ -11,9 +10,8 @@ import android.view.Window
 import androidx.annotation.LayoutRes
 import androidx.annotation.StyleRes
 import androidx.fragment.app.DialogFragment
+import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
-
-
 
 
 /**
@@ -25,14 +23,17 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
  
 abstract class MorphDialog : DialogFragment() {
 
-    lateinit var morphView: MorphContainer
+    protected lateinit var morphView: MorphContainer
+    protected lateinit var activity: MorphActivity
 
-    protected var onShown: ((MorphDialog, MorphContainer) -> Unit)? = null
+    protected lateinit var morpher: Morpher
+    protected lateinit var layout: ViewGroup
 
     @LayoutRes protected var layoutId: Int = -1
 
     @StyleRes protected var layoutTheme: Int = -1
 
+    protected var onShown: ((MorphDialog, MorphContainer) -> Unit)? = null
 
     override fun onResume() {
         super.onResume()
@@ -51,17 +52,25 @@ abstract class MorphDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.window?.let {
-            it.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            it.requestFeature(Window.FEATURE_NO_TITLE)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                //it.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                //it.setStatusBarColor(yourColor);
-            }
-            it.setDimAmount(0f)
-        }
-        return dialog
-    }
+        return object : Dialog(activity, theme) {
+            override fun onBackPressed() {
+                if (morpher.isMorphing) {
+                    morpher.cancelMorph()
+                    return
+                }
+                if (morpher.isMorphed) {
+                    morpher.morphFrom(onEnd = { super.onBackPressed() })
+                    return
+                }
 
+                super.onBackPressed()
+            }
+        }.apply {
+            window?.let {
+                it.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                it.requestFeature(Window.FEATURE_NO_TITLE)
+                it.setDimAmount(0f)
+            }
+        }
+    }
 }
