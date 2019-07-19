@@ -45,32 +45,32 @@
             android:visibility="invisible"
             layout="@layout/activity_demo1_details"/>
 
-    <com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
+    <com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
             android:id="@+id/toolbarMenuBor"
             android:tag="details"
             android:layout_gravity="end|bottom"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             android:backgroundTint="@color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
             android:elevation="1dp"
             android:translationZ="8dp"
-            app:fl_shapeType="CIRCULAR">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:mw_shapeType="CIRCULAR">
 
         <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
                 android:id="@+id/fab"
                 android:layout_width="55dp"
                 android:layout_height="55dp"
-                android:backgroundTint="@color/fab"
+                android:backgroundTint="@color/white"
                 app:fl_shapeType="CIRCULAR">
             <View
                     android:layout_gravity="center"
                     android:background="@drawable/ic_add"
-                    android:backgroundTint="@color/white"
+                    android:backgroundTint="@color/icon_dark"
                     android:layout_width="24dp"
                     android:layout_height="24dp"/>
         </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout>
-    </com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer>
+    </com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

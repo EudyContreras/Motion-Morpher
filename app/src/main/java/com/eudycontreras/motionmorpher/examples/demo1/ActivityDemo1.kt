@@ -8,9 +8,9 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
-import com.eudycontreras.motionmorpherlibrary.activities.MorphDialogImpl
+import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
 import com.eudycontreras.motionmorpherlibrary.extensions.openDialog
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
 import kotlinx.android.synthetic.main.activity_demo1.*
 
 
@@ -28,8 +28,8 @@ class ActivityDemo1 : MorphActivity() {
 
         morpher.useArcTranslator = false
 
-        morpher.morphIntoDuration = 1200
-        morpher.morphFromDuration = 1200
+        morpher.morphIntoDuration = 1500
+        morpher.morphFromDuration = 1500
 
         morpher.morphIntoInterpolator = FastOutSlowInInterpolator()
         morpher.morphFromInterpolator = FastOutSlowInInterpolator()
@@ -37,15 +37,13 @@ class ActivityDemo1 : MorphActivity() {
         morpher.endStateMorphIntoDescriptor.animateOnOffset = 0f
         morpher.endStateMorphFromDescriptor.animateOnOffset = 0f
 
-        morpher.startView = toolbarMenuBor as MorphContainer
+        morpher.startView = toolbarMenuBor as MorphWrapper
 
         fab.setOnClickListener {
-            val dialog = MorphDialogImpl.instance(
-                this,
-                morpher,
-                R.layout.activity_demo1_details,
-                R.style.AppTheme_Dialog) { dialog, morphView ->
+            val dialog = MorphDialog.instance(this, morpher, R.layout.activity_demo1_details, R.style.AppTheme_Dialog) { dialog, morphView ->
+
                 val details = DetailsDemo1(this, dialog, morphView)
+
                 morpher.endView = morphView
                 morpher.morphInto()
             }

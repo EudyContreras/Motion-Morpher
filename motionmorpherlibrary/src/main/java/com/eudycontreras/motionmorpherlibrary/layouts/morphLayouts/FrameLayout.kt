@@ -169,11 +169,11 @@ open class FrameLayout : FrameLayout, MorphLayout {
     override val morphShape: Int
         get() = shape
 
-    private var shape: Int = RECTANGULAR
-    
-    private val location: IntArray = IntArray(2)
+    protected var shape: Int = RECTANGULAR
 
-    private var cornerRadii: CornerRadii = CornerRadii()
+    protected val location: IntArray = IntArray(2)
+
+    protected var cornerRadii: CornerRadii = CornerRadii()
 
     private var drawListener: DrawDispatchListener? = null
 

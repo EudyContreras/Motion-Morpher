@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer
+<com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -10,9 +10,9 @@
         android:backgroundTint="@color/white"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:mc_shapeType="RECTANGULAR"
-        app:mc_startLayout="@id/detailsLayout"
-        app:mc_endLayout="@id/fabLayout">
+        app:mw_shapeType="RECTANGULAR"
+        app:mw_startLayout="@id/fabLayout"
+        app:mw_endLayout="@id/detailsLayout">
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.LinearLayout
             android:id="@+id/detailsLayout"
             android:orientation="vertical"
@@ -21,7 +21,7 @@
             android:backgroundTint="@color/white"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:ll_state="START"
+            app:ll_state="END"
             app:ll_shapeType="RECTANGULAR">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -99,19 +99,19 @@
 
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
             android:id="@+id/fabLayout"
-            android:visibility="invisible"
             android:layout_width="55dp"
             android:layout_height="55dp"
             android:layout_gravity="end|bottom"
-            android:backgroundTint="@color/fab"
+            android:backgroundTint="@color/white"
+            app:fl_state="START"
             app:fl_shapeType="CIRCULAR">
         <View
                 android:layout_gravity="center"
                 android:background="@drawable/ic_add"
-                android:backgroundTint="@color/white"
+                android:backgroundTint="@color/icon_dark"
                 android:layout_width="24dp"
                 android:layout_height="24dp">
 
         </View>
     </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout>
-</com.eudycontreras.motionmorpherlibrary.layouts.MorphContainer>
+</com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper>

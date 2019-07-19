@@ -6,18 +6,8 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.VectorDrawable
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
-import com.eudycontreras.motionmorpherlibrary.extensions.getProperties
-import com.eudycontreras.motionmorpherlibrary.extensions.setProperties
-import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FabLayout
-import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
-import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ViewLayout
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -103,65 +93,11 @@ interface MorphLayout {
         const val CIRCULAR = 0
         const val RECTANGULAR = 1
 
-        fun makeMorphable(viewGroup: ViewGroup): View{
-            return when (viewGroup) {
-                is ConstraintLayout -> {
-                    viewGroup as com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
-                    viewGroup.apply {
-                        this.applyDrawable()
-                    }
-                }
-                is FrameLayout -> {
-                    viewGroup as com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
-                    viewGroup.apply {
-                        this.applyDrawable()
-                    }
-                }
-                is LinearLayout -> {
-                    viewGroup as com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.LinearLayout
-                    viewGroup.apply {
-                        this.applyDrawable()
-                    }
-                }
-                else -> viewGroup
+        fun makeMorphable(view: View): MorphLayout {
+            if (view is FloatingActionButton) {
+               return Morphable(view, CIRCULAR)
             }
-        }
-
-        fun makeMorphable(view: View): View {
-            if (view is ViewGroup) {
-                return makeMorphable(view)
-            }
-
-            return when (view) {
-                is TextView -> {
-                    view as TextLayout
-                    view.apply {
-                        this.applyDrawable()
-                    }
-                }
-                is FloatingActionButton -> {
-                    FabLayout(view.context).apply {
-                        this.setProperties(view.getProperties())
-                        this.layoutParams = view.layoutParams
-                        this.backgroundTintList = view.backgroundTintList
-                        this.supportImageTintList = view.supportImageTintList
-                        this.compatElevation = view.compatElevation
-                        this.customSize = view.customSize
-                        this.applyDrawable(CIRCULAR)
-                        //this.setRippleColor(view.rippleColorStateList)
-                        view.drawable?.let { this.setImageDrawable(it) }
-
-                        val parent = view.parent as ViewGroup
-                        parent.addView(this)
-                    }
-                }
-                else -> {
-                    view as ViewLayout
-                    view.apply {
-                        this.applyDrawable()
-                    }
-                }
-            }
+            return Morphable(view)
         }
     }
 }

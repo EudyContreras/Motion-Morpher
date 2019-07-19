@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary
 
-import androidx.core.math.MathUtils
+import androidx.core.math.MathUtils.clamp
 
 
 fun interpolate(from: Int, to: Int, fraction: Float): Float {
@@ -20,7 +20,7 @@ fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: 
 }
 
 fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float, clampMin: Float, clampMax: Float): Float {
-    return MathUtils.clamp(((value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin), clampMin, clampMax)
+    return clamp((value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin, clampMin, clampMax)
 }
 
 inline fun <reified T> any(vararg args: T, predicate: (any: T) -> Boolean): Boolean {
