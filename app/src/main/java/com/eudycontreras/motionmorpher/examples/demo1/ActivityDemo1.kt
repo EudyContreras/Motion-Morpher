@@ -35,6 +35,7 @@ class ActivityDemo1 : MorphActivity() {
         morpher.morphFromInterpolator = FastOutSlowInInterpolator()
 
         morpher.endStateMorphIntoDescriptor.animateOnOffset = 0f
+        morpher.endStateMorphFromDescriptor.animateOnOffset = 0f
 
         morpher.startView = toolbarMenuBor as MorphContainer
 
