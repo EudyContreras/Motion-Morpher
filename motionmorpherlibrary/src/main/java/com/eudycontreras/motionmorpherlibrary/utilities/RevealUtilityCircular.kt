@@ -1,8 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.utilities
 
-import android.animation.LayoutTransition
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
+import android.animation.*
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -10,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
 import android.graphics.drawable.VectorDrawable
+import android.os.Build
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
@@ -212,6 +211,56 @@ object RevealUtilityCircular {
             bitmap
         } else {
             throw IllegalArgumentException("unsupported drawable type")
+        }
+    }
+
+    fun reveal(myView: View) {
+        // Check if the runtime version is at least Lollipop
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // get the center for the clipping circle
+            val cx = myView.width / 2
+            val cy = myView.height / 2
+
+            // get the final radius for the clipping circle
+            val finalRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
+
+            // create the animator for this view (the start radius is zero)
+            val anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, 0f, finalRadius)
+            // make the view visible and start the animation
+            myView.visibility = View.VISIBLE
+            anim.start()
+        } else {
+            // set the view to invisible without a circular reveal animation below Lollipop
+            myView.visibility = View.INVISIBLE
+        }
+
+    }
+    fun conceal(myView: View) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+            // get the center for the clipping circle
+            val cx = myView.width / 2
+            val cy = myView.height / 2
+
+            // get the initial radius for the clipping circle
+            val initialRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
+
+            // create the animation (the final radius is zero)
+            val anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, initialRadius, 0f)
+
+            // make the view invisible when the animation is done
+            anim.addListener(object : AnimatorListenerAdapter() {
+
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
+                    myView.visibility = View.INVISIBLE
+                }
+            })
+
+            // start the animation
+            anim.start()
+        } else {
+            // set the view to visible without a circular reveal animation below Lollipop
+            myView.visibility = View.VISIBLE
         }
     }
 }

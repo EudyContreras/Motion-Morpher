@@ -7,21 +7,11 @@ import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
 
+
 /**
- * <h1>Class description!</h1>
- *
- *
- *
- * **Note:** Unlicensed private property of the author and creator
- * unauthorized use of this class outside of the Soul Vibe project
- * may result on legal prosecution.
- *
- *
- * Created by <B>Eudy Contreras</B>
- *
- * @author  Eudy Contreras
- * @version 1.0
- * @since   2018-03-31
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 18 2019
  */
 
 fun View.getColor(default: Int = 0x000000): Int {

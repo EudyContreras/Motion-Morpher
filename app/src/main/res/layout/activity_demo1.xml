@@ -48,7 +48,7 @@
     <com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
             android:id="@+id/toolbarMenuBor"
             android:tag="details"
-            android:layout_gravity="end|bottom"
+            android:layout_gravity="center"
             android:backgroundTint="@color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

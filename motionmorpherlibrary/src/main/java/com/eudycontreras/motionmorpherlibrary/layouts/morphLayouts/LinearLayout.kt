@@ -19,26 +19,17 @@ import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.CIRCULAR
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.RECTANGULAR
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphShape
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 
 /**
- * <h1>Class description!</h1>
- *
- *
- *
- * **Note:** Unlicensed private property of the author and creator
- * unauthorized use of this class outside of the Soul Vibe project
- * may result on legal prosecution.
- *
- *
- * Created by <B>Eudy Contreras</B>
- *
- * @author  Eudy Contreras
- * @version 1.0
- * @since   2018-03-31
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 19 2019
  */
+
+
 class LinearLayout : LinearLayout, MorphLayout {
 
     override var morphX: Float
@@ -169,6 +160,8 @@ class LinearLayout : LinearLayout, MorphLayout {
     override val morphShape: Int
         get() = shape
 
+    override var animate: Boolean = true
+
     private var shape: Int = RECTANGULAR
 
     private val location: IntArray = IntArray(2)
@@ -195,6 +188,8 @@ class LinearLayout : LinearLayout, MorphLayout {
             shape = typedArray.getInt(R.styleable.LinearLayout_ll_shapeType,
                 RECTANGULAR
             )
+            animate = typedArray.getBoolean(R.styleable.LinearLayout_ll_animate, true)
+
             val radius = typedArray.getDimension(R.styleable.LinearLayout_ll_radius, 0f)
             val topLeft = typedArray.getDimension(R.styleable.LinearLayout_ll_topLeftCornerRadius, radius)
             val topRight = typedArray.getDimension(R.styleable.LinearLayout_ll_topRightCornerRadius, radius)

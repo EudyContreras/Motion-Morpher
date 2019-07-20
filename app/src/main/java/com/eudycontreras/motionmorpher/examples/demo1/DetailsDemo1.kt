@@ -15,13 +15,12 @@ import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
  
 class DetailsDemo1(
     private val activityDemo1: ActivityDemo1,
-    private val dialog: MorphDialog,
-    private val layout: View) {
+    private val dialog: MorphDialog) {
 
     private lateinit var toolbar: Toolbar
 
     init {
-        initialize(layout)
+        initialize(dialog.morphView)
     }
 
     private fun initialize(layout: View) {

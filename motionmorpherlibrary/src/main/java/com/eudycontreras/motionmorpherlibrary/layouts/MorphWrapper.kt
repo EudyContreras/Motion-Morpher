@@ -16,8 +16,12 @@ import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
  * @since July 19 2019
  */
 
-
 class MorphWrapper : FrameLayout, MorphContainer {
+
+    @IdRes private var startViewId: Int = -1
+    @IdRes private var endViewId: Int = -1
+
+    private val mask: Path = Path()
 
     constructor(context: Context) : super(context)
 
@@ -36,6 +40,7 @@ class MorphWrapper : FrameLayout, MorphContainer {
                 R.styleable.MorphWrapper_mw_shapeType,
                 MorphLayout.RECTANGULAR
             )
+
             startViewId = typedArray.getResourceId(R.styleable.MorphWrapper_mw_startLayout, -1)
             endViewId = typedArray.getResourceId(R.styleable.MorphWrapper_mw_endLayout, -1)
 
@@ -51,15 +56,9 @@ class MorphWrapper : FrameLayout, MorphContainer {
         }
     }
 
-    private val mask: Path = Path()
-
-    @IdRes private var startViewId: Int = -1
-    @IdRes private var endViewId: Int = -1
-
     init {
         clipToOutline = true
     }
-
 
     override fun updateLayout() {
         requestLayout()

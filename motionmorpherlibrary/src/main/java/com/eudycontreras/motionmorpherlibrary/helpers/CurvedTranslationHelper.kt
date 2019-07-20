@@ -4,6 +4,13 @@ import com.eudycontreras.motionmorpherlibrary.properties.Coordintates
 import java.lang.StrictMath.pow
 import kotlin.math.round
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 19 2019
+ *
+ * Uses algorithm from: http://en.wikipedia.org/wiki/B%C3%A9zier_curve
+ */
 
 class CurvedTranslationHelper(
     fromX: Float = 0f,
@@ -15,7 +22,6 @@ class CurvedTranslationHelper(
     private var endPoint: Coordintates = Coordintates(toX, toY)
 
     private var controlPoint: Coordintates = Coordintates.midPoint(startPoint, endPoint)
-
 
     fun setStartPoint(start: Coordintates) {
         startPoint = start

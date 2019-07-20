@@ -9,24 +9,15 @@ import android.view.View
 import android.view.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
- * <h1>Class description!</h1>
- *
- *
- *
- * **Note:** Unlicensed private property of the author and creator
- * unauthorized use of this class outside of the Soul Vibe project
- * may result on legal prosecution.
- *
- *
- * Created by <B>Eudy Contreras</B>
- *
- * @author  Eudy Contreras
- * @version 1.0
- * @since   2018-03-31
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 19 2019
  */
+
 interface MorphLayout {
     var morphX: Float
     var morphY: Float
@@ -49,9 +40,10 @@ interface MorphLayout {
     var morphCornerRadii: CornerRadii
     var morphVisibility: Int
     val morphChildCount: Int
-    var mutateCorners: Boolean
     val morphShape: Int
     val morphTag: Any?
+    var animate: Boolean
+    var mutateCorners: Boolean
     val windowLocationX: Int
     val windowLocationY: Int
     var morphBackground: Drawable
@@ -95,9 +87,9 @@ interface MorphLayout {
 
         fun makeMorphable(view: View): MorphLayout {
             if (view is FloatingActionButton) {
-               return Morphable(view, CIRCULAR)
+               return MorphView(view, CIRCULAR)
             }
-            return Morphable(view)
+            return MorphView(view)
         }
     }
 }

@@ -13,6 +13,11 @@ import com.eudycontreras.motionmorpherlibrary.Action
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.mapRange
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 18 2019
+ */
 
 class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(drawables) {
 

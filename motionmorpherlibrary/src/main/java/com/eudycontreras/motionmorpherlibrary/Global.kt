@@ -2,6 +2,11 @@ package com.eudycontreras.motionmorpherlibrary
 
 import androidx.core.math.MathUtils.clamp
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
+ */
 
 fun interpolate(from: Int, to: Int, fraction: Float): Float {
     return from + (to - from) * fraction

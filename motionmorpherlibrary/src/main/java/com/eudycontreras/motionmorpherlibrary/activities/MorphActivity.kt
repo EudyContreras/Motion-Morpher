@@ -2,6 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.activities
 
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.eudycontreras.motionmorpherlibrary.listeners.BackPressedListener
 
 
@@ -36,4 +37,16 @@ abstract class MorphActivity: AppCompatActivity(){
         backNavigationListeners.remove(listener)
     }
 
+    fun openFragment(fragment: Fragment) {
+        val prev = supportFragmentManager.findFragmentByTag(fragment::class.java.simpleName)
+
+        val fragmentTransaction = supportFragmentManager.beginTransaction()
+
+        if (supportFragmentManager.fragments.contains(fragment) || prev != null) {
+            fragmentTransaction.remove(prev!!)
+        }
+
+        fragmentTransaction.addToBackStack(null)
+        fragmentTransaction.show(fragment)
+    }
 }

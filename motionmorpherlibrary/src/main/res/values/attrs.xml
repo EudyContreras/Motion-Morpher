@@ -24,6 +24,7 @@
             <enum name="RECTANGULAR" value="1"/>
         </attr>
         <attr name="cl_radius" format="dimension"/>
+        <attr name="cl_animate" format="boolean"/>
         <attr name="cl_topLeftCornerRadius" format="dimension" />
         <attr name="cl_topRightCornerRadius" format="dimension" />
         <attr name="cl_bottomLeftCornerRadius" format="dimension" />
@@ -40,6 +41,7 @@
             <enum name="RECTANGULAR" value="1"/>
         </attr>
         <attr name="fl_radius" format="dimension"/>
+        <attr name="fl_animate" format="boolean"/>
         <attr name="fl_topLeftCornerRadius" format="dimension" />
         <attr name="fl_topRightCornerRadius" format="dimension" />
         <attr name="fl_bottomLeftCornerRadius" format="dimension" />
@@ -56,6 +58,7 @@
             <enum name="RECTANGULAR" value="1"/>
         </attr>
         <attr name="ll_radius" format="dimension"/>
+        <attr name="ll_animate" format="boolean"/>
         <attr name="ll_topLeftCornerRadius" format="dimension" />
         <attr name="ll_topRightCornerRadius" format="dimension" />
         <attr name="ll_bottomLeftCornerRadius" format="dimension" />
@@ -72,6 +75,7 @@
             <enum name="RECTANGULAR" value="1"/>
         </attr>
         <attr name="vl_radius" format="dimension"/>
+        <attr name="vl_animate" format="boolean"/>
         <attr name="vl_topLeftCornerRadius" format="dimension" />
         <attr name="vl_topRightCornerRadius" format="dimension" />
         <attr name="vl_bottomLeftCornerRadius" format="dimension" />
@@ -93,6 +97,7 @@
             <enum name="RECTANGULAR" value="1"/>
         </attr>
         <attr name="tl_radius" format="dimension"/>
+        <attr name="tl_animate" format="boolean"/>
         <attr name="tl_topLeftCornerRadius" format="dimension" />
         <attr name="tl_topRightCornerRadius" format="dimension" />
         <attr name="tl_bottomLeftCornerRadius" format="dimension" />

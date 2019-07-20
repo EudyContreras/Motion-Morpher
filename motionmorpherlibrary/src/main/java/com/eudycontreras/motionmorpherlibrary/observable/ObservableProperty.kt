@@ -1,7 +1,9 @@
 package com.eudycontreras.motionmorpherlibrary.observable
 
 /**
- * Created by eudycontreras.
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
  */
 
 data class ObservableProperty<T>(private val _value: T, val name: String, private val changeObservable: PropertyChangeObservable) {

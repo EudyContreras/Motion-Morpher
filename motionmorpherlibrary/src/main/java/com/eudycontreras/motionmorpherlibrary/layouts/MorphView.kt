@@ -15,6 +15,7 @@ import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 
 /**
  * @Project MotionMorpher
@@ -22,7 +23,7 @@ import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
  * @since July 19 2019
  */
 
-class Morphable: MorphLayout {
+class MorphView: MorphLayout {
 
     private val view: View
 
@@ -148,12 +149,13 @@ class Morphable: MorphLayout {
     override val morphShape: Int
         get() = shape
 
-
     override var morphBackground: Drawable
         get() = view.background
         set(value) {
             view.background = value
         }
+
+    override var animate: Boolean = true
 
     private var shape: Int = MorphLayout.RECTANGULAR
 
@@ -304,8 +306,4 @@ class Morphable: MorphLayout {
     }
 
     override fun toString(): String = view.tag.toString()
-
-    fun setListener(listener: DrawDispatchListener) {
-        this.drawListener = listener
-    }
 }

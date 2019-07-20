@@ -11,15 +11,15 @@ import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.CIRCULAR
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphShape
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
- * @since July 17 2019
+ * @since July 19 2019
  */
 
 class FabLayout: FloatingActionButton, MorphLayout {
@@ -156,6 +156,8 @@ class FabLayout: FloatingActionButton, MorphLayout {
 
     override val morphShape: Int
         get() = shape
+
+    override var animate: Boolean = true
 
     private var shape: Int = CIRCULAR
 

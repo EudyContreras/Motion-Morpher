@@ -4,7 +4,9 @@ import com.eudycontreras.motionmorpherlibrary.PropertyChangeListener
 
 
 /**
- * Created by eudycontreras.
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
  */
 
 abstract class PropertyChangeObservable {

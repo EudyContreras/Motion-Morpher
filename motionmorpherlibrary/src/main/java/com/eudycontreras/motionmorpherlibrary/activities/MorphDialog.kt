@@ -22,17 +22,18 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
  
 sealed class MorphDialog : DialogFragment() {
 
-    protected lateinit var morphView: MorphWrapper
+    lateinit var morphView: MorphWrapper
+
     protected lateinit var activity: MorphActivity
 
     protected lateinit var morpher: Morpher
     protected lateinit var layout: ViewGroup
 
+    protected var showListener: ArrayList<((MorphWrapper) -> Unit)?> = ArrayList()
+
     @LayoutRes protected var layoutId: Int = -1
 
     @StyleRes protected var layoutTheme: Int = -1
-
-    protected var onShown: ((MorphDialog, MorphWrapper) -> Unit)? = null
 
     override fun onResume() {
         super.onResume()
@@ -73,6 +74,27 @@ sealed class MorphDialog : DialogFragment() {
         }
     }
 
+    fun addShowListener(listener: ((MorphWrapper) -> Unit)? ) {
+        this.showListener.add(listener)
+    }
+
+    fun show(listener: ((MorphWrapper) -> Unit)? = null ) {
+        val prev = activity.supportFragmentManager.findFragmentByTag(this::class.java.simpleName)
+
+        val fragmentTransaction = activity.supportFragmentManager.beginTransaction()
+
+        if (activity.supportFragmentManager.fragments.contains(this) || prev != null) {
+            fragmentTransaction.remove(prev!!)
+        }
+
+        fragmentTransaction.addToBackStack(null)
+
+        listener?.let {
+            addShowListener(it)
+        }
+
+        this.show(fragmentTransaction, this::class.java.simpleName)
+    }
 
     companion object {
         fun instance(
@@ -80,7 +102,7 @@ sealed class MorphDialog : DialogFragment() {
             morpher: Morpher,
             @LayoutRes layoutId: Int,
             @StyleRes layoutTheme: Int,
-            showListener: ((MorphDialog, MorphWrapper) -> Unit)? = null
+            showListener: ((MorphWrapper) -> Unit)? = null
         ): MorphDialogImpl {
 
             val fragment = MorphDialogImpl()
@@ -88,9 +110,10 @@ sealed class MorphDialog : DialogFragment() {
             fragment.morpher = morpher
             fragment.layoutId = layoutId
             fragment.layoutTheme = layoutTheme
-            fragment.onShown = showListener
+            fragment.addShowListener(showListener)
             return fragment
         }
+
     }
 
     class MorphDialogImpl: MorphDialog() {
@@ -101,7 +124,8 @@ sealed class MorphDialog : DialogFragment() {
             morphView = layout.getChildAt(0) as MorphWrapper
 
             morphView.post {
-                onShown?.invoke(this, morphView)
+                morpher.endView = morphView
+                showListener.forEach { it?.invoke(morphView) }
             }
 
             morpher.backgroundDimListener = {

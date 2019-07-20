@@ -1,8 +1,11 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 /**
- * Created by eudycontreras.
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
  */
+
 data class Padding(
     val start: Float = 0f,
     val end: Float = 0f,
