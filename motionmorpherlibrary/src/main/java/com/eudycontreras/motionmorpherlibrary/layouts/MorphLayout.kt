@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -46,7 +47,9 @@ interface MorphLayout {
     var mutateCorners: Boolean
     val windowLocationX: Int
     val windowLocationY: Int
+    val viewBounds: ViewBounds
     var morphBackground: Drawable
+    fun getView(): View
     fun animator(): ViewPropertyAnimator
     fun updateLayout()
     fun hasChildren(): Boolean

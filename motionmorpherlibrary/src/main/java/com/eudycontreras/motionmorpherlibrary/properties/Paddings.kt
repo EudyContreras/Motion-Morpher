@@ -6,10 +6,10 @@ package com.eudycontreras.motionmorpherlibrary.properties
  * @since July 12 2019
  */
 
-data class Padding(
-    val start: Float = 0f,
-    val end: Float = 0f,
-    val top: Float = 0f,
-    val bottom: Float = 0f
+data class Paddings(
+    var start: Int = 0,
+    var end: Int = 0,
+    var top: Int = 0,
+    var bottom: Int = 0
 )
 

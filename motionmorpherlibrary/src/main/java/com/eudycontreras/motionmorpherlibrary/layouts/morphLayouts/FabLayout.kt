@@ -5,13 +5,16 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.*
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
+import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.CIRCULAR
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -157,7 +160,31 @@ class FabLayout: FloatingActionButton, MorphLayout {
     override val morphShape: Int
         get() = shape
 
+    override val viewBounds: ViewBounds
+        get() {
+            bounds.top = this.top
+            bounds.left = this.left
+            bounds.right = this.right
+            bounds.bottom = this.bottom
+
+            bounds.paddings.top = this.paddingTop
+            bounds.paddings.start = this.paddingStart
+            bounds.paddings.end = this.paddingEnd
+            bounds.paddings.bottom = this.paddingBottom
+
+            doWith(layoutParams as ViewGroup.MarginLayoutParams) {
+                bounds.margins.top = it.topMargin
+                bounds.margins.start = it.marginStart
+                bounds.margins.end = it.marginEnd
+                bounds.margins.bottom = it.bottomMargin
+            }
+
+            return bounds
+        }
+
     override var animate: Boolean = true
+
+    private var bounds: ViewBounds = ViewBounds()
 
     private var shape: Int = CIRCULAR
 
@@ -257,6 +284,8 @@ class FabLayout: FloatingActionButton, MorphLayout {
             background = drawable
         }
     }
+
+    override fun getView(): View  = this
 
     override fun isFloatingActionButton(): Boolean = true
 

@@ -11,8 +11,7 @@ import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
-import com.eudycontreras.motionmorpherlibrary.extensions.dp
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import kotlinx.android.synthetic.main.activity_demo1.*
 
 
@@ -43,8 +42,8 @@ class ActivityDemo1 : MorphActivity() {
          * Optionally assign the duration for both morphing into
          * and morphing from
          */
-        morpher.morphIntoDuration = 1000
-        morpher.morphFromDuration = 1000
+        morpher.morphIntoDuration = 1500
+        morpher.morphFromDuration = 1500
 
         morpher.dimPropertyInto.toValue = 1f
         morpher.dimPropertyFrom.fromValue = 1f
@@ -66,39 +65,19 @@ class ActivityDemo1 : MorphActivity() {
         morpher.endStateChildMorphIntoDescriptor = Morpher.ChildAnimationDescriptor(
             type = Morpher.AnimationType.REVEAL,
             animateOnOffset = 0.1f,
-            durationMultiplier = -0.15f,
-            startStateProps = Morpher.AnimationProperties().apply {
-                alpha = 0f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = 55.dp
-            },
-            endStateProps = Morpher.AnimationProperties().apply {
-                alpha = 1f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = 0f
-            },
+            durationMultiplier = -0.2f,
+            allowDiagonalTranslation = true,
+            defaultTranslateMultiplier = 0.12f,
             interpolator = DecelerateInterpolator(),
-            stagger = Morpher.AnimationStagger(0.15f)
+            stagger = Morpher.AnimationStagger(0.14f)
         )
 
         morpher.endStateChildMorphFromDescriptor = Morpher.ChildAnimationDescriptor(
             type = Morpher.AnimationType.CONCEAL,
             animateOnOffset = 0f,
             durationMultiplier = -0.8f,
-            startStateProps = Morpher.AnimationProperties().apply {
-                alpha = 1f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = 0f
-            },
-            endStateProps = Morpher.AnimationProperties().apply {
-                alpha = 0f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = 100.dp
-            },
+            allowDiagonalTranslation = true,
+            defaultTranslateMultiplier = 0.18f,
             interpolator = AccelerateInterpolator(),
             stagger = Morpher.AnimationStagger(0.15f),
             reversed = true
@@ -108,18 +87,7 @@ class ActivityDemo1 : MorphActivity() {
             type = Morpher.AnimationType.REVEAL,
             animateOnOffset = 0f,
             durationMultiplier = 0.2f,
-            startStateProps = Morpher.AnimationProperties().apply {
-                alpha = 1f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = 0f
-            },
-            endStateProps = Morpher.AnimationProperties().apply {
-                alpha = 0f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = -(80.dp)
-            },
+            allowDiagonalTranslation = true,
             interpolator = AccelerateInterpolator()
         )
 
@@ -127,20 +95,8 @@ class ActivityDemo1 : MorphActivity() {
             type = Morpher.AnimationType.CONCEAL,
             animateOnOffset = 0f,
             durationMultiplier = 0.1f,
-            startStateProps = Morpher.AnimationProperties().apply {
-                alpha = 1f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = -(30.dp)
-            },
-            endStateProps = Morpher.AnimationProperties().apply {
-                alpha = 1f
-                scaleX = 1f
-                scaleY = 1f
-                translationY = 0.dp
-            },
-            interpolator = DecelerateInterpolator(),
-            reversed = false
+            allowDiagonalTranslation = true,
+            interpolator = DecelerateInterpolator()
         )
 
         morpher.computedStatesListener = { startState, endState ->
@@ -186,7 +142,7 @@ class ActivityDemo1 : MorphActivity() {
             morpher.startStateMorphIntoDescriptor.propertyAlpha.toValue = 0f
 
             morpher.startStateMorphIntoDescriptor.propertyAlpha.startOffset = 0f
-            morpher.startStateMorphIntoDescriptor.propertyAlpha.endOffset = 0.30f
+            morpher.startStateMorphIntoDescriptor.propertyAlpha.endOffset = 0.28f
 
             morpher.startStateMorphIntoDescriptor.propertyScaleX.interpolator = FastOutSlowInInterpolator()
             morpher.startStateMorphIntoDescriptor.propertyScaleY.interpolator = FastOutSlowInInterpolator()
@@ -248,7 +204,7 @@ class ActivityDemo1 : MorphActivity() {
          *  Set the starting view to morph from. The view
          *  must be a morphable layout/view
          */
-        morpher.startView = toolbarMenuBor as MorphWrapper
+        morpher.startView = fab as MorphLayout
 
         /**
          * When the resulting view from a morph is a dialog

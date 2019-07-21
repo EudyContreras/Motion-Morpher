@@ -1,5 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary
 
+import java.util.*
+
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
@@ -18,3 +20,5 @@ typealias TransitionOffsetListener = ((percent: Float) -> Unit)?
 typealias BackgroundDimListener = ((dimAmount: Float) -> Unit)?
 
 typealias ComputedStatesListener = ((startState: Morpher.Properties, endState: Morpher.Properties) -> Unit)?
+
+typealias TranslationPositions = EnumSet<Morpher.TranslationPosition>

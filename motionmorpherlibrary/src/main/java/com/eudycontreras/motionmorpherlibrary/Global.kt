@@ -1,6 +1,10 @@
 package com.eudycontreras.motionmorpherlibrary
 
 import androidx.core.math.MathUtils.clamp
+import com.eudycontreras.motionmorpherlibrary.observable.ObservableProperty
+import com.eudycontreras.motionmorpherlibrary.observable.ObservableValue
+import com.eudycontreras.motionmorpherlibrary.observable.PropertyChangeObservable
+import kotlin.reflect.KProperty
 
 /**
  * @Project MotionMorpher
@@ -40,6 +44,10 @@ inline fun <reified T> none(vararg args: T, predicate: (none: T) -> Boolean): Bo
     return args.none(predicate)
 }
 
+inline fun <reified T> doWith(param: T, capsule: (T) -> Unit) {
+    return capsule.invoke(param)
+}
+
 inline fun <reified X,reified Y> doWith(first: X?, second: Y?, capsule: (X,Y) -> Unit) {
     if (first != null && second != null) {
         return capsule.invoke(first, second)
@@ -51,4 +59,20 @@ inline fun <reified X,reified Y,reified Z> doWith(first: X?, second: Y?, third: 
         return capsule.invoke(first, second, third)
     }
     throw KotlinNullPointerException("")
+}
+
+fun <T> T.toObservable(property: KProperty<Any>, observable: PropertyChangeObservable): ObservableProperty<T>{
+    return ObservableProperty(this, property.name, observable)
+}
+
+fun <T> from(value: T, property: KProperty<Any>, observable: PropertyChangeObservable): ObservableProperty<T>{
+    return ObservableProperty(value, property.name, observable)
+}
+
+fun <T> from(value: T): ObservableValue<T> {
+    return ObservableValue(value)
+}
+
+inline fun <reified T> Any.cast(): T{
+    return this as T
 }

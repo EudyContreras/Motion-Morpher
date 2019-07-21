@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:backgroundTint="@color/white"
+        android:layout_gravity="end|bottom"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_margin="@dimen/fab_margin"
+        android:elevation="1dp"
+        android:translationZ="8dp"
+        app:fl_state="START"
+        app:fl_shapeType="CIRCULAR">
+
+    <View
+            android:layout_gravity="center"
+            android:background="@drawable/ic_add"
+            android:backgroundTint="@color/icon_dark"
+            android:layout_width="24dp"
+            android:layout_height="24dp"/>
+</com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout>

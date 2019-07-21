@@ -10,7 +10,7 @@ data class Dimension(
     var width: Float = 0f,
     var height: Float = 0f
 ) {
-    var padding = Padding()
+    var padding = Paddings()
 
     fun copy(): Dimension {
         return Dimension(width, height)

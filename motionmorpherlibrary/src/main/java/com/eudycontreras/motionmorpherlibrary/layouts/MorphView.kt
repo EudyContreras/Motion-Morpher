@@ -10,11 +10,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import androidx.core.view.children
+import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 
 /**
@@ -155,7 +157,31 @@ class MorphView: MorphLayout {
             view.background = value
         }
 
+    override val viewBounds: ViewBounds
+        get() {
+            bounds.top = view.top
+            bounds.left = view.left
+            bounds.right = view.right
+            bounds.bottom = view.bottom
+
+            bounds.paddings.top = view.paddingTop
+            bounds.paddings.start = view.paddingStart
+            bounds.paddings.end = view.paddingEnd
+            bounds.paddings.bottom = view.paddingBottom
+
+            doWith(view.layoutParams as ViewGroup.MarginLayoutParams) {
+                bounds.margins.top = it.topMargin
+                bounds.margins.start = it.marginStart
+                bounds.margins.end = it.marginEnd
+                bounds.margins.bottom = it.bottomMargin
+            }
+
+            return bounds
+        }
+
     override var animate: Boolean = true
+
+    private var bounds: ViewBounds = ViewBounds()
 
     private var shape: Int = MorphLayout.RECTANGULAR
 
@@ -220,6 +246,8 @@ class MorphView: MorphLayout {
         mutableDrawable = drawable
         view.background = drawable
     }
+
+    override fun getView(): View = view
 
     override fun isFloatingActionButton(): Boolean = false
 

@@ -9,8 +9,10 @@ import android.graphics.drawable.VectorDrawable
 import android.os.Build
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.R
+import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
@@ -19,6 +21,7 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.CIRC
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.RECTANGULAR
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 
 
@@ -159,7 +162,31 @@ class ViewLayout : View, MorphLayout {
     override val morphShape: Int
         get() = shape
 
+    override val viewBounds: ViewBounds
+        get() {
+            bounds.top = this.top
+            bounds.left = this.left
+            bounds.right = this.right
+            bounds.bottom = this.bottom
+
+            bounds.paddings.top = this.paddingTop
+            bounds.paddings.start = this.paddingStart
+            bounds.paddings.end = this.paddingEnd
+            bounds.paddings.bottom = this.paddingBottom
+
+            doWith(layoutParams as ViewGroup.MarginLayoutParams) {
+                bounds.margins.top = it.topMargin
+                bounds.margins.start = it.marginStart
+                bounds.margins.end = it.marginEnd
+                bounds.margins.bottom = it.bottomMargin
+            }
+
+            return bounds
+        }
+
     override var animate: Boolean = true
+
+    private var bounds: ViewBounds = ViewBounds()
 
     private var shape: Int = RECTANGULAR
 
@@ -279,6 +306,8 @@ class ViewLayout : View, MorphLayout {
             background = drawable
         }
     }
+
+    override fun getView(): View  = this
 
     override fun isFloatingActionButton(): Boolean = false
 
