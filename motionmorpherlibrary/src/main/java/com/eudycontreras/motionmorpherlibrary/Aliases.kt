@@ -1,5 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary
 
+import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 import java.util.*
 
 /**
@@ -17,8 +18,12 @@ typealias PropertyChangeListener <T> = (oldValue: T, newValue: T, name: String) 
 
 typealias TransitionOffsetListener = ((percent: Float) -> Unit)?
 
+typealias ContainerBoundsListener = ((oldBounds: Bounds, newBounds: Bounds) -> Unit)?
+
 typealias BackgroundDimListener = ((dimAmount: Float) -> Unit)?
 
 typealias ComputedStatesListener = ((startState: Morpher.Properties, endState: Morpher.Properties) -> Unit)?
 
 typealias TranslationPositions = EnumSet<Morpher.TranslationPosition>
+
+typealias MorphValuesListener = ((startValue: Morpher.MorphValues, endValues: Morpher.MorphValues) -> Unit)?

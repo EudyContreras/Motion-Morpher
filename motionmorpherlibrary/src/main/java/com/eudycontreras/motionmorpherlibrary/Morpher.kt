@@ -17,6 +17,7 @@ import com.eudycontreras.motionmorpherlibrary.extensions.*
 import com.eudycontreras.motionmorpherlibrary.helpers.CurvedTranslationHelper
 import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
 import com.eudycontreras.motionmorpherlibrary.properties.Coordintates
@@ -60,6 +61,8 @@ class Morpher(private val context: Context) {
     var backgroundDimListener: BackgroundDimListener = null
     var computedStatesListener: ComputedStatesListener = null
     var transitionOffsetListener: TransitionOffsetListener = null
+    var containerBoundsListener: ContainerBoundsListener = null
+    var morphValuesListener: MorphValuesListener = null
 
     var morphIntoInterpolator: Interpolator? = null
     var morphFromInterpolator: Interpolator? = null
@@ -107,29 +110,10 @@ class Morpher(private val context: Context) {
     var startStateMorphIntoDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.REVEAL)
     var startStateMorphFromDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.CONCEAL)
 
-    var endStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL).apply { default = true }
-        set(value) {
-            field = value
-            field.default = true
-        }
-
-    var endStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL).apply { default = true }
-        set(value) {
-            field = value
-            field.default = true
-        }
-
-    var startStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL).apply { default = true }
-        set(value) {
-            field = value
-            field.default = true
-        }
-
-    var startStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL).apply { default = true }
-        set(value) {
-            field = value
-            field.default = true
-        }
+    var endStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL)
+    var endStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL)
+    var startStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL)
+    var startStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL)
 
     var dimPropertyInto: PropertyDescriptor<Float> = PropertyDescriptor(
         propertyType = PropertyDescriptor.COLOR,
@@ -169,10 +153,57 @@ class Morpher(private val context: Context) {
         val endingViewStart = endView.getStartState()
         val endingViewEnd = endView.getEndState()
 
-        val pivotPoint: Point<Float> = calculatePivot(endingViewStart, endingViewEnd)
+        applyPivots(endingViewStart, endingViewEnd)
+
+        if (!initialValuesApplied) {
+            adjustChildAnimations(endingViewEnd, endingViewStart)
+        }
+
+        applyChildrenDefault(endingViewEnd)
+
+        applyProps(endingView, startingState)
 
         endViewEndState = MorphState(endingViewEnd, endingViewEnd.getProperties())
         endViewStartState = MorphState(endingViewStart, endingViewStart.getProperties())
+
+        endingView.show(overlayCrossfadeDurationIn) { VISIBLE }
+        startingView.hide(overlayCrossfadeDurationOut) { INVISIBLE }
+
+        startingState.translationX =  abs(endingState.windowLocationX.toFloat() - startingState.windowLocationX.toFloat())
+        startingState.translationY =  abs(endingState.windowLocationY.toFloat() - startingState.windowLocationY.toFloat())
+
+        endingView.morphTranslationX = startingState.translationX
+        endingView.morphTranslationY = startingState.translationY
+
+        if (useArcTranslator) {
+            curveTranslator.setControlPoint(Coordintates(endingState.translationX, startingState.translationY))
+        }
+
+        initialValuesApplied = true
+    }
+
+    private fun applyChildrenDefault(endingViewEnd: MorphLayout) {
+        for (child in endingViewEnd.getChildren()) {
+
+            if ((morphChildren && child.tag != null) || child.visibility == View.GONE)
+                continue
+
+            if (child is MorphLayout && !child.animate)
+                continue
+
+            child.alpha = MIN_OFFSET
+            child.pivotX = child.width / 2f
+            child.pivotY = child.height / 2f
+            child.layoutParams.width = child.width
+            child.layoutParams.height = child.height
+        }
+    }
+
+    private fun applyPivots(
+        endingViewStart: MorphLayout,
+        endingViewEnd: MorphLayout
+    ) {
+        val pivotPoint: Point<Float> = calculatePivot(endingViewStart, endingViewEnd)
 
         endingViewStart.morphPivotX = pivotPoint.x
         endingViewStart.morphPivotY = pivotPoint.y
@@ -185,7 +216,12 @@ class Morpher(private val context: Context) {
 
         endingViewEnd.morphWidth = endingViewEnd.morphWidth
         endingViewEnd.morphHeight = endingViewEnd.morphHeight
+    }
 
+    private fun adjustChildAnimations(
+        endingViewEnd: MorphLayout,
+        endingViewStart: MorphLayout
+    ) {
         val endChildren = getAllChildren(endingViewEnd, useDeepChildSearch) { it.tag != null }
 
         endChildren.forEach {
@@ -196,102 +232,44 @@ class Morpher(private val context: Context) {
             }
         }
 
-        if (endStateChildMorphIntoDescriptor.default) {
-            endStateChildMorphIntoDescriptor.let {
-                val propertyChange = AnimationProperties(
-                    translationX = endingViewEnd.morphWidth * it.defaultTranslateMultiplier,
-                    translationY = endingViewEnd.morphHeight * it.defaultTranslateMultiplier
-                )
-                it.startStateProps = AnimationProperties.from(this, it, propertyChange, endingViewStart, endingViewEnd, ValueType.START)
-                it.endStateProps = AnimationProperties.from(this, it, propertyChange, endingViewStart, endingViewEnd, ValueType.END)
-                it.default = true
-            }
+        endStateChildMorphIntoDescriptor.let {
+            val propertyChange = it.startStateProps
+
+            propertyChange.translationX = endingViewEnd.morphWidth * it.defaultTranslateMultiplierX
+            propertyChange.translationY = endingViewEnd.morphHeight * it.defaultTranslateMultiplierY
+
+            it.startStateProps.computeTranslation(this, propertyChange, endingViewStart, endingViewEnd)
         }
 
-        if (endStateChildMorphFromDescriptor.default) {
-            val clone = endStateChildMorphIntoDescriptor.startStateProps.clone(AnimationProperties::class.java)
+        endStateChildMorphFromDescriptor.let {
+            val clone = endStateChildMorphIntoDescriptor.startStateProps.clone()
 
             clone.translationX = clone.translationX * 2
             clone.translationY = clone.translationY * 2
 
-            endStateChildMorphFromDescriptor.let {
-                it.startStateProps = endStateChildMorphIntoDescriptor.endStateProps
-                it.endStateProps = clone
-                it.default = true
-            }
+            it.startStateProps = endStateChildMorphIntoDescriptor.endStateProps
+            it.endStateProps = clone
         }
 
-        if (startStateChildMorphIntoDescriptor.default) {
-            startStateChildMorphIntoDescriptor.let {
-                val propertyChangeEnd = AnimationProperties(
-                    translationX = endingViewStart.morphWidth * it.defaultTranslateMultiplier,
-                    translationY = endingViewStart.morphHeight * it.defaultTranslateMultiplier
-                )
-                val propertyChangeStart = AnimationProperties()
-                it.startStateProps = AnimationProperties.from(this, it, propertyChangeStart, endingViewStart, endingViewEnd, ValueType.START)
-                it.endStateProps = AnimationProperties.from(this, it, propertyChangeEnd, endingViewStart, endingViewEnd, ValueType.END)
-                it.default = true
-            }
+        startStateChildMorphIntoDescriptor.let {
+            val propertyChange = it.endStateProps
+
+            propertyChange.translationX = endingViewStart.morphWidth * it.defaultTranslateMultiplierX
+            propertyChange.translationY = endingViewStart.morphHeight * it.defaultTranslateMultiplierY
+
+            it.startStateProps.reset()
+            it.endStateProps.computeTranslation(this, propertyChange, endingViewStart, endingViewEnd)
         }
 
-        if (startStateChildMorphFromDescriptor.default) {
-            startStateChildMorphFromDescriptor.let {
-                val propertyChangeEnd = AnimationProperties()
-
-                val propertyChangeStart = AnimationProperties(
-                    translationX = startStateChildMorphIntoDescriptor.endStateProps.translationX / 3,
-                    translationY = startStateChildMorphIntoDescriptor.endStateProps.translationX / 3,
-                    alpha = 1f
-                )
-                startStateChildMorphFromDescriptor.let {
-                    it.startStateProps = propertyChangeStart
-                    it.endStateProps = propertyChangeEnd
-                    it.default = true
-                }
-            }
+        startStateChildMorphFromDescriptor.let {
+            it.startStateProps.translationX = endingViewStart.morphWidth * it.defaultTranslateMultiplierX
+            it.startStateProps.translationY = endingViewStart.morphHeight * it.defaultTranslateMultiplierY
+            it.endStateProps.reset()
         }
+    }
 
-        for (child in endingViewEnd.getChildren()) {
+    fun createBinding(from: View, to: MorphView) {
 
-            if ((morphChildren && child.tag != null) || child.visibility == View.GONE)
-                continue
-
-            if (child is MorphLayout) {
-                if (!child.animate) {
-                    continue
-                }
-            }
-
-            child.alpha = MIN_OFFSET
-            child.pivotX = child.width / 2f
-            child.pivotY = child.height / 2f
-            child.layoutParams.width = child.width
-            child.layoutParams.height = child.height
-        }
-
-        applyProps(endingView, startingState)
-
-        endingView.show(overlayCrossfadeDurationIn) { VISIBLE }
-        startingView.hide(overlayCrossfadeDurationOut)
-
-        val startX: Float = startingState.windowLocationX.toFloat()
-        val startY: Float = startingState.windowLocationY.toFloat()
-
-        val endX: Float = endingState.windowLocationX.toFloat()
-        val endY: Float = endingState.windowLocationY.toFloat()
-
-        val translationX: Float = abs(endX - startX)
-        val translationY: Float = abs(endY - startY)
-
-        startingState.translationX =  translationX
-        startingState.translationY =  translationY
-
-        endingView.morphTranslationX = startingState.translationX
-        endingView.morphTranslationY = startingState.translationY
-
-        curveTranslator.setControlPoint(Coordintates(endingState.translationX, startingState.translationY))
-
-        initialValuesApplied = true
     }
 
     fun transitionInto(
@@ -345,8 +323,10 @@ class Morpher(private val context: Context) {
 
         computedStatesListener?.invoke(startingState, endingState)
 
-        curveTranslator.setStartPoint(startingState.getDeltaCoordinates())
-        curveTranslator.setEndPoint(endingState.getDeltaCoordinates())
+        if (useArcTranslator) {
+            curveTranslator.setStartPoint(startingState.getDeltaCoordinates())
+            curveTranslator.setEndPoint(endingState.getDeltaCoordinates())
+        }
 
         applyIntoTransitionDrawable(context, mappings)
 
@@ -448,8 +428,10 @@ class Morpher(private val context: Context) {
         endStateMorphFromDescriptor.morphState = endViewEndState
         startStateMorphFromDescriptor.morphState = endViewStartState
 
-        curveTranslator.setStartPoint(endingState.getDeltaCoordinates())
-        curveTranslator.setEndPoint(startingState.getDeltaCoordinates())
+        if (useArcTranslator) {
+            curveTranslator.setStartPoint(endingState.getDeltaCoordinates())
+            curveTranslator.setEndPoint(startingState.getDeltaCoordinates())
+        }
 
         applyFromTransitionDrawable(context, mappings)
 
@@ -1168,7 +1150,7 @@ class Morpher(private val context: Context) {
         scaleX: Float = MAX_OFFSET,
         scaleY: Float = MAX_OFFSET,
         visibility: Int = VISIBLE
-    ): Cloneable {
+    ): Cloneable<AnimationProperties> {
 
         var alpha: Float = alpha
             internal set
@@ -1193,115 +1175,195 @@ class Morpher(private val context: Context) {
         var visibility: Int = visibility
             internal set
 
+        fun reset() {
+            alpha = MAX_OFFSET
+            elevation = MIN_OFFSET
+            translationX = MIN_OFFSET
+            translationY = MIN_OFFSET
+            translationZ = MIN_OFFSET
+            rotation = MIN_OFFSET
+            rotationX = MIN_OFFSET
+            rotationY = MIN_OFFSET
+            scaleX = MAX_OFFSET
+            scaleY = MAX_OFFSET
+            visibility = VISIBLE
+        }
+
+        override fun clone(): AnimationProperties {
+            return AnimationProperties(
+                alpha = this.alpha,
+                elevation = this.elevation,
+                translationX = this.translationX,
+                translationY = this.translationY,
+                translationZ = this.translationZ,
+                rotation = this.rotation,
+                rotationX = this.rotationX,
+                rotationY = this.rotationY,
+                scaleX = this.scaleX,
+                scaleY = this.scaleY,
+                visibility = this.visibility
+            )
+        }
+
+        fun computeTranslation(morpher: Morpher, propertyChange: AnimationProperties, endingViewStart: MorphLayout, endingViewEnd: MorphLayout) {
+
+            val direction = morpher.computeAnimationDirection(endingViewStart, endingViewEnd)
+
+            when  {
+                direction has TranslationPosition.TOP.and(TranslationPosition.LEFT)-> {
+                    val xAmountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
+                    val yAmountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
+
+                    translationX = if (xAmountQualified) -propertyChange.translationX else translationX
+                    translationY = if (yAmountQualified) -propertyChange.translationY else translationY
+                }
+                direction has TranslationPosition.TOP.and(TranslationPosition.RIGHT)-> {
+                    val xAmountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
+                    val yAmountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
+
+                    translationX = if (xAmountQualified) propertyChange.translationX else translationX
+                    translationY = if (yAmountQualified) -propertyChange.translationY else translationY
+                }
+                direction has TranslationPosition.BOTTOM.and(TranslationPosition.LEFT)-> {
+                    val xAmountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
+                    val yAmountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
+
+                    translationX = if (xAmountQualified) -propertyChange.translationX else translationX
+                    translationY = if (yAmountQualified) propertyChange.translationY else translationY
+                }
+                direction has TranslationPosition.BOTTOM.and(TranslationPosition.RIGHT)-> {
+                    val xAmountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
+                    val yAmountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
+
+                    translationX = if (xAmountQualified) propertyChange.translationX else translationX
+                    translationY = if (yAmountQualified) propertyChange.translationY else translationY
+                }
+                direction has TranslationPosition.TOP -> {
+                    val amountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
+
+                    translationY = if (amountQualified) -propertyChange.translationY else translationY
+                }
+                direction has TranslationPosition.BOTTOM -> {
+                    val amountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
+
+                    translationY = if (amountQualified) propertyChange.translationY else translationY
+                }
+                direction has TranslationPosition.LEFT -> {
+                    val amountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
+
+                    translationX = if (amountQualified) -propertyChange.translationX else translationX
+                }
+                direction has TranslationPosition.RIGHT -> {
+                    val amountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
+
+                    translationX = if (amountQualified) propertyChange.translationX else translationX
+                }
+                else -> { }
+            }
+        }
+
         companion object {
-            fun from(morpher: Morpher, animatorDescriptor: ChildAnimationDescriptor, propertyChange: AnimationProperties, endingViewStart: MorphLayout, endingViewEnd: MorphLayout, valueType: ValueType): AnimationProperties {
+            fun from(morpher: Morpher, propertyChange: AnimationProperties, endingViewStart: MorphLayout, endingViewEnd: MorphLayout): AnimationProperties {
 
-                val allowDiagonal = animatorDescriptor.allowDiagonalTranslation
+                val direction = morpher.computeAnimationDirection(endingViewStart, endingViewEnd)
 
-                return when (valueType) {
-                    ValueType.START -> {
-                        val direction = morpher.computeAnimationDirection(endingViewStart, endingViewEnd)
+                return when  {
+                    direction has TranslationPosition.TOP.and(TranslationPosition.LEFT)-> {
+                        val xAmountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
+                        val yAmountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
 
-                        when  {
-                            direction has TranslationPosition.TOP.and(TranslationPosition.LEFT)-> {
-                                val xAmountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
-                                val yAmountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationX = if (xAmountQualified && allowDiagonal) -propertyChange.translationX else 0f,
-                                    translationY = if (yAmountQualified && allowDiagonal) -propertyChange.translationY else 0f
-                                )
-                            }
-                            direction has TranslationPosition.TOP.and(TranslationPosition.RIGHT)-> {
-                                val xAmountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
-                                val yAmountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationX = if (xAmountQualified && allowDiagonal) propertyChange.translationX else 0f,
-                                    translationY = if (yAmountQualified && allowDiagonal) -propertyChange.translationY else 0f
-                                )
-                            }
-                            direction has TranslationPosition.BOTTOM.and(TranslationPosition.LEFT)-> {
-                                val xAmountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
-                                val yAmountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationX = if (xAmountQualified && allowDiagonal) -propertyChange.translationX else 0f,
-                                    translationY = if (yAmountQualified && allowDiagonal) propertyChange.translationY else 0f
-                                )
-                            }
-                            direction has TranslationPosition.BOTTOM.and(TranslationPosition.RIGHT)-> {
-                                val xAmountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
-                                val yAmountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationX = if (xAmountQualified && allowDiagonal) propertyChange.translationX else 0f,
-                                    translationY = if (yAmountQualified && allowDiagonal) propertyChange.translationY else 0f
-                                )
-                            }
-                            direction has TranslationPosition.TOP -> {
-                                val amountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationY = if (amountQualified) -propertyChange.translationY else 0f
-                                )
-                            }
-                            direction has TranslationPosition.BOTTOM -> {
-                                val amountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationY = if (amountQualified) propertyChange.translationY else 0f
-                                )
-                            }
-                            direction has TranslationPosition.LEFT -> {
-                                val amountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationX = if (amountQualified) -propertyChange.translationX else 0f
-                                )
-                            }
-                            direction has TranslationPosition.RIGHT -> {
-                                val amountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
-
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationX = if (amountQualified) propertyChange.translationX else 0f
-                                )
-                            }
-                            else -> {
-                                AnimationProperties(
-                                    alpha = propertyChange.alpha,
-                                    scaleX = 1f,
-                                    scaleY = 1f,
-                                    translationY = 0f
-                                )
-                            }
-                        }
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationX = if (xAmountQualified) -propertyChange.translationX else 0f,
+                            translationY = if (yAmountQualified) -propertyChange.translationY else 0f
+                        )
                     }
-                    else -> AnimationProperties()
+                    direction has TranslationPosition.TOP.and(TranslationPosition.RIGHT)-> {
+                        val xAmountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
+                        val yAmountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
+
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationX = if (xAmountQualified) propertyChange.translationX else 0f,
+                            translationY = if (yAmountQualified) -propertyChange.translationY else 0f
+                        )
+                    }
+                    direction has TranslationPosition.BOTTOM.and(TranslationPosition.LEFT)-> {
+                        val xAmountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
+                        val yAmountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
+
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationX = if (xAmountQualified) -propertyChange.translationX else 0f,
+                            translationY = if (yAmountQualified) propertyChange.translationY else 0f
+                        )
+                    }
+                    direction has TranslationPosition.BOTTOM.and(TranslationPosition.RIGHT)-> {
+                        val xAmountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
+                        val yAmountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
+
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationX = if (xAmountQualified) propertyChange.translationX else 0f,
+                            translationY = if (yAmountQualified) propertyChange.translationY else 0f
+                        )
+                    }
+                    direction has TranslationPosition.TOP -> {
+                        val amountQualified = direction.get(TranslationPosition.TOP).amount > DISTANCE_THRESHOLD
+
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationY = if (amountQualified) -propertyChange.translationY else 0f
+                        )
+                    }
+                    direction has TranslationPosition.BOTTOM -> {
+                        val amountQualified = direction.get(TranslationPosition.BOTTOM).amount > DISTANCE_THRESHOLD
+
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationY = if (amountQualified) propertyChange.translationY else 0f
+                        )
+                    }
+                    direction has TranslationPosition.LEFT -> {
+                        val amountQualified = direction.get(TranslationPosition.LEFT).amount > DISTANCE_THRESHOLD
+
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationX = if (amountQualified) -propertyChange.translationX else 0f
+                        )
+                    }
+                    direction has TranslationPosition.RIGHT -> {
+                        val amountQualified = direction.get(TranslationPosition.RIGHT).amount > DISTANCE_THRESHOLD
+
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationX = if (amountQualified) propertyChange.translationX else 0f
+                        )
+                    }
+                    else -> {
+                        AnimationProperties(
+                            alpha = propertyChange.alpha,
+                            scaleX = 1f,
+                            scaleY = 1f,
+                            translationY = 0f
+                        )
+                    }
                 }
             }
         }
@@ -1309,43 +1371,18 @@ class Morpher(private val context: Context) {
 
     class ChildAnimationDescriptor (
         var type: AnimationType,
-        var allowDiagonalTranslation: Boolean = false,
         var animateOnOffset: Float = DEFAULT_CHILDREN_REVEAL_OFFSET,
         var durationMultiplier: Float = DEFAULT_REVEAL_DURATION_MULTIPLIER,
-        var defaultTranslateMultiplier: Float = DEFAULT_TRANSLATION_MULTIPLIER,
+        var defaultTranslateMultiplierX: Float = DEFAULT_TRANSLATION_MULTIPLIER,
+        var defaultTranslateMultiplierY: Float = DEFAULT_TRANSLATION_MULTIPLIER,
         var interpolator: TimeInterpolator? = null,
-        var stagger: AnimationStagger? = null,
+        var stagger: Morpher.AnimationStagger? = null,
         var reversed: Boolean = false,
         var duration: Long? = null,
         var delay: Long? = null,
-        startStateProps: AnimationProperties = AnimationProperties(),
-        endStateProps: AnimationProperties = AnimationProperties()
-    ) {
-        internal var default: Boolean = true
-
-        private var _startStateProps: AnimationProperties = startStateProps
-
-        private var _endStateProps: AnimationProperties = endStateProps
-
-        var startStateProps: AnimationProperties
-            get() = _startStateProps
-            set(value) {
-                _startStateProps = value
-                default = false
-            }
-
-        var endStateProps: AnimationProperties
-            get() = _endStateProps
-            set(value) {
-                _endStateProps = value
-                default = false
-            }
-
-        init {
-            default = false
-        }
-    }
-
+        var startStateProps: AnimationProperties = AnimationProperties(),
+        var endStateProps: AnimationProperties = AnimationProperties()
+    )
     data class AnimationDescriptor(
         var type: AnimationType,
         var propertyTranslateX: PropertyDescriptor<Float> = PropertyDescriptor(PropertyDescriptor.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
@@ -1362,7 +1399,34 @@ class Morpher(private val context: Context) {
         var morphState: MorphState? = null
     )
 
-    enum class ValueType { START , END }
+    class MorphValues {
+
+    }
+
+    enum class MorphMethod {
+        /**
+         * A
+         */
+        AS_DIALOG,
+
+        /**
+         * B
+         */
+        AS_SOURCE,
+
+        AS_
+    }
+
+    enum class ValueType {
+        /**
+         *
+         */
+        START ,
+        /**
+         *
+         */
+        END
+    }
 
     enum class MorphType { INTO, FROM }
 

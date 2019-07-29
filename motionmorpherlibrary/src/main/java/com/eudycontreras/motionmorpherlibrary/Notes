@@ -7,5 +7,6 @@ TODO PRIORITY 1:
     Deal with VectorDrawable transitions (Icons, etc)
     Allow backgrounds of MorphLayouts to have ripples
 
+    Test share transitions on the first demo
 LIMITATIONS:
 

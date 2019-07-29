@@ -4,7 +4,10 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.memberProperties
 
-@FunctionalInterface interface Cloneable {
+@FunctionalInterface interface Cloneable<T> {
+
+    fun clone(): T
+
     @Suppress("UNCHECKED_CAST")
     fun <T: Any> clone(entityClass: Class<T>): T {
         val clone: T = entityClass.newInstance()
