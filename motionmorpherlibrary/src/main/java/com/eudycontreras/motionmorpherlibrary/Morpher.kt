@@ -38,8 +38,6 @@ class Morpher(private val context: Context) {
 
     private var lastOffset = MIN_OFFSET
 
-    private var remainingDuration: Long = 0L
-
     private var mappingsCreated: Boolean = false
     private var initialValuesApplied: Boolean = false
 
@@ -57,6 +55,34 @@ class Morpher(private val context: Context) {
     private lateinit var endViewStartState: MorphState
 
     private lateinit var mappings: List<MorphMap>
+
+    var dimPropertyInto: PropertyDescriptor<Float> = PropertyDescriptor(
+        propertyType = PropertyDescriptor.COLOR,
+        fromValue = MIN_OFFSET,
+        toValue = MAX_OFFSET,
+        startOffset = 0f,
+        endOffset = 0.6f
+    )
+
+    var dimPropertyFrom: PropertyDescriptor<Float> = PropertyDescriptor(
+        propertyType = PropertyDescriptor.COLOR,
+        fromValue = MAX_OFFSET,
+        toValue = MIN_OFFSET,
+        startOffset = 0.4f,
+        endOffset = 1f
+    )
+
+    var endStateMorphIntoDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.REVEAL)
+    var endStateMorphFromDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.CONCEAL)
+
+    var startStateMorphIntoDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.REVEAL)
+    var startStateMorphFromDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.CONCEAL)
+
+    var endStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL)
+    var endStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL)
+
+    var startStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL)
+    var startStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL)
 
     var backgroundDimListener: BackgroundDimListener = null
     var computedStatesListener: ComputedStatesListener = null
@@ -104,33 +130,6 @@ class Morpher(private val context: Context) {
             mappingsCreated = false
         }
 
-    var endStateMorphIntoDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.REVEAL)
-    var endStateMorphFromDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.CONCEAL)
-
-    var startStateMorphIntoDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.REVEAL)
-    var startStateMorphFromDescriptor: AnimationDescriptor = AnimationDescriptor(AnimationType.CONCEAL)
-
-    var endStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL)
-    var endStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL)
-    var startStateChildMorphIntoDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.REVEAL)
-    var startStateChildMorphFromDescriptor: ChildAnimationDescriptor = ChildAnimationDescriptor(AnimationType.CONCEAL)
-
-    var dimPropertyInto: PropertyDescriptor<Float> = PropertyDescriptor(
-        propertyType = PropertyDescriptor.COLOR,
-        fromValue = MIN_OFFSET,
-        toValue = MAX_OFFSET,
-        startOffset = 0f,
-        endOffset = 0.6f
-    )
-
-    var dimPropertyFrom: PropertyDescriptor<Float> = PropertyDescriptor(
-        propertyType = PropertyDescriptor.COLOR,
-        fromValue = MAX_OFFSET,
-        toValue = MIN_OFFSET,
-        startOffset = 0.4f,
-        endOffset = 1f
-    )
-
     private fun createMappings() {
         endingState = endingView.getProperties()
         startingState = startingView.getProperties()
@@ -138,10 +137,6 @@ class Morpher(private val context: Context) {
         mappings = if (morphChildren) {
             getChildMappings(startingView, endingView, useDeepChildSearch)
         } else emptyList()
-    }
-
-    fun cancelMorph() {
-        //TODO( Implement logic that could cancel a currently going morph animation)
     }
 
     private fun performSetup() {
@@ -159,7 +154,9 @@ class Morpher(private val context: Context) {
             adjustChildAnimations(endingViewEnd, endingViewStart)
         }
 
-        applyChildrenDefault(endingViewEnd)
+        if (animateChildren) {
+            applyChildrenDefault(endingViewEnd)
+        }
 
         applyProps(endingView, startingState)
 
@@ -268,6 +265,94 @@ class Morpher(private val context: Context) {
         }
     }
 
+    private fun applyIntoTransitionDrawable(context: Context, mappings: List<MorphMap>) {
+        mappings.forEach {
+
+            when {
+                all(it.endView, it.startView) { all -> all.hasBitmapDrawable() } -> {
+
+                    val transitionDrawable = MorphTransitionDrawable(it.startProps.background, it.endProps.background)
+
+                    it.endView.morphBackground = transitionDrawable
+
+                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
+                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
+
+                    transitionDrawable.isCrossFadeEnabled = true
+                }
+                all(it.startView, it.endView) { all -> all.hasVectorDrawable() } -> {
+
+                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
+                    val toBitmap = BitmapDrawable(context.resources, it.endProps.background?.toBitmap())
+
+                    val transitionDrawable = MorphTransitionDrawable(fromBitmap, toBitmap)
+
+                    it.endView.morphBackground = transitionDrawable
+
+                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
+                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
+
+                    transitionDrawable.isSequentialFadeEnabled = true
+                }
+                it.endView.hasMorphTransitionDrawable() -> {
+
+                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
+
+                    val transitionDrawable = it.endView.getMorphTransitionDrawable()
+
+                    if (transitionDrawable.startDrawableType == MorphTransitionDrawable.DrawableType.VECTOR ) {
+                        transitionDrawable.setStartDrawable(fromBitmap)
+                    }
+
+                    transitionDrawable.setUpTransition(false)
+                }
+            }
+        }
+    }
+
+    private fun applyFromTransitionDrawable(context: Context, mappings: List<MorphMap>) {
+        mappings.forEach {
+            when {
+                all(it.endView, it.startView) { all -> all.hasBitmapDrawable() } -> {
+
+                    val transitionDrawable = MorphTransitionDrawable(it.endProps.background, it.startProps.background)
+
+                    it.endView.morphBackground = transitionDrawable
+
+                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
+                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
+
+                    transitionDrawable.isCrossFadeEnabled = true
+                }
+                all(it.startView, it.endView) { all -> all.hasVectorDrawable() } -> {
+
+                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
+                    val toBitmap = BitmapDrawable(context.resources, it.endProps.background?.toBitmap())
+
+                    val transitionDrawable = MorphTransitionDrawable(toBitmap, fromBitmap)
+
+                    it.endView.morphBackground = transitionDrawable
+
+                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
+                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
+
+                    transitionDrawable.isSequentialFadeEnabled = true
+                }
+                it.endView.hasMorphTransitionDrawable() -> {
+                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
+
+                    val transitionDrawable = it.endView.getMorphTransitionDrawable()
+
+                    if (transitionDrawable.startDrawableType == MorphTransitionDrawable.DrawableType.VECTOR ) {
+                        transitionDrawable.setStartDrawable(fromBitmap)
+                    }
+
+                    transitionDrawable.setUpTransition(true)
+                }
+            }
+        }
+    }
+
     fun createBinding(from: View, to: MorphView) {
 
     }
@@ -288,6 +373,55 @@ class Morpher(private val context: Context) {
         offsetTrigger: OffsetTrigger? = null
     ) {
         //TODO ( Implement transitioner: Separete morphing from transition)
+    }
+
+    fun transitionBy(percent: Int) {
+        if (percent in 0..100) {
+            transitionBy(percent.toFloat() / 100.0f)
+        }
+    }
+
+    private fun transitionBy(fraction: Float) {
+
+        if (!initialValuesApplied) {
+            performSetup()
+        }
+
+        val startingProps = startingState
+        val endingProps = endingState
+
+        animateProperties(endingView, startingProps, endingProps, fraction)
+
+        endingView.animator().translationX(startingProps.translationX + (endingProps.translationX - startingProps.translationX) * fraction).setDuration(0).start()
+        endingView.animator().translationY(startingProps.translationY + (endingProps.translationY - startingProps.translationY) * fraction).setDuration(0).start()
+
+        if (morphChildren && mappings.isNotEmpty()) {
+            for (mapping in mappings) {
+                animateProperties(mapping.endView, mapping.startProps, mapping.endProps, fraction)
+
+                mapping.endView.animator().x(mapping.startProps.x + (mapping.endProps.x - mapping.startProps.x) * fraction).setDuration(0).start()
+                mapping.endView.animator().y(mapping.startProps.y + (mapping.endProps.y - mapping.startProps.y) * fraction).setDuration(0).start()
+            }
+        }
+
+        if (children == null) {
+            children = getAllChildren(endingView, false) { it.tag == null}
+        }
+
+        children?.let { list ->
+            for (it in list) {
+                it.animate()
+                    .alpha(MIN_OFFSET + (MAX_OFFSET - MIN_OFFSET) * fraction )
+                    .setDuration(0)
+                    .start()
+            }
+        }
+
+        lastOffset = fraction
+    }
+
+    fun cancelMorph() {
+        //TODO( Implement logic that could cancel a currently going morph animation)
     }
 
     fun morphInto(
@@ -344,51 +478,6 @@ class Morpher(private val context: Context) {
             AnimationType.REVEAL,
             MorphType.INTO
         )
-    }
-
-    private fun applyIntoTransitionDrawable(context: Context, mappings: List<MorphMap>) {
-        mappings.forEach {
-
-            when {
-                all(it.endView, it.startView) { all -> all.hasBitmapDrawable() } -> {
-
-                    val transitionDrawable = MorphTransitionDrawable(it.startProps.background, it.endProps.background)
-
-                    it.endView.morphBackground = transitionDrawable
-
-                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
-                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
-
-                    transitionDrawable.isCrossFadeEnabled = true
-                }
-                all(it.startView, it.endView) { all -> all.hasVectorDrawable() } -> {
-
-                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
-                    val toBitmap = BitmapDrawable(context.resources, it.endProps.background?.toBitmap())
-
-                    val transitionDrawable = MorphTransitionDrawable(fromBitmap, toBitmap)
-
-                    it.endView.morphBackground = transitionDrawable
-
-                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
-                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
-
-                    transitionDrawable.isSequentialFadeEnabled = true
-                }
-                it.endView.hasMorphTransitionDrawable() -> {
-
-                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
-
-                    val transitionDrawable = it.endView.getMorphTransitionDrawable()
-
-                    if (transitionDrawable.startDrawableType == MorphTransitionDrawable.DrawableType.VECTOR ) {
-                        transitionDrawable.setStartDrawable(fromBitmap)
-                    }
-
-                    transitionDrawable.setUpTransition(false)
-                }
-            }
-        }
     }
 
     fun morphFrom(
@@ -451,94 +540,6 @@ class Morpher(private val context: Context) {
         )
     }
 
-    private fun applyFromTransitionDrawable(context: Context, mappings: List<MorphMap>) {
-        mappings.forEach {
-            when {
-                all(it.endView, it.startView) { all -> all.hasBitmapDrawable() } -> {
-
-                    val transitionDrawable = MorphTransitionDrawable(it.endProps.background, it.startProps.background)
-
-                    it.endView.morphBackground = transitionDrawable
-
-                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
-                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
-
-                    transitionDrawable.isCrossFadeEnabled = true
-                }
-                all(it.startView, it.endView) { all -> all.hasVectorDrawable() } -> {
-
-                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
-                    val toBitmap = BitmapDrawable(context.resources, it.endProps.background?.toBitmap())
-
-                    val transitionDrawable = MorphTransitionDrawable(toBitmap, fromBitmap)
-
-                    it.endView.morphBackground = transitionDrawable
-
-                    transitionDrawable.startDrawableType = it.startView.getBackgroundType()
-                    transitionDrawable.endDrawableType = it.endView.getBackgroundType()
-
-                    transitionDrawable.isSequentialFadeEnabled = true
-                }
-                it.endView.hasMorphTransitionDrawable() -> {
-                    val fromBitmap = BitmapDrawable(context.resources, it.startProps.background?.toBitmap())
-
-                    val transitionDrawable = it.endView.getMorphTransitionDrawable()
-
-                    if (transitionDrawable.startDrawableType == MorphTransitionDrawable.DrawableType.VECTOR ) {
-                        transitionDrawable.setStartDrawable(fromBitmap)
-                    }
-
-                    transitionDrawable.setUpTransition(true)
-                }
-            }
-        }
-    }
-
-    fun transitionBy(percent: Int) {
-        if (percent in 0..100) {
-            transitionBy(percent.toFloat() / 100.0f)
-        }
-    }
-
-    private fun transitionBy(fraction: Float) {
-
-        if (!initialValuesApplied) {
-            performSetup()
-        }
-
-        val startingProps = startingState
-        val endingProps = endingState
-
-        animateProperties(endingView, startingProps, endingProps, fraction)
-
-        endingView.animator().translationX(startingProps.translationX + (endingProps.translationX - startingProps.translationX) * fraction).setDuration(0).start()
-        endingView.animator().translationY(startingProps.translationY + (endingProps.translationY - startingProps.translationY) * fraction).setDuration(0).start()
-
-        if (morphChildren && mappings.isNotEmpty()) {
-            for (mapping in mappings) {
-                animateProperties(mapping.endView, mapping.startProps, mapping.endProps, fraction)
-
-                mapping.endView.animator().x(mapping.startProps.x + (mapping.endProps.x - mapping.startProps.x) * fraction).setDuration(0).start()
-                mapping.endView.animator().y(mapping.startProps.y + (mapping.endProps.y - mapping.startProps.y) * fraction).setDuration(0).start()
-            }
-        }
-
-        if (children == null) {
-            children = getAllChildren(endingView, false) { it.tag == null}
-        }
-
-        children?.let { list ->
-            for (it in list) {
-                it.animate()
-                    .alpha(MIN_OFFSET + (MAX_OFFSET - MIN_OFFSET) * fraction )
-                    .setDuration(0)
-                    .start()
-            }
-        }
-
-        lastOffset = fraction
-    }
-
     private fun morph(
         endView: MorphLayout,
         startingProps: Properties,
@@ -554,14 +555,16 @@ class Morpher(private val context: Context) {
         morphType: MorphType
     ) {
 
-        this.remainingDuration = duration
+        var remainingDuration: Long
 
         val animator: ValueAnimator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+
+        val mappingsEmpty = mappings.isEmpty()
 
         animator.addListener(MorphAnimationListener(onStart, onEnd))
         animator.addUpdateListener {
 
-            val fraction = (it.animatedValue as Float).clamp(0f, 1f)
+            val fraction = it.animatedFraction.clamp(0f, 1f)
 
             val interpolatedFraction = interpolator?.getInterpolation(fraction) ?: fraction
 
@@ -571,7 +574,7 @@ class Morpher(private val context: Context) {
 
             moveWithOffset(endView, startingProps, endingProps, interpolatedFraction, if (useArcTranslator) curveTranslationHelper else null)
 
-            if (morphChildren && mappings.isNotEmpty()) {
+            if (morphChildren && !mappingsEmpty) {
                 for (mapping in mappings) {
                     when (morphType) {
                         MorphType.INTO -> {
@@ -650,12 +653,11 @@ class Morpher(private val context: Context) {
                 }
             }
 
-            if (trigger != null && !trigger.hasTriggered) {
-                if (interpolatedFraction >= trigger.percentage) {
-                    trigger.triggerAction?.invoke()
-                    trigger.hasTriggered = true
-                }
+            if (trigger != null && !trigger.hasTriggered && interpolatedFraction >= trigger.percentage) {
+                trigger.triggerAction?.invoke()
+                trigger.hasTriggered = true
             }
+
             transitionOffsetListener?.invoke(interpolatedFraction)
         }
 
@@ -1115,6 +1117,10 @@ class Morpher(private val context: Context) {
         val multiplier: Float = DEFAULT_CHILDREN_STAGGER_MULTIPLIER
     )
 
+    class MorphValues {
+
+    }
+
     data class PropertyDescriptor<T>(
         val propertyType: String,
         var fromValue: T,
@@ -1376,7 +1382,7 @@ class Morpher(private val context: Context) {
         var defaultTranslateMultiplierX: Float = DEFAULT_TRANSLATION_MULTIPLIER,
         var defaultTranslateMultiplierY: Float = DEFAULT_TRANSLATION_MULTIPLIER,
         var interpolator: TimeInterpolator? = null,
-        var stagger: Morpher.AnimationStagger? = null,
+        var stagger: AnimationStagger? = null,
         var reversed: Boolean = false,
         var duration: Long? = null,
         var delay: Long? = null,
@@ -1399,40 +1405,13 @@ class Morpher(private val context: Context) {
         var morphState: MorphState? = null
     )
 
-    class MorphValues {
-
-    }
-
-    enum class MorphMethod {
-        /**
-         * A
-         */
-        AS_DIALOG,
-
-        /**
-         * B
-         */
-        AS_SOURCE,
-
-        AS_
-    }
-
-    enum class ValueType {
-        /**
-         *
-         */
-        START ,
-        /**
-         *
-         */
-        END
-    }
+    enum class MorphMethod { AS_DIALOG, AS_SOURCE }
 
     enum class MorphType { INTO, FROM }
 
     enum class AnimationType { REVEAL, CONCEAL }
 
-   // enum class MorphFlag { DISOLVE, CROSS_DISSOLVE, FADE_THROUGH, TRANSFORM }
+    enum class MorphFlag { DISOLVE, CROSS_DISSOLVE, FADE_THROUGH, TRANSFORM }
 
     enum class TranslationPosition(var amount: Float) {
         TOP(0f),

@@ -36,14 +36,14 @@ class ActivityDemo1 : MorphActivity() {
          * If set to true the morpher will animate the untagged
          * children of the layouts using the child animation descriptors
          */
-        morpher.animateChildren = true
+        morpher.animateChildren = false
 
         /**
          * Optionally assign the duration for both morphing into
          * and morphing from
          */
-        morpher.morphIntoDuration = 2450
-        morpher.morphFromDuration = 2450
+        morpher.morphIntoDuration = 1450
+        morpher.morphFromDuration = 1450
 
         morpher.dimPropertyInto.toValue = 1f
         morpher.dimPropertyFrom.fromValue = 1f
@@ -64,13 +64,12 @@ class ActivityDemo1 : MorphActivity() {
 
         morpher.endStateChildMorphIntoDescriptor = Morpher.ChildAnimationDescriptor(
             type = Morpher.AnimationType.REVEAL,
-            animateOnOffset = 0.1f,
-            durationMultiplier = -0.3f,
+            animateOnOffset = 0f,
+            durationMultiplier = -0.2f,
             defaultTranslateMultiplierX = 0.12f,
             defaultTranslateMultiplierY = 0.12f,
             interpolator = DecelerateInterpolator(),
             stagger = Morpher.AnimationStagger(0.14f)
-            //duration = 550
         )
 
         morpher.endStateChildMorphFromDescriptor = Morpher.ChildAnimationDescriptor(
