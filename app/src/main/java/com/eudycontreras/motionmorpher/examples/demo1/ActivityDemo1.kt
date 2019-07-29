@@ -82,7 +82,7 @@ class ActivityDemo1 : MorphActivity() {
             stagger = Morpher.AnimationStagger(0.15f),
             reversed = true
         )
-
+ 
         morpher.startStateChildMorphIntoDescriptor = Morpher.ChildAnimationDescriptor(
             type = Morpher.AnimationType.REVEAL,
             animateOnOffset = 0f,
