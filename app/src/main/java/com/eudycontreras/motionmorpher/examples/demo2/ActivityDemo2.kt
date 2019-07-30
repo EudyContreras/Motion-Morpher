@@ -17,7 +17,7 @@ class ActivityDemo2 : MorphActivity() {
         setContentView(R.layout.activity_demo2)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+    /*override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_demo_1, menu)
         return true
     }
@@ -29,7 +29,7 @@ class ActivityDemo2 : MorphActivity() {
         }
 
         return super.onOptionsItemSelected(item)
-    }
+    }*/
 
     override fun getRoot(): ViewGroup {
         return this.findViewById(R.id.root)

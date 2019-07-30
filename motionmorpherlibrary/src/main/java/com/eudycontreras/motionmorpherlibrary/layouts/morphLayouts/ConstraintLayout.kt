@@ -2,6 +2,8 @@ package com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Canvas
+import android.graphics.Path
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -17,6 +19,7 @@ import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
+import com.eudycontreras.motionmorpherlibrary.interfaces.Clipable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.CIRCULAR
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.RECTANGULAR
@@ -31,7 +34,7 @@ import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
  * @since July 19 2019
  */
 
-class ConstraintLayout : ConstraintLayout, MorphLayout {
+class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
 
     override var morphX: Float
         get() = this.x
@@ -373,6 +376,14 @@ class ConstraintLayout : ConstraintLayout, MorphLayout {
 
     override fun getChildren(): Sequence<View> {
         return children
+    }
+
+    private var clipPath: Path = Path()
+
+    override fun dispatchDraw(canvas: Canvas) {
+        this.clipChildren(clipPath, canvas, cornerRadii.corners, morphWidth, morphHeight)
+
+        super.dispatchDraw(canvas)
     }
 
     override fun setLayer(layer: Int) {

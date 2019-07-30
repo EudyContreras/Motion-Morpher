@@ -9,15 +9,16 @@ import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
+import android.widget.ImageView
 import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
-import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
  * @Project MotionMorpher
@@ -189,8 +190,6 @@ class MorphView: MorphLayout {
 
     private var cornerRadii: CornerRadii = CornerRadii()
 
-    private var drawListener: DrawDispatchListener? = null
-
     private lateinit var mutableDrawable: GradientDrawable
 
     constructor(view: View): this(view, MorphLayout.RECTANGULAR)
@@ -334,4 +333,16 @@ class MorphView: MorphLayout {
     }
 
     override fun toString(): String = view.tag.toString()
+
+    companion object {
+
+        fun makeMorphable(view: View): MorphLayout {
+            if (view is FloatingActionButton) {
+                return MorphView(view, MorphLayout.CIRCULAR)
+            } else if (view is ImageView) {
+                return MorphView(view, MorphLayout.CIRCULAR)
+            }
+            return MorphView(view)
+        }
+    }
 }

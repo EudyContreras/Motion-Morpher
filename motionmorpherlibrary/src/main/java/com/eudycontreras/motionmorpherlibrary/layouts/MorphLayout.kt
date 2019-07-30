@@ -11,7 +11,6 @@ import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
  * @Project MotionMorpher
@@ -87,12 +86,5 @@ interface MorphLayout {
     companion object {
         const val CIRCULAR = 0
         const val RECTANGULAR = 1
-
-        fun makeMorphable(view: View): MorphLayout {
-            if (view is FloatingActionButton) {
-               return MorphView(view, CIRCULAR)
-            }
-            return MorphView(view)
-        }
     }
 }
