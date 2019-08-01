@@ -10,4 +10,6 @@ interface MorphContainer {
 
     fun getStartState(): MorphLayout
     fun getEndState(): MorphLayout
+
+    fun hasStartState(): Boolean
 }

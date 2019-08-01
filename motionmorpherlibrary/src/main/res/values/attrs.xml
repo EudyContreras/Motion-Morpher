@@ -14,6 +14,20 @@
         <attr name="mw_bottomRightCornerRadius" format="dimension" />
     </declare-styleable>
 
+   <!-- <declare-styleable name="MorphWrapperConstraint">
+        <attr name="mwc_startLayout" format="reference"/>
+        <attr name="mwc_endLayout" format="reference"/>
+        <attr name="mwc_shapeType" format="enum">
+            <enum name="CIRCULAR" value="0"/>
+            <enum name="RECTANGULAR" value="1"/>
+        </attr>
+        <attr name="mwc_radius" format="dimension"/>
+        <attr name="mwc_topLeftCornerRadius" format="dimension" />
+        <attr name="mwc_topRightCornerRadius" format="dimension" />
+        <attr name="mwc_bottomLeftCornerRadius" format="dimension" />
+        <attr name="mwc_bottomRightCornerRadius" format="dimension" />
+    </declare-styleable>
+-->
     <declare-styleable name="ConstraintLayout">
         <attr name="cl_state" format="enum">
             <enum name="START" value="0"/>

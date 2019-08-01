@@ -6,9 +6,9 @@ package com.eudycontreras.motionmorpherlibrary.properties
  * @since July 12 2019
  */
 
-data class Bounds(
-    var x: Float = 0f,
-    var y: Float = 0f,
+open class Bounds(
+    var x: Int = 0,
+    var y: Int = 0,
     var width: Float = 0f,
     var height: Float = 0f
 ) {

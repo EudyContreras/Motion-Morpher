@@ -150,6 +150,8 @@ class Morpher(private val context: Context) {
 
         applyPivots(endingViewStart, endingViewEnd)
 
+        applyProps(endingView, startingState)
+
         if (!initialValuesApplied) {
             adjustChildAnimations(endingViewEnd, endingViewStart)
         }
@@ -157,8 +159,6 @@ class Morpher(private val context: Context) {
         if (animateChildren) {
             applyChildrenDefault(endingViewEnd)
         }
-
-        applyProps(endingView, startingState)
 
         endViewEndState = MorphState(endingViewEnd, endingViewEnd.getProperties())
         endViewStartState = MorphState(endingViewStart, endingViewStart.getProperties())
@@ -1136,7 +1136,7 @@ class Morpher(private val context: Context) {
             const val ALPHA = "alpha"
             const val SCALE_X = "scale_x"
             const val SCALE_Y = "scale_y"
-            const val ROTATION = "rotation"
+            const val ROTATION = "rotate"
             const val ROTATION_X = "rotation_x"
             const val ROTATION_Y = "rotation_y"
             const val TRANSLATION_X = "translation_x"

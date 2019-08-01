@@ -102,7 +102,7 @@ fun MorphLayout.getProperties(): Morpher.Properties {
     val color = this.morphColor
     val stateList = this.morphStateList
     val cornerRadii = this.morphCornerRadii.getCopy()
-    val background = this.morphBackground.constantState?.newDrawable()
+    val background = this.morphBackground!!.constantState?.newDrawable()
     val hasVectorBackground = this.hasVectorDrawable()
     val hasBitmapBackground = this.hasBitmapDrawable()
     val hasGradientBackground = this.hasGradientDrawable()

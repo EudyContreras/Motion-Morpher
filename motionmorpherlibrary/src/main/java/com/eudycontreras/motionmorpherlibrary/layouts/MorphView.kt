@@ -44,11 +44,13 @@ class MorphView: MorphLayout {
         get() = view.width.toFloat()
         set(value) {
             view.layoutParams.width = value.toInt()
+            recomputeChange()
         }
     override var morphHeight: Float
         get() = view.height.toFloat()
         set(value) {
             view.layoutParams.height = value.toInt()
+            recomputeChange()
         }
     override var morphAlpha: Float
         get() = view.alpha
@@ -123,7 +125,10 @@ class MorphView: MorphLayout {
     override var morphCornerRadii: CornerRadii
         get() = cornerRadii
         set(value) {
-            updateCorners(value)
+            cornerRadii = value
+            if (::mutableDrawable.isInitialized) {
+                mutableDrawable.cornerRadii = cornerRadii.corners
+            }
         }
     override val morphChildCount: Int
         get() = if (view is ViewGroup) view.childCount else 0
@@ -152,10 +157,23 @@ class MorphView: MorphLayout {
     override val morphShape: Int
         get() = shape
 
-    override var morphBackground: Drawable
+
+    override var morphMutableDrawable: GradientDrawable
+        get() = mutableDrawable
+        set(value) {
+            this.mutableDrawable = value
+        }
+
+    override var morphBackground: Drawable?
         get() = view.background
         set(value) {
             view.background = value
+        }
+
+    override val coordinates: IntArray
+        get() {
+            view.getLocationInWindow(location)
+            return location
         }
 
     override val viewBounds: ViewBounds
@@ -169,6 +187,12 @@ class MorphView: MorphLayout {
             bounds.paddings.start = view.paddingStart
             bounds.paddings.end = view.paddingEnd
             bounds.paddings.bottom = view.paddingBottom
+
+            bounds.x = coordinates[0]
+            bounds.y = coordinates[1]
+
+            bounds.width = morphWidth
+            bounds.height = morphHeight
 
             doWith(view.layoutParams as ViewGroup.MarginLayoutParams) {
                 bounds.margins.top = it.topMargin
@@ -203,47 +227,25 @@ class MorphView: MorphLayout {
         applyDrawable(shape, topLeft, topRight, bottomRight, bottomLeft)
     }
 
-    override fun applyDrawable(shape: Int, topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
-        var drawable = GradientDrawable()
+    fun recomputeChange() {
+        if (shape == MorphLayout.CIRCULAR && morphBackground !is VectorDrawable) {
 
-        if (view.background is VectorDrawable || view.background is BitmapDrawable) {
-            return
-        }
+            val drawable = (morphBackground as GradientDrawable).mutate() as GradientDrawable
 
-        drawable = if (view.background is GradientDrawable) {
-            (view.background as GradientDrawable).mutate() as GradientDrawable
-        } else {
-            drawable.mutate() as GradientDrawable
-        }
-
-        if (view.backgroundTintList != null) {
-            drawable.color = view.backgroundTintList
-        } else {
-            drawable.color = view.solidColor.toStateList()
-        }
-
-        drawable.shape = if (shape == MorphLayout.RECTANGULAR) {
-            GradientDrawable.RECTANGLE
-        } else
-            GradientDrawable.OVAL
-
-        if (shape == MorphLayout.RECTANGULAR) {
             val corners = floatArrayOf(
-                topLeft, topLeft,
-                topRight, topRight,
-                bottomRight, bottomRight,
-                bottomLeft, bottomLeft
+                morphWidth, morphHeight,
+                morphWidth, morphHeight,
+                morphWidth, morphHeight,
+                morphWidth, morphHeight
             )
+
+            drawable.cornerRadii = corners
 
             cornerRadii = CornerRadii(corners)
 
-            drawable.cornerRadii = cornerRadii.corners
-        } else {
-            mutateCorners = false
+            mutableDrawable = drawable
+            morphBackground = drawable
         }
-
-        mutableDrawable = drawable
-        view.background = drawable
     }
 
     override fun getView(): View = view
@@ -337,11 +339,17 @@ class MorphView: MorphLayout {
     companion object {
 
         fun makeMorphable(view: View): MorphLayout {
+            if (view is MorphLayout) {
+                return view
+            }
+
             if (view is FloatingActionButton) {
                 return MorphView(view, MorphLayout.CIRCULAR)
-            } else if (view is ImageView) {
-                return MorphView(view, MorphLayout.CIRCULAR)
             }
+            if (view is ImageView) {
+                return MorphView(view, MorphLayout.RECTANGULAR)
+            }
+
             return MorphView(view)
         }
     }

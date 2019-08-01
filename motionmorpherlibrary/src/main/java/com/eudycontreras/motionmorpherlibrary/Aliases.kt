@@ -1,5 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary
 
+import android.graphics.Color
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 import java.util.*
 
@@ -11,6 +12,10 @@ import java.util.*
 
 
 typealias Action = (()-> Unit)?
+
+typealias AndroidColor = Color
+
+typealias ChoreographerAction = ((Choreographer.Choreography)-> Unit)?
 
 typealias ValueChangeListener <T> = (old: T, new: T) -> Unit
 

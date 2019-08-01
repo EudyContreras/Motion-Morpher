@@ -34,7 +34,7 @@ import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
  * @since July 19 2019
  */
 
-class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
+open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
 
     override var morphX: Float
         get() = this.x
@@ -126,11 +126,16 @@ class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         set(value) {
             this.backgroundTintList = value
         }
+
     override var morphCornerRadii: CornerRadii
         get() = cornerRadii
         set(value) {
-            updateCorners(value)
+            cornerRadii = value
+            if (::mutableDrawable.isInitialized) {
+                mutableDrawable.cornerRadii = cornerRadii.corners
+            }
         }
+
     override val morphChildCount: Int
         get() = this.childCount
 
@@ -159,10 +164,22 @@ class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         get() = shape
 
 
-    override var morphBackground: Drawable
+    override var morphMutableDrawable: GradientDrawable
+        get() = mutableDrawable
+        set(value) {
+            this.mutableDrawable = value
+        }
+
+    override var morphBackground: Drawable?
         get() = background
         set(value) {
             this.background = value
+        }
+
+    override val coordinates: IntArray
+        get() {
+            getLocationInWindow(location)
+            return location
         }
 
     override val viewBounds: ViewBounds
@@ -176,6 +193,12 @@ class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
             bounds.paddings.start = this.paddingStart
             bounds.paddings.end = this.paddingEnd
             bounds.paddings.bottom = this.paddingBottom
+
+            bounds.x = coordinates[0]
+            bounds.y = coordinates[1]
+
+            bounds.width = morphWidth
+            bounds.height = morphHeight
 
             doWith(layoutParams as MarginLayoutParams) {
                 bounds.margins.top = it.topMargin
@@ -191,11 +214,11 @@ class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
 
     private var bounds: ViewBounds = ViewBounds()
 
-    private var shape: Int = RECTANGULAR
+    protected var shape: Int = RECTANGULAR
 
     private val location: IntArray = IntArray(2)
 
-    private var cornerRadii: CornerRadii = CornerRadii()
+    protected var cornerRadii: CornerRadii = CornerRadii()
 
     private var drawListener: DrawDispatchListener? = null
 
@@ -229,49 +252,6 @@ class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         } finally {
             typedArray.recycle()
         }
-    }
-
-    override fun applyDrawable(shape: Int, topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
-        var drawable = GradientDrawable()
-
-        if (background is VectorDrawable || background is BitmapDrawable) {
-            return
-        }
-
-        drawable = if (background is GradientDrawable) {
-            (background as GradientDrawable).mutate() as GradientDrawable
-        } else {
-            drawable.mutate() as GradientDrawable
-        }
-
-        if (backgroundTintList != null) {
-            drawable.color = backgroundTintList
-        } else {
-            drawable.color = solidColor.toStateList()
-        }
-
-        drawable.shape = if (shape == RECTANGULAR) {
-            GradientDrawable.RECTANGLE
-        } else
-            GradientDrawable.OVAL
-
-        if (shape == RECTANGULAR) {
-            val corners = floatArrayOf(
-                topLeft, topLeft,
-                topRight, topRight,
-                bottomRight, bottomRight,
-                bottomLeft, bottomLeft
-            )
-
-            cornerRadii = CornerRadii(corners)
-
-            drawable.cornerRadii = cornerRadii.corners
-        } else {
-            mutateCorners = false
-        }
-
-        mutableDrawable = drawable
-        background = drawable
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

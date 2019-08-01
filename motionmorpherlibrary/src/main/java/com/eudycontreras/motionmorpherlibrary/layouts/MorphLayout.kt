@@ -1,13 +1,11 @@
 package com.eudycontreras.motionmorpherlibrary.layouts
 
 import android.content.res.ColorStateList
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.VectorDrawable
+import android.graphics.drawable.*
 import android.view.View
 import android.view.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
+import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
@@ -47,7 +45,10 @@ interface MorphLayout {
     val windowLocationX: Int
     val windowLocationY: Int
     val viewBounds: ViewBounds
-    var morphBackground: Drawable
+    var morphBackground: Drawable?
+    var morphMutableDrawable: GradientDrawable
+    val coordinates: IntArray
+
     fun getView(): View
     fun animator(): ViewPropertyAnimator
     fun updateLayout()
@@ -64,11 +65,54 @@ interface MorphLayout {
     fun getBitmapDrawable(): BitmapDrawable
     fun getMorphTransitionDrawable(): MorphTransitionDrawable
     fun applyTransitionDrawable(transitionDrawable: MorphTransitionDrawable)
-    fun applyDrawable(shape: Int = RECTANGULAR, topLeft: Float = 0f, topRight: Float = 0f, bottomRight: Float = 0f, bottomLeft: Float = 0f)
     fun updateCorners(cornerRadii: CornerRadii): Boolean
     fun updateCorners(index: Int, corner: Float): Boolean
     fun getMorphShape(): MorphShape
     fun setLayer(layer: Int)
+
+    fun applyDrawable(shape: Int = RECTANGULAR, topLeft: Float = 0f, topRight: Float = 0f, bottomRight: Float = 0f, bottomLeft: Float = 0f) {
+        var drawable = GradientDrawable()
+
+        if (morphBackground is VectorDrawable || morphBackground is BitmapDrawable) {
+            return
+        }
+
+        drawable = if (morphBackground is GradientDrawable) {
+            (morphBackground as GradientDrawable).mutate() as GradientDrawable
+        } else {
+            drawable.mutate() as GradientDrawable
+        }
+
+        if (morphStateList != null) {
+            drawable.color = morphStateList
+        } else {
+            if (morphBackground is ColorDrawable) {
+                drawable.color = (morphBackground as ColorDrawable).color.toStateList()
+            }
+        }
+
+        drawable.shape = if (shape == RECTANGULAR) {
+            GradientDrawable.RECTANGLE
+        } else
+            GradientDrawable.OVAL
+
+        if (shape == RECTANGULAR) {
+            val corners = floatArrayOf(
+                topLeft, topLeft,
+                topRight, topRight,
+                bottomRight, bottomRight,
+                bottomLeft, bottomLeft
+            )
+
+            morphCornerRadii = CornerRadii(corners)
+
+            drawable.cornerRadii = morphCornerRadii.corners
+        } else {
+            mutateCorners = false
+        }
+        morphBackground = drawable
+        morphMutableDrawable = drawable
+    }
 
     enum class DimensionSnap(val value: Int) {
         WIDTH(0), HEIGHT(1), NONE(-1);

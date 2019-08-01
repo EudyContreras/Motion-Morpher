@@ -127,7 +127,10 @@ open class FrameLayout : FrameLayout, MorphLayout {
     override var morphCornerRadii: CornerRadii
         get() = cornerRadii
         set(value) {
-            updateCorners(value)
+            cornerRadii = value
+            if (::mutableDrawable.isInitialized) {
+                mutableDrawable.cornerRadii = cornerRadii.corners
+            }
         }
     override val morphChildCount: Int
         get() = this.childCount
@@ -137,6 +140,7 @@ open class FrameLayout : FrameLayout, MorphLayout {
         set(value) {
             this.visibility = value
         }
+
     override var mutateCorners: Boolean = true
 
     override val morphTag: Any?
@@ -153,7 +157,13 @@ open class FrameLayout : FrameLayout, MorphLayout {
             return location[1]
         }
 
-    override var morphBackground: Drawable
+    override var morphMutableDrawable: GradientDrawable
+        get() = mutableDrawable
+        set(value) {
+            this.mutableDrawable = value
+        }
+
+    override var morphBackground: Drawable?
         get() = background
         set(value) {
             this.background = value
@@ -161,6 +171,12 @@ open class FrameLayout : FrameLayout, MorphLayout {
 
     override val morphShape: Int
         get() = shape
+
+    override val coordinates: IntArray
+        get() {
+            getLocationInWindow(location)
+            return location
+        }
 
     override val viewBounds: ViewBounds
         get() {
@@ -173,6 +189,12 @@ open class FrameLayout : FrameLayout, MorphLayout {
             bounds.paddings.start = this.paddingStart
             bounds.paddings.end = this.paddingEnd
             bounds.paddings.bottom = this.paddingBottom
+
+            bounds.x = coordinates[0]
+            bounds.y = coordinates[1]
+
+            bounds.width = morphWidth
+            bounds.height = morphHeight
 
             doWith(layoutParams as MarginLayoutParams) {
                 bounds.margins.top = it.topMargin
@@ -226,49 +248,6 @@ open class FrameLayout : FrameLayout, MorphLayout {
         } finally {
             typedArray.recycle()
         }
-    }
-
-    override fun applyDrawable(shape: Int, topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
-        var drawable = GradientDrawable()
-
-        if (background is VectorDrawable || background is BitmapDrawable) {
-            return
-        }
-
-        drawable = if (background is GradientDrawable) {
-            (background as GradientDrawable).mutate() as GradientDrawable
-        } else {
-            drawable.mutate() as GradientDrawable
-        }
-
-        if (backgroundTintList != null) {
-            drawable.color = backgroundTintList
-        } else {
-            drawable.color = solidColor.toStateList()
-        }
-
-        drawable.shape = if (shape == RECTANGULAR) {
-            GradientDrawable.RECTANGLE
-        } else
-            GradientDrawable.OVAL
-
-        if (shape == RECTANGULAR) {
-            val corners = floatArrayOf(
-                topLeft, topLeft,
-                topRight, topRight,
-                bottomRight, bottomRight,
-                bottomLeft, bottomLeft
-            )
-
-            drawable.cornerRadii = corners
-
-            cornerRadii = CornerRadii(corners)
-        } else {
-            mutateCorners = false
-        }
-
-        mutableDrawable = drawable
-        background = drawable
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

@@ -8,5 +8,10 @@ TODO PRIORITY 1:
     Allow backgrounds of MorphLayouts to have ripples
 
     Test share transitions on the first demo
+
+    DEMO 2:
+        If a focal element is used. The start layout must bind its transformation to the end layout. The focal element on the end layout must
+        take the shape and form of the element in the start layout
+
 LIMITATIONS:
 

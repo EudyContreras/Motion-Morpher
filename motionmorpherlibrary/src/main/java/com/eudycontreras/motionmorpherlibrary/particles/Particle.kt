@@ -3,6 +3,7 @@ package com.eudycontreras.motionmorpherlibrary.particles
 import android.graphics.Canvas
 import android.graphics.Paint
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
+import com.eudycontreras.motionmorpherlibrary.properties.Color
 import com.eudycontreras.motionmorpherlibrary.utilities.ColorUtility
 
 /**
@@ -40,7 +41,7 @@ abstract class Particle {
     var targetX = Float.MIN_VALUE
     var targetY = Float.MIN_VALUE
 
-    var color: ColorUtility.MorphColor? = null
+    var color: Color? = null
     var bounds: Bounds = Bounds()
     var paint: Paint = Paint()
 

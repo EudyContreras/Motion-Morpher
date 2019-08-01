@@ -1,3 +1,4 @@
+/*
 package com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts
 
 import android.content.Context
@@ -19,11 +20,13 @@ import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 
+*/
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 19 2019
- */
+ *//*
+
 
 class FabLayout: FloatingActionButton, MorphLayout {
 
@@ -357,3 +360,4 @@ class FabLayout: FloatingActionButton, MorphLayout {
 
     override fun toString(): String = tag.toString()
 }
+*/

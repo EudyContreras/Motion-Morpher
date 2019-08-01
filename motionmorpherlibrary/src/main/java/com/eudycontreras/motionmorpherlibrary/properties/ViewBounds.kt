@@ -6,12 +6,13 @@ package com.eudycontreras.motionmorpherlibrary.properties
  * @since July 12 2019
  */
 
-data class ViewBounds(
+data class ViewBounds (
     var top: Int = 0,
     var left: Int = 0,
     var right: Int = 0,
     var bottom: Int = 0
-) {
+): Bounds () {
+
     val paddings: Paddings by lazy {
         Paddings()
     }
