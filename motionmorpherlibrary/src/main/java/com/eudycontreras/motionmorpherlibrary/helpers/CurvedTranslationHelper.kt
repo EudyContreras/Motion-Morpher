@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.helpers
 
-import com.eudycontreras.motionmorpherlibrary.properties.Coordintates
+import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.StrictMath.pow
 import kotlin.math.round
 
@@ -18,33 +18,33 @@ class CurvedTranslationHelper(
     fromY: Float = 0f,
     toY: Float = 0f
 ) {
-    private var startPoint: Coordintates = Coordintates(fromX, fromY)
-    private var endPoint: Coordintates = Coordintates(toX, toY)
+    private var startPoint: Coordinates = Coordinates(fromX, fromY)
+    private var endPoint: Coordinates = Coordinates(toX, toY)
 
-    private var controlPoint: Coordintates = Coordintates.midPoint(startPoint, endPoint)
+    private var controlPoint: Coordinates = Coordinates.midPoint(startPoint, endPoint)
 
-    fun setStartPoint(start: Coordintates) {
+    fun setStartPoint(start: Coordinates) {
         startPoint = start
     }
 
     fun setStartPoint(x: Float, y: Float) {
-        setStartPoint(Coordintates(x, y))
+        setStartPoint(Coordinates(x, y))
     }
 
-    fun setEndPoint(end: Coordintates) {
+    fun setEndPoint(end: Coordinates) {
         endPoint = end
     }
 
     fun setEndPoint(x: Float, y: Float) {
-        setEndPoint(Coordintates(x, y))
+        setEndPoint(Coordinates(x, y))
     }
 
-    fun setControlPoint(control: Coordintates) {
+    fun setControlPoint(control: Coordinates) {
         controlPoint = control
     }
 
     fun setControlPoint(x: Float, y: Float) {
-        setControlPoint(Coordintates(x, y))
+        setControlPoint(Coordinates(x, y))
     }
 
     fun getCurvedTranslationX(scale: Float): Double {

@@ -7,6 +7,8 @@ import android.view.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.properties.Margings
+import com.eudycontreras.motionmorpherlibrary.properties.Paddings
 import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 
@@ -46,7 +48,9 @@ interface MorphLayout {
     val windowLocationY: Int
     val viewBounds: ViewBounds
     var morphBackground: Drawable?
-    var morphMutableDrawable: GradientDrawable
+    var mutableBackground: GradientDrawable
+    var morphMargings: Margings
+    var morphPaddings: Paddings
     val coordinates: IntArray
 
     fun getView(): View
@@ -110,8 +114,9 @@ interface MorphLayout {
         } else {
             mutateCorners = false
         }
+
         morphBackground = drawable
-        morphMutableDrawable = drawable
+        mutableBackground = drawable
     }
 
     enum class DimensionSnap(val value: Int) {

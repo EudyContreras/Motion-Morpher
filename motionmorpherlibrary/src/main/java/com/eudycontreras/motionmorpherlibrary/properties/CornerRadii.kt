@@ -1,5 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
+import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bindable
+
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
@@ -11,7 +13,7 @@ class CornerRadii(
     topRight: Float = 0f,
     bottomRight: Float = 0f,
     bottomLeft: Float = 0f
-) {
+): Bindable<FloatArray>() {
     val topLeft: Float
         get() = corners[0]
 
@@ -43,12 +45,14 @@ class CornerRadii(
         for (index in 0 until cornerRadii.size) {
             corners[index] = cornerRadii[index]
         }
+        notifyChange(corners)
     }
 
     fun apply(cornerRadii: FloatArray) {
         for (index in 0 until cornerRadii.size) {
             corners[index] = cornerRadii[index]
         }
+        notifyChange(corners)
     }
 
     fun apply(topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
@@ -63,6 +67,8 @@ class CornerRadii(
 
         corners[6] = bottomLeft
         corners[7] = bottomLeft
+
+        notifyChange(corners)
     }
 
     fun getCopy(): CornerRadii {
@@ -75,9 +81,29 @@ class CornerRadii(
 
     operator fun set(index: Int, value: Float) {
         corners[index] = value
+        notifyChange(corners)
+    }
+
+    override fun onBindingChanged(newValue: FloatArray) {
+        for (index in 0 until newValue.size) {
+            corners[index] = newValue[index]
+        }
     }
 
     override fun toString(): String {
         return "TL: ${corners[0]} TR: ${corners[2]} BR: ${corners[4]} BL: ${corners[6]}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CornerRadii) return false
+
+        if (!corners.contentEquals(other.corners)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return corners.contentHashCode()
     }
 }

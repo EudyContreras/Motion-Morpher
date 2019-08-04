@@ -20,7 +20,7 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
-import com.eudycontreras.motionmorpherlibrary.properties.Coordintates
+import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.properties.Dimension
 import com.eudycontreras.motionmorpherlibrary.properties.Point
@@ -173,7 +173,7 @@ class Morpher(private val context: Context) {
         endingView.morphTranslationY = startingState.translationY
 
         if (useArcTranslator) {
-            curveTranslator.setControlPoint(Coordintates(endingState.translationX, startingState.translationY))
+            curveTranslator.setControlPoint(Coordinates(endingState.translationX, startingState.translationY))
         }
 
         initialValuesApplied = true
@@ -1108,7 +1108,7 @@ class Morpher(private val context: Context) {
         val hasGradientBackground: Boolean,
         val tag: String
     ) {
-        fun getDeltaCoordinates() = Coordintates(translationX, translationY)
+        fun getDeltaCoordinates() = Coordinates(translationX, translationY)
 
         override fun toString() = tag
     }

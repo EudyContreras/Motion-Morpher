@@ -2,8 +2,6 @@ package com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Canvas
-import android.graphics.Path
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -25,6 +23,8 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.CIRC
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.RECTANGULAR
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.properties.Margings
+import com.eudycontreras.motionmorpherlibrary.properties.Paddings
 import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 
@@ -164,7 +164,7 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         get() = shape
 
 
-    override var morphMutableDrawable: GradientDrawable
+    override var mutableBackground: GradientDrawable
         get() = mutableDrawable
         set(value) {
             this.mutableDrawable = value
@@ -184,15 +184,15 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
 
     override val viewBounds: ViewBounds
         get() {
-            bounds.top = this.top
-            bounds.left = this.left
-            bounds.right = this.right
-            bounds.bottom = this.bottom
+            bounds.top = top
+            bounds.left = left
+            bounds.right = right
+            bounds.bottom = bottom
 
-            bounds.paddings.top = this.paddingTop
-            bounds.paddings.start = this.paddingStart
-            bounds.paddings.end = this.paddingEnd
-            bounds.paddings.bottom = this.paddingBottom
+            bounds.paddings.top = paddingTop.toFloat()
+            bounds.paddings.start = paddingStart.toFloat()
+            bounds.paddings.end = paddingEnd.toFloat()
+            bounds.paddings.bottom = paddingBottom.toFloat()
 
             bounds.x = coordinates[0]
             bounds.y = coordinates[1]
@@ -201,18 +201,37 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
             bounds.height = morphHeight
 
             doWith(layoutParams as MarginLayoutParams) {
-                bounds.margins.top = it.topMargin
-                bounds.margins.start = it.marginStart
-                bounds.margins.end = it.marginEnd
-                bounds.margins.bottom = it.bottomMargin
+                bounds.margings.top = it.topMargin.toFloat()
+                bounds.margings.start = it.marginStart.toFloat()
+                bounds.margings.end = it.marginEnd.toFloat()
+                bounds.margings.bottom = it.bottomMargin.toFloat()
             }
 
             return bounds
         }
 
+    override var morphMargings: Margings
+        get() = bounds.margings
+        set(value) {
+            bounds.margings.top = value.top
+            bounds.margings.start = value.start
+            bounds.margings.end = value.end
+            bounds.margings.bottom = value.bottom
+        }
+
+    override var morphPaddings: Paddings
+        get() = bounds.paddings
+        set(value) {
+            bounds.paddings.top = value.top
+            bounds.paddings.start = value.start
+            bounds.paddings.end = value.end
+            bounds.paddings.bottom = value.bottom
+        }
+
+
     override var animate: Boolean = true
 
-    private var bounds: ViewBounds = ViewBounds()
+    private var bounds: ViewBounds = ViewBounds(this.getView())
 
     protected var shape: Int = RECTANGULAR
 
@@ -252,6 +271,8 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         } finally {
             typedArray.recycle()
         }
+
+        bounds = ViewBounds(this.getView())
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -358,6 +379,7 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         return children
     }
 
+/*
     private var clipPath: Path = Path()
 
     override fun dispatchDraw(canvas: Canvas) {
@@ -365,6 +387,7 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
 
         super.dispatchDraw(canvas)
     }
+*/
 
     override fun setLayer(layer: Int) {
         setLayerType(layer, null)

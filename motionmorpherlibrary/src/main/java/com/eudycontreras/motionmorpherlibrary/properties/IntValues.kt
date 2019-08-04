@@ -7,4 +7,8 @@ class IntValues(
         fromValue: Int,
         toValue: Int,
         interpolator: TimeInterpolator? = null
-    ): ValueMap<Int>(type, fromValue, toValue, 0, interpolator)
+    ): ValueMap<Int>(type, fromValue, toValue, 0, interpolator) {
+
+    override val canInterpolate: Boolean
+        get() = fromValue != toValue
+}

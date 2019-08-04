@@ -19,7 +19,6 @@ import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-
 */
 /**
  * @Project MotionMorpher
@@ -176,10 +175,10 @@ class FabLayout: FloatingActionButton, MorphLayout {
             bounds.paddings.bottom = this.paddingBottom
 
             doWith(layoutParams as ViewGroup.MarginLayoutParams) {
-                bounds.margins.top = it.topMargin
-                bounds.margins.start = it.marginStart
-                bounds.margins.end = it.marginEnd
-                bounds.margins.bottom = it.bottomMargin
+                bounds.margings.top = it.topMargin
+                bounds.margings.start = it.marginStart
+                bounds.margings.end = it.marginEnd
+                bounds.margings.bottom = it.bottomMargin
             }
 
             return bounds

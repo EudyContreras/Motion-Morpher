@@ -32,3 +32,5 @@ typealias ComputedStatesListener = ((startState: Morpher.Properties, endState: M
 typealias TranslationPositions = EnumSet<Morpher.TranslationPosition>
 
 typealias MorphValuesListener = ((startValue: Morpher.MorphValues, endValues: Morpher.MorphValues) -> Unit)?
+
+typealias BindingChangeListener <T> = ((newValue: T) -> Unit)?

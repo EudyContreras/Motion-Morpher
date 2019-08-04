@@ -101,6 +101,14 @@
         </attr>
     </declare-styleable>
 
+    <declare-styleable name="RoundedImageView">
+        <attr name="riv_radius" format="dimension"/>
+        <attr name="riv_topLeftCornerRadius" format="dimension" />
+        <attr name="riv_topRightCornerRadius" format="dimension" />
+        <attr name="riv_bottomLeftCornerRadius" format="dimension" />
+        <attr name="riv_bottomRightCornerRadius" format="dimension" />
+    </declare-styleable>
+
     <declare-styleable name="TextLayout">
         <attr name="tl_state" format="enum">
             <enum name="START" value="0"/>

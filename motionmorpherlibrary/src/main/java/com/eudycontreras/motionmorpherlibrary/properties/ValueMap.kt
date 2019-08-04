@@ -10,6 +10,9 @@ open class ValueMap<T>(
         var interpolator: TimeInterpolator? = null
     ) {
 
+    open val canInterpolate: Boolean
+        get() = fromValue != toValue
+
     var by: Float = 1f
 
     val interpolate: Boolean
@@ -22,6 +25,12 @@ open class ValueMap<T>(
 
     var type: String = type
         private set
+
+    fun flip() {
+        val temp: T = fromValue
+        fromValue = toValue
+        toValue = temp
+    }
 
     fun copy(other: ValueMap<T>) {
         this.by = other.by
@@ -37,11 +46,36 @@ open class ValueMap<T>(
         this.toValue = other.toValue
         this.interpolator = other.interpolator
     }
-        companion object {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ValueMap<*>) return false
+
+        if (fromValue != other.fromValue) return false
+        if (toValue != other.toValue) return false
+        if (add != other.add) return false
+        if (by != other.by) return false
+        if (type != other.type) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = fromValue?.hashCode() ?: 0
+        result = 31 * result + (toValue?.hashCode() ?: 0)
+        result = 31 * result + (add?.hashCode() ?: 0)
+        result = 31 * result + by.hashCode()
+        result = 31 * result + type.hashCode()
+        return result
+    }
+
+    companion object {
             const val COLOR = "color"
             const val ALPHA = "alpha"
             const val WIDTH = "resize"
             const val HEIGHT = "height"
+            const val MARGIN = "margin"
+            const val PADDING = "padding"
             const val CORNERS = "corners"
             const val SCALE_X = "scale_x"
             const val SCALE_Y = "scale_y"
