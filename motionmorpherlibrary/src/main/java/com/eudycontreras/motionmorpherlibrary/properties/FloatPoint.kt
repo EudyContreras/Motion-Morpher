@@ -7,7 +7,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
  * @since July 20 2019
  */
  
-open class Point<T>(
-   open var x: T,
-   open var y: T
-)
+data class FloatPoint(
+    override var x: Float,
+    override var y: Float
+): Point<Float>(x, y)

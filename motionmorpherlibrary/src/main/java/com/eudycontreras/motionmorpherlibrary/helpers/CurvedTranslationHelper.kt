@@ -9,7 +9,6 @@ import kotlin.math.round
  * @author Eudy Contreras.
  * @since July 19 2019
  *
- * Uses algorithm from: http://en.wikipedia.org/wiki/B%C3%A9zier_curve
  */
 
 class CurvedTranslationHelper(
@@ -47,15 +46,26 @@ class CurvedTranslationHelper(
         setControlPoint(Coordinates(x, y))
     }
 
-    fun getCurvedTranslationX(scale: Float): Double {
-        return calcBezier(scale.toDouble(), startPoint.x, controlPoint.x, endPoint.x)
+    fun getCurvedTranslationX(fraction: Float): Double {
+        return calcBezier(fraction.toDouble(), startPoint.x, controlPoint.x, endPoint.x)
     }
 
-    fun getCurvedTranslationY(scale: Float): Double {
-        return calcBezier(scale.toDouble(), startPoint.y, controlPoint.y, endPoint.y)
+    fun getCurvedTranslationX(fraction: Float, startX: Float, endX: Float, controlX: Float): Double {
+        return calcBezier(fraction.toDouble(), startX, controlX, endX)
     }
 
-    private fun calcBezier(scale: Double, start: Float, control: Float, end: Float): Double {
-        return round(pow(((1.0 - scale)), 2.0) * start) + (2.0 * (1.0 - scale) * scale * control) + (pow(scale, 2.0) * end)
+    fun getCurvedTranslationY(fraction: Float): Double {
+        return calcBezier(fraction.toDouble(), startPoint.y, controlPoint.y, endPoint.y)
+    }
+
+    fun getCurvedTranslationY(fraction: Float, startY: Float, endY: Float, controlY: Float): Double {
+        return calcBezier(fraction.toDouble(), startY, controlY, endY)
+    }
+
+    /**
+     * algorithm from: http://en.wikipedia.org/wiki/B%C3%A9zier_curve
+     */
+    private fun calcBezier(fraction: Double, start: Float, control: Float, end: Float): Double {
+        return round(pow(((1.0 - fraction)), 2.0) * start) + (2.0 * (1.0 - fraction) * fraction * control) + (pow(fraction, 2.0) * end)
     }
 }

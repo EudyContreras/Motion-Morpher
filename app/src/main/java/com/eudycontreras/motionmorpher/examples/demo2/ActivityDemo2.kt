@@ -2,6 +2,7 @@ package com.eudycontreras.motionmorpher.examples.demo2
 
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.animation.AnticipateOvershootInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
@@ -29,6 +30,8 @@ class ActivityDemo2 : MorphActivity() {
     lateinit var icon2: MorphLayout
     lateinit var icon3: MorphLayout
 
+    var value: Float = 0f
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_demo2)
@@ -37,27 +40,6 @@ class ActivityDemo2 : MorphActivity() {
             testChoreographer()
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-      /*  Handler().postDelayed({
-            testChoreographer()
-        }, 1000)*/
-    }
-
-    /*override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_demo_1, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        if (id == R.id.settings) {
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }*/
 
     override fun getRoot(): ViewGroup {
         return this.findViewById(R.id.root)
@@ -91,105 +73,105 @@ class ActivityDemo2 : MorphActivity() {
 
         Binder.createBinding(Bind.UNIDIRECTIONAL, card.morphCornerRadii, image.morphCornerRadii)
 
-        choreographer.withDefaultDuration(300)
+        choreographer
+            .withDefaultInterpolator(interpolator)
+            .withDefaultDuration(300)
+
             .animate(card)
-            .rotate(0f, 360f)
+            .withPivot(0.5f, 0.5f)
+            .rotateTo(360f)
             .withDuration(1000)
 
-            .thenAnimate(card)
-            .resizeTo(root.viewBounds)
-            .positionAt(root.viewBounds)
+            .thenAnimate()
+            .xTranslateBetween(0f, -(30.dp), (30.dp), -(70.dp), (70.dp), -(100.dp), (100.dp), -(70.dp), (70.dp), -(30.dp), (30.dp), 0f)
+            .withDuration(500)
+
+            .thenAnimate()
+            .withStartDelay(100)
+            .yTranslateBetween(0f, -(30.dp), (30.dp), -(70.dp), (70.dp), -(100.dp), (100.dp), -(70.dp), (70.dp), -(30.dp), (30.dp), 0f)
+            .withDuration(500)
+
+            .thenAnimate()
+            .boundsTo(root.viewBounds)
             .cornerRadiusTo(root.morphCornerRadii)
             .withDuration(1000)
-            .interpolator(interpolator)
 
             .alsoAnimate(image)
             .resizeTo(root.viewBounds)
             .withDuration(1000)
-            .interpolator(interpolator)
 
             .alsoAnimate(icon1, icon2, icon3)
-            .scale(0f)
+            .scaleTo(0f)
             .withDuration(1000)
-            .interpolator(interpolator)
 
             .reverseAnimate(card)
             .withDuration(2000)
-            .interpolator(interpolator)
 
             .andReverseAnimate(image)
             .withDuration(2000)
-            .interpolator(interpolator)
 
             .andReverseAnimate(icon1, icon2, icon3)
             .withDuration(1000)
-            .interpolator(interpolator)
 
             .thenAnimate(card)
-            .withStartDelay(1000)
+            .withStartDelay(500)
             .withDuration(500)
             .anchorTo(Anchor.TOP_LEFT, root)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
+            .thenAnimate()
             .withDuration(500)
             .anchorTo(Anchor.RIGHT, root)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
+            .thenAnimate()
             .withDuration(500)
             .anchorTo(Anchor.BOTTOM, root)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
+            .thenAnimate()
             .withDuration(500)
             .anchorTo(Anchor.LEFT, root)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
+            .thenAnimate()
             .withDuration(500)
-            .anchorTo(Anchor.TOP_RIGHT, root)
-            .interpolator(interpolator)
+            .anchorArcTo(Anchor.TOP_RIGHT, root)
 
-            .thenAnimate(card)
+            .thenAnimate()
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
-            .rotate(0f)
+            .thenAnimate()
+            .rotateTo(0f)
             .withDuration(1000)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
-            .translateZ(30.dp)
-            .scale(1.2f)
+            .thenAnimate()
+            .withPivot(0.5f, 0f)
+            .yScaleTo(0.1f)
             .withDuration(2000)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
-            .translateZ(0f)
-            .opacity(0f)
-            .scale(1f)
+            .thenAnimate()
+            .withPivot(0.5f, 0f)
+            .withInterpolator(AnticipateOvershootInterpolator())
+            .zTranslateTo(30.dp)
+            .scaleTo(1.2f)
+            .withDuration(2000)
+
+            .thenAnimate()
+            .withPivot(0.5f, 0f)
+            .zTranslateTo(0f)
+            .alphaTo(0f)
+            .scaleTo(1f)
             .withDuration(1000)
-            .interpolator(interpolator)
 
-            .thenAnimate(card)
-            .translateZ(10.dp)
-            .opacity(1f)
+            .thenAnimate()
+            .zTranslateTo(10.dp)
+            .alphaTo(1f)
             .withDuration(1000)
-            .interpolator(interpolator)
 
-            .whenDone {
-                //it.choreographer.reset()
-                /*it.choreographer.resetWithAnimation(card)
-                it.choreographer.resetWithAnimation(image)
-                it.choreographer.resetWithAnimation(text)*/
-            }
+
             .build()
             .start()
 
-        //TODO("Reuse already assigned animators")
-        //TODO("allow repeat forever or for a duration")
+
+        //TODO("Reuse already assigned animators. IDEA!! Use an animator pool where they can be recycled")
+        //TODO("Maybe interpolate between pivot points")
     }
 }

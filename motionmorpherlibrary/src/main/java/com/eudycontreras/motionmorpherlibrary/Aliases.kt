@@ -1,6 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary
 
 import android.graphics.Color
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 import java.util.*
 
@@ -26,6 +27,8 @@ typealias TransitionOffsetListener = ((percent: Float) -> Unit)?
 typealias ContainerBoundsListener = ((oldBounds: Bounds, newBounds: Bounds) -> Unit)?
 
 typealias BackgroundDimListener = ((dimAmount: Float) -> Unit)?
+
+typealias ViewPropertyValueListener = (view: MorphLayout, value: Float) -> Unit
 
 typealias ComputedStatesListener = ((startState: Morpher.Properties, endState: Morpher.Properties) -> Unit)?
 

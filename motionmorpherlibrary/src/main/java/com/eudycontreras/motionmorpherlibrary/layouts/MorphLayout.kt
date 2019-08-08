@@ -71,6 +71,10 @@ interface MorphLayout {
     fun applyTransitionDrawable(transitionDrawable: MorphTransitionDrawable)
     fun updateCorners(cornerRadii: CornerRadii): Boolean
     fun updateCorners(index: Int, corner: Float): Boolean
+/*    fun rotate(rotation: Float, pivot: FloatPoint? = null)
+    fun scaleX(scaleX: Float, pivot: FloatPoint? = null)
+    fun scaleY(scaleY: Float, pivot: FloatPoint? = null)
+    fun scale(scale: Float, pivot: FloatPoint? = null)*/
     fun getMorphShape(): MorphShape
     fun setLayer(layer: Int)
 

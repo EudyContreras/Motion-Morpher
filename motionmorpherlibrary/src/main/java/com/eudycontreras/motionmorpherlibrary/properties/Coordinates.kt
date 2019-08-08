@@ -14,8 +14,13 @@ data class Coordinates(
         return Coordinates(x, y)
     }
 
+    fun copy(other: Coordinates) {
+        this.x = other.x
+        this.y = other.y
+    }
+
     fun midPoint(other: Coordinates): Coordinates {
-        return Companion.midPoint(this, other)
+        return midPoint(this, other)
     }
 
     override fun equals(other: Any?): Boolean {

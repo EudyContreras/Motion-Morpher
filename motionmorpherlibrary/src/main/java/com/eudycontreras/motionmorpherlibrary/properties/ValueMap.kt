@@ -15,9 +15,6 @@ open class ValueMap<T>(
 
     var by: Float = 1f
 
-    val interpolate: Boolean
-        get() = fromValue != toValue
-
     fun set(value: T) {
         this.fromValue = value
         this.toValue = value
@@ -34,15 +31,9 @@ open class ValueMap<T>(
 
     fun copy(other: ValueMap<T>) {
         this.by = other.by
+        this.add = other.add
         this.type = other.type
         this.fromValue = other.fromValue
-        this.toValue = other.toValue
-        this.interpolator = other.interpolator
-    }
-
-    fun copyTo(other: ValueMap<T>) {
-        this.by = other.by
-        this.type = other.type
         this.toValue = other.toValue
         this.interpolator = other.interpolator
     }

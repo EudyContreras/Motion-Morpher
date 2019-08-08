@@ -81,14 +81,14 @@ class ScaleUtility {
         thumbView.alpha = 0f
         expandedImageView.visibility = View.VISIBLE
 
-        // Set the pivot point for SCALE_X and SCALE_Y transformations
+        // Set the scalePivot point for SCALE_X and SCALE_Y transformations
         // to the top-left corner of the zoomed-in view (the default
         // is the center of the view).
         expandedImageView.pivotX = 0f
         expandedImageView.pivotY = 0f
 
         // Construct and run the parallel animation of the four translation and
-        // scale properties (X, Y, SCALE_X, and SCALE_Y).
+        // scaleTo properties (X, Y, SCALE_X, and SCALE_Y).
         currentAnimator = AnimatorSet().apply {
             play(ObjectAnimator.ofFloat(
                 expandedImageView,

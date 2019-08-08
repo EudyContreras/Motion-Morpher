@@ -1,6 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.observable
 
 import com.eudycontreras.motionmorpherlibrary.ValueChangeListener
+import kotlin.properties.ObservableProperty
 
 
 /**
@@ -10,7 +11,7 @@ import com.eudycontreras.motionmorpherlibrary.ValueChangeListener
  */
 
 
-data class ObservableValue<T>(private val _value: T) {
+data class ObservableValue<T>(private val _value: T): ObservableProperty<T>(_value) {
 
     var value = _value
         set(value) {
