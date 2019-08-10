@@ -3,9 +3,8 @@ package com.eudycontreras.motionmorpherlibrary
 import android.animation.Animator
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
+import android.os.Handler
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.Transformation
 import androidx.annotation.ColorInt
 import androidx.core.animation.addListener
 import com.eudycontreras.motionmorpherlibrary.enumerations.*
@@ -25,28 +24,31 @@ import kotlin.math.abs
  * @author Eudy Contreras.
  * @since July 30 2019
  */
-
 class Choreographer: PropertyChangeObservable() {
 
-    private val transformation: Transformation = Transformation()
+    private lateinit var headChoreography: Choreography
+    private lateinit var tailChoreography: Choreography
 
-    private val animators: ArrayList<ChoreographyControl> = ArrayList()
+    private val handler: Handler by lazy {
+        Handler()
+    }
 
     private var listener: ChoreographyListener = ChoreographyListener()
 
     private var defaultInterpolator: TimeInterpolator? = null
 
-    private var built: Boolean = false
-
     private var boundsChanged: Boolean = false
 
     private var defaultDuration: Long = 0L
 
-    private lateinit var headChoreography: Choreography
-    private lateinit var tailChoreography: Choreography
+    private var built: Boolean = false
+
+    var totalDuration: Long = 0L
+        private set
 
     private val arcTranslator: CurvedTranslationHelper by lazy {
         CurvedTranslationHelper()
+        //TODO("Different animation durations for properties")
     }
 
     private var translationXListener: ViewPropertyValueListener = { view, value ->
@@ -219,20 +221,28 @@ class Choreographer: PropertyChangeObservable() {
 
     }
 
-    fun transitionTo(offset: Float){
+    fun transitionTo(fraction: Float){
 
     }
 
-    fun start(): List<ChoreographyControl> {
-        animators.forEach {
-            it.cancel()
-            it.start()
+    fun startAfter(delay: Long) {
+        handler.postDelayed({
+            start()
+        }, delay)
+    }
+
+    fun start() {
+        successors(headChoreography) { _, choreography ->
+            choreography.control.cancel()
+            choreography.control.start()
         }
-        return animators
     }
 
     fun clear() {
-        animators.forEach { it.animator.cancel() }
+        predecessors(tailChoreography) { _, choreography ->
+            choreography.control.cancel()
+        }
+
         headChoreography.parent = null
         headChoreography.child = null
         headChoreography.views = emptyArray()
@@ -262,11 +272,11 @@ class Choreographer: PropertyChangeObservable() {
         return this
     }
 
-    fun resetWithAnimation(view: MorphLayout, duration: Long? = null, interpolator: TimeInterpolator? = null): Choreographer {
+    fun resetWithAnimation(view: MorphLayout, duration: Long? = null): Choreographer {
         predecessors(tailChoreography) { _, choreography ->
             choreography.views.forEach {v ->
                 if (view == v) {
-                    animators.first { it.choreography == choreography }.reverse(duration, interpolator)
+                    choreography.control.reverse(duration)
                 }
             }
         }
@@ -285,12 +295,11 @@ class Choreographer: PropertyChangeObservable() {
         }
     }
 
-    private fun successors(choreography: Choreography, iterator: (choreography: Choreography) -> Unit) {
-        val traverseControl= TraverseControl()
-
+    private fun successors(choreography: Choreography, iterator: (control: TraverseControl, choreography: Choreography) -> Unit) {
+        val traverseControl = TraverseControl()
         var temp: Choreography? = choreography
         while (temp != null) {
-            iterator.invoke(temp)
+            iterator.invoke(traverseControl, temp)
             if (traverseControl.breakTraverse) {
                 break
             }
@@ -319,11 +328,11 @@ class Choreographer: PropertyChangeObservable() {
             val start: Float = if (current.reverseToStartState) MAX_OFFSET else MIN_OFFSET
             val end: Float = if (current.reverseToStartState) MIN_OFFSET else MAX_OFFSET
 
-            val animator = ValueAnimator.ofFloat(start, end)
+            current.control = ChoreographyControl(current, start, end)
 
             if (current.reverse) {
-                animator.repeatMode = ValueAnimator.REVERSE
-                animator.repeatCount = 1
+                current.control.repeatMode = ChoreographyControl.REVERSE
+                current.control.repeatCount = 1
             }
 
             val updateListener: ValueAnimator.AnimatorUpdateListener = ValueAnimator.AnimatorUpdateListener {
@@ -333,34 +342,22 @@ class Choreographer: PropertyChangeObservable() {
                 current.offsetListener?.invoke(fraction)
             }
 
-            val control = ChoreographyControl(animator, current)
-
             val endListener: (Animator) -> Unit = {
                 current.doneAction?.invoke(current)
                 current.isRunning = false
             }
 
             val startListener: (Animator) -> Unit = {
+                current.startAction?.invoke(current)
                 current.isRunning = true
             }
 
-            animator.addListener(
-                onStart = startListener,
-                onEnd = endListener
-            )
-
-            animator.addUpdateListener(updateListener)
-
-            animator.duration = current.duration
-            animator.startDelay = totalDelay
-
-            control.endListener = endListener
-            control.mStartDelay = totalDelay
-            control.mDuration = current.duration
-            control.mRemainingDuration = totalDuration
-            control.updateListener = updateListener
-
-            animators.add(control)
+            current.control.mDuration = current.duration
+            current.control.mStartDelay = totalDelay
+            current.control.updateListener = updateListener
+            current.control.startListener = startListener
+            current.control.endListener = endListener
+            current.control.build()
 
             temp = current.child
         }
@@ -450,6 +447,148 @@ class Choreographer: PropertyChangeObservable() {
         }
     }
 
+    fun animate(choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
+        val views = choreography.views
+
+        if (views.size == 1) {
+            animate(views[0], choreography, fraction, duration, currentPlayTime)
+            return
+        }
+
+        for (view in views) {
+            animate(view, choreography, fraction, duration, currentPlayTime)
+        }
+    }
+
+    private fun animate(view: MorphLayout, choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
+
+        val alphaFraction = choreography.alpha.interpolator?.getInterpolation(fraction) ?: fraction
+
+        val scaleXFraction = choreography.scaleX.interpolator?.getInterpolation(fraction) ?: fraction
+        val scaleYFraction = choreography.scaleY.interpolator?.getInterpolation(fraction) ?: fraction
+
+        val rotateFraction = choreography.rotation.interpolator?.getInterpolation(fraction) ?: fraction
+        val rotateXFraction = choreography.rotationX.interpolator?.getInterpolation(fraction) ?: fraction
+        val rotateYFraction = choreography.rotationY.interpolator?.getInterpolation(fraction) ?: fraction
+
+        val translateZFraction = choreography.translateZ.interpolator?.getInterpolation(fraction) ?: fraction
+
+        view.morphPivotX = choreography.pivotPoint.x
+        view.morphPivotY = choreography.pivotPoint.y
+
+        view.morphAlpha = choreography.alpha.fromValue + (choreography.alpha.toValue - choreography.alpha.fromValue) * alphaFraction
+
+        view.morphScaleX = choreography.scaleX.fromValue + (choreography.scaleX.toValue - choreography.scaleX.fromValue) * scaleXFraction
+        view.morphScaleY = choreography.scaleY.fromValue + (choreography.scaleY.toValue - choreography.scaleY.fromValue) * scaleYFraction
+
+        view.morphRotation = choreography.rotation.fromValue + (choreography.rotation.toValue - choreography.rotation.fromValue) * rotateFraction
+
+        view.morphRotationX = choreography.rotationX.fromValue + (choreography.rotationX.toValue - choreography.rotationX.fromValue) * rotateXFraction
+        view.morphRotationY = choreography.rotationY.fromValue + (choreography.rotationY.toValue - choreography.rotationY.fromValue) * rotateYFraction
+
+        view.morphTranslationZ = choreography.translateZ.fromValue + (choreography.translateZ.toValue - choreography.translateZ.fromValue) * translateZFraction
+
+        if (choreography.positionX.canInterpolate || choreography.positionY.canInterpolate) {
+            val positionXFraction = choreography.positionX.interpolator?.getInterpolation(fraction) ?: fraction
+            val positionYFraction = choreography.positionY.interpolator?.getInterpolation(fraction) ?: fraction
+
+            if (choreography.useArcTranslator) {
+
+                val arcTranslationX = arcTranslator.getCurvedTranslationX(positionXFraction, choreography.positionX.fromValue, choreography.positionX.toValue, choreography.positionX.toValue)
+                val arcTranslationY = arcTranslator.getCurvedTranslationY(positionYFraction, choreography.positionY.fromValue, choreography.positionY.toValue, choreography.positionY.fromValue)
+
+                view.morphTranslationX = arcTranslationX.toFloat()
+                view.morphTranslationY = arcTranslationY.toFloat()
+            } else {
+                view.morphTranslationX = choreography.positionX.fromValue + (choreography.positionX.toValue - choreography.positionX.fromValue) * positionXFraction
+                view.morphTranslationY = choreography.positionY.fromValue + (choreography.positionY.toValue - choreography.positionY.fromValue) * positionYFraction
+            }
+
+        } else if (choreography.translateX.canInterpolate || choreography.translateY.canInterpolate) {
+            val translateXFraction = choreography.translateX.interpolator?.getInterpolation(fraction) ?: fraction
+            val translateYFraction = choreography.translateY.interpolator?.getInterpolation(fraction) ?: fraction
+
+            if (choreography.useArcTranslator) {
+                val arcTranslationX = arcTranslator.getCurvedTranslationX(translateXFraction, choreography.translateX.fromValue, choreography.translateX.toValue, choreography.translateX.toValue)
+                val arcTranslationY = arcTranslator.getCurvedTranslationY(translateYFraction, choreography.translateY.fromValue, choreography.translateY.toValue, choreography.translateY.fromValue)
+
+                view.morphTranslationX = arcTranslationX.toFloat()
+                view.morphTranslationY = arcTranslationY.toFloat()
+            } else {
+                view.morphTranslationX = choreography.translateX.fromValue + (choreography.translateX.toValue - choreography.translateX.fromValue) * translateXFraction
+                view.morphTranslationY = choreography.translateY.fromValue + (choreography.translateY.toValue - choreography.translateY.fromValue) * translateYFraction
+            }
+        } else {
+            if(choreography.translateXValues.canInterpolate) {
+                animateThroughPoints(choreography.translateXValues, view, currentPlayTime, duration, translationXListener)
+            }
+
+            if(choreography.translateYValues.canInterpolate) {
+                animateThroughPoints(choreography.translateYValues, view, currentPlayTime, duration, translationYListener)
+            }
+        }
+
+        if (view.mutateCorners && view.hasGradientDrawable() && choreography.cornerRadii.canInterpolate) {
+            val cornersFraction = choreography.cornerRadii.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.updateCorners(0, choreography.cornerRadii.fromValue[0] + (choreography.cornerRadii.toValue[0] - choreography.cornerRadii.fromValue[0]) * cornersFraction)
+            view.updateCorners(1, choreography.cornerRadii.fromValue[1] + (choreography.cornerRadii.toValue[1] - choreography.cornerRadii.fromValue[1]) * cornersFraction)
+            view.updateCorners(2, choreography.cornerRadii.fromValue[2] + (choreography.cornerRadii.toValue[2] - choreography.cornerRadii.fromValue[2]) * cornersFraction)
+            view.updateCorners(3, choreography.cornerRadii.fromValue[3] + (choreography.cornerRadii.toValue[3] - choreography.cornerRadii.fromValue[3]) * cornersFraction)
+            view.updateCorners(4, choreography.cornerRadii.fromValue[4] + (choreography.cornerRadii.toValue[4] - choreography.cornerRadii.fromValue[4]) * cornersFraction)
+            view.updateCorners(5, choreography.cornerRadii.fromValue[5] + (choreography.cornerRadii.toValue[5] - choreography.cornerRadii.fromValue[5]) * cornersFraction)
+            view.updateCorners(6, choreography.cornerRadii.fromValue[6] + (choreography.cornerRadii.toValue[6] - choreography.cornerRadii.fromValue[6]) * cornersFraction)
+            view.updateCorners(7, choreography.cornerRadii.fromValue[7] + (choreography.cornerRadii.toValue[7] - choreography.cornerRadii.fromValue[7]) * cornersFraction)
+        }
+
+        if (choreography.color.canInterpolate) {
+            val colorFraction = choreography.color.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphStateList = ColorUtility.interpolateColor(colorFraction, choreography.color.fromValue, choreography.color.toValue).toStateList()
+        }
+
+        if (choreography.margings.canInterpolate) {
+            val marginFraction = choreography.margings.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphMargings.top = choreography.margings.fromValue.top + (choreography.margings.toValue.top - choreography.margings.fromValue.top) * marginFraction
+            view.morphMargings.start = choreography.margings.fromValue.start + (choreography.margings.toValue.start - choreography.margings.fromValue.start) * marginFraction
+            view.morphMargings.end = choreography.margings.fromValue.end + (choreography.margings.toValue.end - choreography.margings.fromValue.end) * marginFraction
+            view.morphMargings.bottom = choreography.margings.fromValue.bottom + (choreography.margings.toValue.bottom - choreography.margings.fromValue.bottom) * marginFraction
+
+            boundsChanged = true
+        }
+
+        if (choreography.paddings.canInterpolate) {
+            val paddingFraction = choreography.paddings.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphPaddings.top = choreography.paddings.fromValue.top + (choreography.paddings.toValue.top - choreography.paddings.fromValue.top) * paddingFraction
+            view.morphPaddings.start = choreography.paddings.fromValue.start + (choreography.paddings.toValue.start - choreography.paddings.fromValue.start) * paddingFraction
+            view.morphPaddings.end = choreography.paddings.fromValue.end + (choreography.paddings.toValue.end - choreography.paddings.fromValue.end) * paddingFraction
+            view.morphPaddings.bottom = choreography.paddings.fromValue.bottom + (choreography.paddings.toValue.bottom - choreography.paddings.fromValue.bottom) * paddingFraction
+        }
+
+        if (choreography.width.canInterpolate || choreography.height.canInterpolate) {
+            val widthFraction = choreography.width.interpolator?.getInterpolation(fraction) ?: fraction
+            val heightFraction = choreography.height.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphWidth = choreography.width.fromValue + (choreography.width.toValue - choreography.width.fromValue) * widthFraction
+            view.morphHeight = choreography.height.fromValue + (choreography.height.toValue - choreography.height.fromValue) * heightFraction
+
+            boundsChanged = true
+        }
+
+        if (fraction >= 1f) {
+            choreography.done = true
+            choreography.doneAction?.invoke(choreography)
+        }
+
+        if (boundsChanged) {
+            view.updateLayout()
+        }
+
+        boundsChanged = false
+    }
+
     private fun animateThroughPoints(valueHolder: FloatValueHolder, view: MorphLayout, playTime: Long, duration: Long, listener: ViewPropertyValueListener) {
         val values = valueHolder.values
         val pointDuration = duration / values.size
@@ -473,164 +612,6 @@ class Choreographer: PropertyChangeObservable() {
         }
     }
 
-    inner class ChoreographyAnimation(var choreography: Choreography, var view: MorphLayout): Animation() {
-
-        override fun applyTransformation(interpolatedTime: Float, transformation: Transformation?) {
-            val currentPlayTime: Long = (duration * interpolatedTime).toLong()
-            animate(choreography, interpolatedTime, duration, currentPlayTime)
-        }
-
-        fun animate(choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
-            val views = choreography.views
-
-            if (views.size == 1) {
-                animate(views[0], choreography, fraction, duration, currentPlayTime)
-                return
-            }
-
-            for (view in views) {
-                animate(view, choreography, fraction, duration, currentPlayTime)
-            }
-        }
-
-        private fun animate(view: MorphLayout, choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
-
-            val alphaFraction = choreography.alpha.interpolator?.getInterpolation(fraction) ?: fraction
-
-            val scaleXFraction = choreography.scaleX.interpolator?.getInterpolation(fraction) ?: fraction
-            val scaleYFraction = choreography.scaleY.interpolator?.getInterpolation(fraction) ?: fraction
-
-            val rotateFraction = choreography.rotation.interpolator?.getInterpolation(fraction) ?: fraction
-            val rotateXFraction = choreography.rotationX.interpolator?.getInterpolation(fraction) ?: fraction
-            val rotateYFraction = choreography.rotationY.interpolator?.getInterpolation(fraction) ?: fraction
-
-            val translateZFraction = choreography.translateZ.interpolator?.getInterpolation(fraction) ?: fraction
-
-            view.morphPivotX = choreography.pivotPoint.x
-            view.morphPivotY = choreography.pivotPoint.y
-
-            view.morphAlpha = choreography.alpha.fromValue + (choreography.alpha.toValue - choreography.alpha.fromValue) * alphaFraction
-
-            view.morphScaleX = choreography.scaleX.fromValue + (choreography.scaleX.toValue - choreography.scaleX.fromValue) * scaleXFraction
-            view.morphScaleY = choreography.scaleY.fromValue + (choreography.scaleY.toValue - choreography.scaleY.fromValue) * scaleYFraction
-
-            view.morphRotation = choreography.rotation.fromValue + (choreography.rotation.toValue - choreography.rotation.fromValue) * rotateFraction
-
-            view.morphRotationX = choreography.rotationX.fromValue + (choreography.rotationX.toValue - choreography.rotationX.fromValue) * rotateXFraction
-            view.morphRotationY = choreography.rotationY.fromValue + (choreography.rotationY.toValue - choreography.rotationY.fromValue) * rotateYFraction
-
-            view.morphTranslationZ = choreography.translateZ.fromValue + (choreography.translateZ.toValue - choreography.translateZ.fromValue) * translateZFraction
-
-            if (choreography.positionX.canInterpolate || choreography.positionY.canInterpolate) {
-                val positionXFraction = choreography.positionX.interpolator?.getInterpolation(fraction) ?: fraction
-                val positionYFraction = choreography.positionY.interpolator?.getInterpolation(fraction) ?: fraction
-
-                if (choreography.useArcTranslator) {
-
-                    val arcTranslationX = arcTranslator.getCurvedTranslationX(positionXFraction, choreography.positionX.fromValue, choreography.positionX.toValue, choreography.positionX.toValue)
-                    val arcTranslationY = arcTranslator.getCurvedTranslationY(positionYFraction, choreography.positionY.fromValue, choreography.positionY.toValue, choreography.positionY.fromValue)
-
-                    view.morphTranslationX = arcTranslationX.toFloat()
-                    view.morphTranslationY = arcTranslationY.toFloat()
-                } else {
-                    view.morphTranslationX = choreography.positionX.fromValue + (choreography.positionX.toValue - choreography.positionX.fromValue) * positionXFraction
-                    view.morphTranslationY = choreography.positionY.fromValue + (choreography.positionY.toValue - choreography.positionY.fromValue) * positionYFraction
-                }
-
-            } else if (choreography.translateX.canInterpolate || choreography.translateY.canInterpolate) {
-                val translateXFraction = choreography.translateX.interpolator?.getInterpolation(fraction) ?: fraction
-                val translateYFraction = choreography.translateY.interpolator?.getInterpolation(fraction) ?: fraction
-
-                if (choreography.useArcTranslator) {
-                    val arcTranslationX = arcTranslator.getCurvedTranslationX(translateXFraction, choreography.translateX.fromValue, choreography.translateX.toValue, choreography.translateX.toValue)
-                    val arcTranslationY = arcTranslator.getCurvedTranslationY(translateYFraction, choreography.translateY.fromValue, choreography.translateY.toValue, choreography.translateY.fromValue)
-
-                    view.morphTranslationX = arcTranslationX.toFloat()
-                    view.morphTranslationY = arcTranslationY.toFloat()
-                } else {
-                    view.morphTranslationX = choreography.translateX.fromValue + (choreography.translateX.toValue - choreography.translateX.fromValue) * translateXFraction
-                    view.morphTranslationY = choreography.translateY.fromValue + (choreography.translateY.toValue - choreography.translateY.fromValue) * translateYFraction
-                }
-            } else {
-                if(choreography.translateXValues.canInterpolate) {
-                    animateThroughPoints(choreography.translateXValues, view, currentPlayTime, duration, translationXListener)
-                }
-
-                if(choreography.translateYValues.canInterpolate) {
-                    animateThroughPoints(choreography.translateYValues, view, currentPlayTime, duration, translationYListener)
-                }
-            }
-
-            if (view.mutateCorners && view.hasGradientDrawable() && choreography.cornerRadii.canInterpolate) {
-                val cornersFraction = choreography.cornerRadii.interpolator?.getInterpolation(fraction) ?: fraction
-
-                view.updateCorners(0, choreography.cornerRadii.fromValue[0] + (choreography.cornerRadii.toValue[0] - choreography.cornerRadii.fromValue[0]) * cornersFraction)
-                view.updateCorners(1, choreography.cornerRadii.fromValue[1] + (choreography.cornerRadii.toValue[1] - choreography.cornerRadii.fromValue[1]) * cornersFraction)
-                view.updateCorners(2, choreography.cornerRadii.fromValue[2] + (choreography.cornerRadii.toValue[2] - choreography.cornerRadii.fromValue[2]) * cornersFraction)
-                view.updateCorners(3, choreography.cornerRadii.fromValue[3] + (choreography.cornerRadii.toValue[3] - choreography.cornerRadii.fromValue[3]) * cornersFraction)
-                view.updateCorners(4, choreography.cornerRadii.fromValue[4] + (choreography.cornerRadii.toValue[4] - choreography.cornerRadii.fromValue[4]) * cornersFraction)
-                view.updateCorners(5, choreography.cornerRadii.fromValue[5] + (choreography.cornerRadii.toValue[5] - choreography.cornerRadii.fromValue[5]) * cornersFraction)
-                view.updateCorners(6, choreography.cornerRadii.fromValue[6] + (choreography.cornerRadii.toValue[6] - choreography.cornerRadii.fromValue[6]) * cornersFraction)
-                view.updateCorners(7, choreography.cornerRadii.fromValue[7] + (choreography.cornerRadii.toValue[7] - choreography.cornerRadii.fromValue[7]) * cornersFraction)
-            }
-
-            if (choreography.color.canInterpolate) {
-                val colorFraction = choreography.color.interpolator?.getInterpolation(fraction) ?: fraction
-
-                view.morphStateList = ColorUtility.interpolateColor(colorFraction, choreography.color.fromValue, choreography.color.toValue).toStateList()
-            }
-
-            if (choreography.margings.canInterpolate) {
-                val marginFraction = choreography.margings.interpolator?.getInterpolation(fraction) ?: fraction
-
-                view.morphMargings.top = choreography.margings.fromValue.top + (choreography.margings.toValue.top - choreography.margings.fromValue.top) * marginFraction
-                view.morphMargings.start = choreography.margings.fromValue.start + (choreography.margings.toValue.start - choreography.margings.fromValue.start) * marginFraction
-                view.morphMargings.end = choreography.margings.fromValue.end + (choreography.margings.toValue.end - choreography.margings.fromValue.end) * marginFraction
-                view.morphMargings.bottom = choreography.margings.fromValue.bottom + (choreography.margings.toValue.bottom - choreography.margings.fromValue.bottom) * marginFraction
-
-                boundsChanged = true
-            }
-
-            if (choreography.paddings.canInterpolate) {
-                val paddingFraction = choreography.paddings.interpolator?.getInterpolation(fraction) ?: fraction
-
-                view.morphPaddings.top = choreography.paddings.fromValue.top + (choreography.paddings.toValue.top - choreography.paddings.fromValue.top) * paddingFraction
-                view.morphPaddings.start = choreography.paddings.fromValue.start + (choreography.paddings.toValue.start - choreography.paddings.fromValue.start) * paddingFraction
-                view.morphPaddings.end = choreography.paddings.fromValue.end + (choreography.paddings.toValue.end - choreography.paddings.fromValue.end) * paddingFraction
-                view.morphPaddings.bottom = choreography.paddings.fromValue.bottom + (choreography.paddings.toValue.bottom - choreography.paddings.fromValue.bottom) * paddingFraction
-            }
-
-            if (choreography.width.canInterpolate || choreography.height.canInterpolate) {
-                val widthFraction = choreography.width.interpolator?.getInterpolation(fraction) ?: fraction
-                val heightFraction = choreography.height.interpolator?.getInterpolation(fraction) ?: fraction
-
-                view.morphWidth = choreography.width.fromValue + (choreography.width.toValue - choreography.width.fromValue) * widthFraction
-                view.morphHeight = choreography.height.fromValue + (choreography.height.toValue - choreography.height.fromValue) * heightFraction
-
-                boundsChanged = true
-            }
-
-            if (fraction >= 1f) {
-                choreography.done = true
-                choreography.doneAction?.invoke(choreography)
-            }
-
-            if (boundsChanged) {
-                view.updateLayout()
-            }
-
-            boundsChanged = false
-        }
-
-        override fun willChangeTransformationMatrix(): Boolean {
-            return true
-        }
-
-        override fun willChangeBounds(): Boolean {
-            return true
-        }
-    }
-
     data class ChoreographyListener(
         var fractionListener: ((remainingTime: Long, fraction: Float) -> Unit)? = null,
         var endListener: Action = null,
@@ -638,19 +619,23 @@ class Choreographer: PropertyChangeObservable() {
         var reverseListener: Action = null
     )
 
-    inner class ChoreographyControl(
-        internal var animator: ValueAnimator,
-        internal var choreography: Choreography
+    class ChoreographyControl(
+        internal var choreography: Choreography,
+        internal var startOffset: Float,
+        internal var endOffset: Float
     ) {
 
+        internal var repeatMode: Int = RESTART
+        internal var repeatCount: Int = 0
         internal var mDuration: Long = 0L
         internal var mStartDelay: Long = 0L
-        internal var mRemainingDuration: Long = 0L
-        internal var mElapsedDuration: Long = 0L
 
-        internal var endListener: ((Animator) -> Unit)? = null
+        internal lateinit  var endListener: (Animator) -> Unit
+        internal lateinit var startListener: (Animator) -> Unit
 
         internal lateinit var updateListener: ValueAnimator.AnimatorUpdateListener
+
+        internal var animator = ValueAnimator.ofFloat(startOffset, endOffset)
 
         fun pause() {
             animator.pause()
@@ -664,17 +649,27 @@ class Choreographer: PropertyChangeObservable() {
             animator.cancel()
         }
 
-        fun reverse(duration: Long?, interpolator: TimeInterpolator?) {
-            val animator = ValueAnimator.ofFloat(MAX_OFFSET, MIN_OFFSET)
+        internal fun build() {
+            animator.addListener(
+                onStart = startListener,
+                onEnd = endListener
+            )
+            animator.setFloatValues(startOffset, endOffset)
+            animator.addUpdateListener(updateListener)
+            animator.duration = mDuration
+            animator.startDelay = mStartDelay
+            animator.repeatCount = repeatCount
+            animator.repeatMode = repeatMode
+        }
 
-            endListener?.let { animator.addListener(it) }
+        fun reverse(duration: Long?) {
+            animator  = ValueAnimator.ofFloat(MAX_OFFSET, MIN_OFFSET)
 
-            animator.interpolator = interpolator ?: animator.interpolator
+            animator.addListener( onEnd = endListener)
+
             animator.duration = duration ?: this.mDuration
             animator.addUpdateListener(this.updateListener)
             animator.start()
-
-            this.animator = animator
         }
 
         internal fun start(): ChoreographyControl {
@@ -687,15 +682,21 @@ class Choreographer: PropertyChangeObservable() {
         }
 
         fun getRemainingDuration(): Long  {
-            return mRemainingDuration
+            return mDuration - animator.currentPlayTime
         }
 
         fun getElapsedDuration(): Long  {
-            return mElapsedDuration
+            return animator.currentPlayTime
         }
 
         fun getStartDelay(): Long  {
             return mStartDelay
+        }
+
+        companion object {
+            const val RESTART = 1
+            const val REVERSE = 2
+            const val INFINITE = -1
         }
     }
 
@@ -761,11 +762,13 @@ class Choreographer: PropertyChangeObservable() {
         internal val pivotPoint: Coordinates = Coordinates()
 
         internal var doneAction: ChoreographerAction = null
+        internal var startAction: ChoreographerAction = null
 
         internal var interpolator: TimeInterpolator? = null
 
         internal var viewParentSize: Dimension = Dimension()
 
+        lateinit var control: ChoreographyControl
         internal var parent: Choreography? = null
         internal var child: Choreography? = null
 
@@ -1824,6 +1827,11 @@ class Choreographer: PropertyChangeObservable() {
             return this
         }
 
+        fun withStartDelay(delay: Long): Choreography {
+            this.delay = delay
+            return this
+        }
+
         fun withStagger(offset: Float): Choreography {
             return this
         }
@@ -1832,13 +1840,13 @@ class Choreographer: PropertyChangeObservable() {
             return this
         }
 
-        fun withStartDelay(delay: Long): Choreography {
-            this.delay = delay
+        fun whenDone(action: ChoreographerAction): Choreography {
+            this.doneAction = action
             return this
         }
 
-        fun whenDone(action: ChoreographerAction): Choreography {
-            this.doneAction = action
+        fun onStart(action: ChoreographerAction): Choreography {
+            this.startAction = action
             return this
         }
 
@@ -1911,8 +1919,8 @@ class Choreographer: PropertyChangeObservable() {
             return choreographer.build()
         }
 
-        fun start(): List<ChoreographyControl> {
-            return if (choreographer.built) {
+        fun start() {
+            if (choreographer.built) {
                 choreographer.start()
             } else {
                 choreographer.build().start()

@@ -144,6 +144,10 @@ class TextLayout : TextView, MorphLayout {
         }
     override var mutateCorners: Boolean = true
 
+    override var animatedContainer: Boolean = false
+
+    override var placeholder: Boolean = false
+
     override val morphTag: Any?
         get() = this.tag
 
@@ -257,6 +261,7 @@ class TextLayout : TextView, MorphLayout {
                 RECTANGULAR
             )
             animate = typedArray.getBoolean(R.styleable.TextLayout_tl_animate, true)
+            placeholder = typedArray.getBoolean(R.styleable.TextLayout_tl_placeholder, false)
 
             val radius = typedArray.getDimension(R.styleable.TextLayout_tl_radius, 0f)
             val topLeft = typedArray.getDimension(R.styleable.TextLayout_tl_topLeftCornerRadius, radius)

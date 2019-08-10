@@ -2,6 +2,8 @@ package com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Canvas
+import android.graphics.Path
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -146,6 +148,10 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         }
     override var mutateCorners: Boolean = true
 
+    override var animatedContainer: Boolean = false
+
+    override var placeholder: Boolean = false
+
     override val morphTag: Any?
         get() = this.tag
 
@@ -231,6 +237,8 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
 
     override var animate: Boolean = true
 
+    private var clipCorners: Boolean = false
+
     private var bounds: ViewBounds = ViewBounds(this.getView())
 
     protected var shape: Int = RECTANGULAR
@@ -260,6 +268,9 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
                 RECTANGULAR
             )
             animate = typedArray.getBoolean(R.styleable.ConstraintLayout_cl_animate, true)
+            clipCorners = typedArray.getBoolean(R.styleable.ConstraintLayout_cl_clipCorners, false)
+            animatedContainer = typedArray.getBoolean(R.styleable.ConstraintLayout_cl_animatedContainer, false)
+            placeholder = typedArray.getBoolean(R.styleable.ConstraintLayout_cl_placeholder, false)
 
             val radius = typedArray.getDimension(R.styleable.ConstraintLayout_cl_radius, 0f)
             val topLeft = typedArray.getDimension(R.styleable.ConstraintLayout_cl_topLeftCornerRadius, radius)
@@ -379,15 +390,14 @@ open class ConstraintLayout : ConstraintLayout, MorphLayout, Clipable {
         return children
     }
 
-/*
     private var clipPath: Path = Path()
 
     override fun dispatchDraw(canvas: Canvas) {
-        this.clipChildren(clipPath, canvas, cornerRadii.corners, morphWidth, morphHeight)
-
+        if (clipCorners) {
+            this.clipChildren(clipPath, canvas, cornerRadii.corners, morphWidth, morphHeight)
+        }
         super.dispatchDraw(canvas)
     }
-*/
 
     override fun setLayer(layer: Int) {
         setLayerType(layer, null)

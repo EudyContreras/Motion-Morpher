@@ -2,12 +2,16 @@ package com.eudycontreras.motionmorpher.examples.demo2
 
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.DecelerateInterpolator
+import androidx.core.view.children
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
+import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
@@ -16,12 +20,14 @@ import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLay
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bind
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Binder
 import kotlinx.android.synthetic.main.activity_demo2.*
+import kotlinx.android.synthetic.main.activity_demo2.view.*
 import kotlinx.android.synthetic.main.activity_demo2_card.view.*
 
 class ActivityDemo2 : MorphActivity() {
 
-    lateinit var morpher: Morpher
     val choreographer: Choreographer = Choreographer()
+
+    lateinit var morpher: Morpher
 
     lateinit var actions: MorphLayout
     lateinit var image: MorphLayout
@@ -36,8 +42,53 @@ class ActivityDemo2 : MorphActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_demo2)
 
-        card.setOnClickListener {
-            testChoreographer()
+        morpher = Morpher(this)
+
+        morpher.useArcTranslator = false
+        morpher.animateChildren = true
+        morpher.animateChildren = true
+
+        morpher.morphIntoInterpolator = FastOutSlowInInterpolator()
+        morpher.morphFromInterpolator = FastOutSlowInInterpolator()
+
+        morpher.endStateChildMorphIntoDescriptor = Morpher.ChildAnimationDescriptor(
+            type = Morpher.AnimationType.REVEAL,
+            animateOnOffset = 0f,
+            durationMultiplier = 0f,
+            defaultTranslateMultiplierX = 0.04f,
+            defaultTranslateMultiplierY = 0.04f,
+            interpolator = DecelerateInterpolator(),
+            stagger = Morpher.AnimationStagger(0.14f),
+            startStateProps = Morpher.AnimationProperties(alpha = 0f)
+        )
+
+        morpher.endStateChildMorphFromDescriptor = Morpher.ChildAnimationDescriptor(
+            type = Morpher.AnimationType.CONCEAL,
+            animateOnOffset = 0f,
+            durationMultiplier = -0.8f,
+            defaultTranslateMultiplierX = 0.1f,
+            defaultTranslateMultiplierY = 0.1f,
+            interpolator = AccelerateInterpolator(),
+            stagger = Morpher.AnimationStagger(0.15f),
+            reversed = true
+        )
+
+        morpher.morphIntoDuration = 2450
+        morpher.morphFromDuration = 2450
+
+        val dialog = MorphDialog.instance(this, morpher, R.layout.activity_demo2_details, R.style.AppTheme_Dialog)
+
+        dialog.addShowListener {
+            DetailsDemo2(this, dialog)
+        }
+
+        grid.children.forEach { child ->
+            child.setOnClickListener {
+                morpher.startView = child as MorphLayout
+                dialog.show {
+                    morpher.morphInto()
+                }
+            }
         }
     }
 
@@ -46,7 +97,7 @@ class ActivityDemo2 : MorphActivity() {
     }
 
     fun testChoreographer() {
-        val card = card as ConstraintLayout
+        val card = grid.cardLayout as ConstraintLayout
 
         if (!::actions.isInitialized) {
             actions = MorphView.makeMorphable(card.demo_2_actions)
@@ -92,7 +143,8 @@ class ActivityDemo2 : MorphActivity() {
             .withDuration(500)
 
             .thenAnimate()
-            .boundsTo(root.viewBounds)
+            .resizeTo(root.viewBounds)
+            /*.positionAt(root.viewBounds)*/
             .cornerRadiusTo(root.morphCornerRadii)
             .withDuration(1000)
 
@@ -166,12 +218,10 @@ class ActivityDemo2 : MorphActivity() {
             .alphaTo(1f)
             .withDuration(1000)
 
-
             .build()
             .start()
 
-
+        //TODO("Attempt to implement counter transform scaling")
         //TODO("Reuse already assigned animators. IDEA!! Use an animator pool where they can be recycled")
-        //TODO("Maybe interpolate between pivot points")
     }
 }

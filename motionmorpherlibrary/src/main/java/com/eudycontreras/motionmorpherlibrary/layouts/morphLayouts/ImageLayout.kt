@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.R
+import com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
 import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
@@ -25,6 +26,8 @@ import com.eudycontreras.motionmorpherlibrary.properties.Margings
 import com.eudycontreras.motionmorpherlibrary.properties.Paddings
 import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
+import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bind
+import com.eudycontreras.motionmorpherlibrary.utilities.binding.Binder
 
 
 /**
@@ -34,7 +37,7 @@ import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
  */
 
 
-class ViewLayout : View, MorphLayout {
+class ImageLayout : RoundedImageView, MorphLayout {
 
     override var morphX: Float
         get() = this.x
@@ -145,6 +148,8 @@ class ViewLayout : View, MorphLayout {
         }
     override var mutateCorners: Boolean = true
 
+    override var animatedContainer: Boolean = false
+
     override var placeholder: Boolean = false
 
     override val morphTag: Any?
@@ -231,8 +236,6 @@ class ViewLayout : View, MorphLayout {
 
     override var animate: Boolean = true
 
-    override var animatedContainer: Boolean = false
-
     private var bounds: ViewBounds = ViewBounds(this.getView())
 
     private var shape: Int = RECTANGULAR
@@ -247,7 +250,12 @@ class ViewLayout : View, MorphLayout {
 
     private lateinit var mutableDrawable: GradientDrawable
 
-    constructor(context: Context) : super(context)
+    constructor(context: Context) : super(context) {
+        Binder.createBinding(Bind.UNIDIRECTIONAL, corners, cornerRadii)
+
+        applyDrawable(shape)
+        bounds = ViewBounds(this.getView())
+    }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         setUpAttributes(attrs)
@@ -257,23 +265,22 @@ class ViewLayout : View, MorphLayout {
         setUpAttributes(attrs)
     }
 
+
     private fun setUpAttributes(attrs: AttributeSet) {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ViewLayout)
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ImageLayout)
         try {
             shape = typedArray.getInt(
-                R.styleable.ViewLayout_vl_shapeType,
+                R.styleable.ImageLayout_il_shapeType,
                 RECTANGULAR
             )
-            animate = typedArray.getBoolean(R.styleable.ViewLayout_vl_animate, true)
-            placeholder = typedArray.getBoolean(R.styleable.ViewLayout_vl_placeholder, false)
+            animate = typedArray.getBoolean(R.styleable.ImageLayout_il_animate, true)
+            placeholder = typedArray.getBoolean(R.styleable.ImageLayout_il_placeholder, false)
 
-            val radius = typedArray.getDimension(R.styleable.ViewLayout_vl_radius, 0f)
-            val topLeft = typedArray.getDimension(R.styleable.ViewLayout_vl_topLeftCornerRadius, radius)
-            val topRight = typedArray.getDimension(R.styleable.ViewLayout_vl_topRightCornerRadius, radius)
-            val bottomRight = typedArray.getDimension(R.styleable.ViewLayout_vl_bottomRightCornerRadius, radius)
-            val bottomLeft = typedArray.getDimension(R.styleable.ViewLayout_vl_bottomLeftCornerRadius, radius)
-
-             dimensionSnap = MorphLayout.DimensionSnap.from(typedArray.getInt(R.styleable.ViewLayout_vl_snap_dimensions, -1))
+            val radius = typedArray.getDimension(R.styleable.ImageLayout_il_radius, 0f)
+            val topLeft = typedArray.getDimension(R.styleable.ImageLayout_il_topLeftCornerRadius, radius)
+            val topRight = typedArray.getDimension(R.styleable.ImageLayout_il_topRightCornerRadius, radius)
+            val bottomRight = typedArray.getDimension(R.styleable.ImageLayout_il_bottomRightCornerRadius, radius)
+            val bottomLeft = typedArray.getDimension(R.styleable.ImageLayout_il_bottomLeftCornerRadius, radius)
 
             applyDrawable(shape, topLeft, topRight, bottomRight, bottomLeft)
         } finally {

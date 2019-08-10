@@ -42,8 +42,6 @@ interface MorphLayout {
     val morphChildCount: Int
     val morphShape: Int
     val morphTag: Any?
-    var animate: Boolean
-    var mutateCorners: Boolean
     val windowLocationX: Int
     val windowLocationY: Int
     val viewBounds: ViewBounds
@@ -52,6 +50,11 @@ interface MorphLayout {
     var morphMargings: Margings
     var morphPaddings: Paddings
     val coordinates: IntArray
+
+    var animate: Boolean
+    var mutateCorners: Boolean
+    var animatedContainer: Boolean
+    var placeholder: Boolean
 
     fun getView(): View
     fun animator(): ViewPropertyAnimator
@@ -71,10 +74,6 @@ interface MorphLayout {
     fun applyTransitionDrawable(transitionDrawable: MorphTransitionDrawable)
     fun updateCorners(cornerRadii: CornerRadii): Boolean
     fun updateCorners(index: Int, corner: Float): Boolean
-/*    fun rotate(rotation: Float, pivot: FloatPoint? = null)
-    fun scaleX(scaleX: Float, pivot: FloatPoint? = null)
-    fun scaleY(scaleY: Float, pivot: FloatPoint? = null)
-    fun scale(scale: Float, pivot: FloatPoint? = null)*/
     fun getMorphShape(): MorphShape
     fun setLayer(layer: Int)
 

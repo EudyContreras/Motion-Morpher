@@ -145,6 +145,10 @@ open class FrameLayout : FrameLayout, MorphLayout {
 
     override var mutateCorners: Boolean = true
 
+    override var animatedContainer: Boolean = false
+
+    override var placeholder: Boolean = false
+
     override val morphTag: Any?
         get() = this.tag
 
@@ -258,6 +262,8 @@ open class FrameLayout : FrameLayout, MorphLayout {
                 RECTANGULAR
             )
             animate = typedArray.getBoolean(R.styleable.FrameLayout_fl_animate, true)
+            animatedContainer = typedArray.getBoolean(R.styleable.FrameLayout_fl_animatedContainer, false)
+            placeholder = typedArray.getBoolean(R.styleable.FrameLayout_fl_placeholder, false)
 
             val radius = typedArray.getDimension(R.styleable.FrameLayout_fl_radius, 0f)
             val topLeft = typedArray.getDimension(R.styleable.FrameLayout_fl_topLeftCornerRadius, radius)

@@ -150,6 +150,10 @@ open class LinearLayout : LinearLayout, MorphLayout {
 
     override var mutateCorners: Boolean = true
 
+    override var animatedContainer: Boolean = false
+
+    override var placeholder: Boolean = false
+
     override val morphTag: Any?
         get() = this.tag
 
@@ -257,6 +261,8 @@ open class LinearLayout : LinearLayout, MorphLayout {
                 RECTANGULAR
             )
             animate = typedArray.getBoolean(R.styleable.LinearLayout_ll_animate, true)
+            animatedContainer = typedArray.getBoolean(R.styleable.LinearLayout_ll_animatedContainer, false)
+            placeholder = typedArray.getBoolean(R.styleable.LinearLayout_ll_placeholder, false)
 
             val radius = typedArray.getDimension(R.styleable.LinearLayout_ll_radius, 0f)
             val topLeft = typedArray.getDimension(R.styleable.LinearLayout_ll_topLeftCornerRadius, radius)

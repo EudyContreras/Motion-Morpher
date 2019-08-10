@@ -10,7 +10,8 @@ import androidx.annotation.StyleRes
 import androidx.fragment.app.DialogFragment
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.R
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
 
 
 /**
@@ -22,14 +23,14 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
  
 sealed class MorphDialog : DialogFragment() {
 
-    lateinit var morphView: MorphWrapper
+    lateinit var morphView: ConstraintLayout
 
     protected lateinit var activity: MorphActivity
 
     protected lateinit var morpher: Morpher
     protected lateinit var layout: ViewGroup
 
-    protected var showListener: ArrayList<((MorphWrapper) -> Unit)?> = ArrayList()
+    protected var showListener: ArrayList<((MorphLayout) -> Unit)?> = ArrayList()
 
     @LayoutRes protected var layoutId: Int = -1
 
@@ -74,11 +75,11 @@ sealed class MorphDialog : DialogFragment() {
         }
     }
 
-    fun addShowListener(listener: ((MorphWrapper) -> Unit)? ) {
+    fun addShowListener(listener: ((MorphLayout) -> Unit)? ) {
         this.showListener.add(listener)
     }
 
-    fun show(listener: ((MorphWrapper) -> Unit)? = null ) {
+    fun show(listener: ((MorphLayout) -> Unit)? = null ) {
         val prev = activity.supportFragmentManager.findFragmentByTag(this::class.java.simpleName)
 
         val fragmentTransaction = activity.supportFragmentManager.beginTransaction()
@@ -102,7 +103,7 @@ sealed class MorphDialog : DialogFragment() {
             morpher: Morpher,
             @LayoutRes layoutId: Int,
             @StyleRes layoutTheme: Int,
-            showListener: ((MorphWrapper) -> Unit)? = null
+            showListener: ((MorphLayout) -> Unit)? = null
         ): MorphDialogImpl {
 
             val fragment = MorphDialogImpl()
@@ -120,8 +121,9 @@ sealed class MorphDialog : DialogFragment() {
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
             layout = inflater.inflate(R.layout.morph_dialog_container, container) as ViewGroup
-            inflater.inflate(layoutId, layout, true)
-            morphView = layout.getChildAt(0) as MorphWrapper
+            layoutInflater.inflate(layoutId, layout, true)
+
+            morphView = layout.getChildAt(0) as ConstraintLayout
 
             morphView.post {
                 morpher.endView = morphView

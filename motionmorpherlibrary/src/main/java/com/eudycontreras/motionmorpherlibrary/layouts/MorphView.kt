@@ -145,6 +145,8 @@ class MorphView: MorphLayout {
         }
     override var mutateCorners: Boolean = true
 
+    override var placeholder: Boolean = false
+
     override val morphTag: Any?
         get() = view.tag
 
@@ -230,6 +232,8 @@ class MorphView: MorphLayout {
     private var isActionButton: Boolean = false
 
     private var isTextView: Boolean = false
+
+    override var animatedContainer: Boolean = false
 
     override var animate: Boolean = true
 
@@ -356,7 +360,7 @@ class MorphView: MorphLayout {
         mutableDrawable.cornerRadii = cornerRadii.corners
 
         if (view is RoundedImageView) {
-            view.updateCorners(index, corner)
+            view.updateCornerRadii(index, corner)
         }
         return true
     }
@@ -376,7 +380,7 @@ class MorphView: MorphLayout {
     override fun hasChildren(): Boolean = this.morphChildCount > 0
 
     override fun getChildren(): Sequence<View> {
-        return if (view is ViewGroup) view.children.asSequence() else emptySequence()
+        return if (view is ViewGroup) view.children else emptySequence()
     }
 
     override fun setLayer(layer: Int) {

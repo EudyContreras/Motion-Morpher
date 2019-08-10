@@ -6,24 +6,21 @@
         android:layout_height="wrap_content"
         android:elevation="0dp"
         android:translationZ="6dp"
+        android:background="@color/white"
         android:backgroundTint="@color/white"
-        android:layout_gravity="center"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="2dp"
+        app:cl_clipCorners="true"
         app:cl_shapeType="RECTANGULAR"
-        app:cl_radius="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:cl_radius="6dp">
 
-    <com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
+    <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
             android:tag="demo2Image"
             android:id="@+id/demo_2_image"
             android:src="@drawable/demo_2_image"
-            android:scaleType="fitXY"
-            android:layout_width="150dp"
-            android:layout_height="100dp"
-            app:riv_topLeftCornerRadius="8dp"
-            app:riv_topRightCornerRadius="8dp"
+            android:scaleType="center"
+            android:layout_width="wrap_content"
+            android:layout_height="120dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
@@ -43,16 +40,22 @@
             android:background="@color/overlay_dark"
             app:layout_constraintBottom_toBottomOf="@id/demo_2_image"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-    />
+            app:layout_constraintEnd_toEndOf="parent"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
+            android:tag="demo2actions"
             android:id="@+id/demo_2_actions"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:padding="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="@dimen/margin_medium"
+            android:paddingEnd="@dimen/margin_medium"
+            android:background="@color/white"
+            android:backgroundTint="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/demo_2_image">

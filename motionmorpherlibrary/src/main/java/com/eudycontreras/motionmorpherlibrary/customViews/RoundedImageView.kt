@@ -9,7 +9,7 @@ import android.widget.ImageView
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 
 
-class RoundedImageView : ImageView {
+open class RoundedImageView : ImageView {
 
     private var path: Path = Path()
 
@@ -53,7 +53,7 @@ class RoundedImageView : ImageView {
         corners.apply(topLeft, topRight, bottomRight, bottomLeft)
     }
 
-    fun updateCorners(index: Int, corner: Float) {
+    fun updateCornerRadii(index: Int, corner: Float) {
         corners[index] = corner
         cornersChanged = true
     }
