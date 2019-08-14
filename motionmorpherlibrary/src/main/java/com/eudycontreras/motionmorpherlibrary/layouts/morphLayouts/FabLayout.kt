@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.drawable.*
 import android.util.AttributeSet
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewPropertyAnimator
+import android.startView.View
+import android.startView.ViewGroup
+import android.startView.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
@@ -287,7 +287,7 @@ class FabLayout: FloatingActionButton, MorphLayout {
         }
     }
 
-    override fun getView(): View  = this
+    override fun getStartView(): View  = this
 
     override fun isFloatingActionButton(): Boolean = true
 

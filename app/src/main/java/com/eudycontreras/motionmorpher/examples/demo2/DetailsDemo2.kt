@@ -14,7 +14,7 @@ import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
  
  
 class DetailsDemo2(
-    private val activityDemo1: ActivityDemo2,
+    private val activityDemo: ActivityDemo2,
     private val dialog: MorphDialog) {
 
     private lateinit var toolbar: Toolbar
@@ -27,7 +27,7 @@ class DetailsDemo2(
         toolbar = layout.findViewById(R.id.toolbar)
 
         toolbar.setNavigationOnClickListener {
-            activityDemo1.morpher.morphFrom(onEnd = { dialog.dismiss() })
+            dialog.requestDismiss()
         }
 
         toolbar.setOnMenuItemClickListener {

@@ -107,4 +107,24 @@ open class Bounds(
         bounds.height = bounds.height / value
         return bounds
     }
+
+    fun inside(coordinates: Coordinates): Boolean {
+        return (coordinates.x >= this.x && coordinates.x <= (this.x + this.width))  && (coordinates.y >= this.y && coordinates.y <= (this.y + this.height))
+    }
+
+    fun inside(other: Bounds): Boolean {
+        val minX = x >= other.x
+        val maxX = (x + width) <= (other.x + other.width)
+        val minY = y >= other.y
+        val maxY = (y + height) <= (other.y + other.height)
+        return minX && maxX && minY && maxY
+    }
+
+    fun overlaps(other: Bounds): Boolean {
+        val minX = (x + width) >= other.x
+        val maxX = x <= (other.x + other.width)
+        val minY = (y + height) >= other.y
+        val maxY = y <= (other.y + other.height)
+        return minX && maxX && minY && maxY
+    }
 }

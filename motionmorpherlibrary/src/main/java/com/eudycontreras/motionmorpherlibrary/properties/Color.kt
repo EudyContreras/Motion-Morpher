@@ -4,7 +4,7 @@ import com.eudycontreras.motionmorpherlibrary.AndroidColor
 
 
 /**
- * Created by eudycontreras.
+ * Created multiply eudycontreras.
  */
 
 abstract class Color(

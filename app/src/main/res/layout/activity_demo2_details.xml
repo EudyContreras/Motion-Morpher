@@ -4,7 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:elevation="1dp"
         android:translationZ="6dp"
         android:backgroundTint="@color/white"
@@ -19,10 +19,11 @@
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
             android:tag="demo2Image"
             android:id="@+id/demo_2_image"
-            android:src="@drawable/demo_2_image"
+            android:src="@drawable/background11"
+            android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
@@ -36,10 +37,11 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:textAlignment="center"
-            android:text="Metamorphosis"
+            android:text="The Dark Knight"
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:background="@color/overlay_dark"
+            android:visibility="visible"
             app:tl_placeholder="true"
             app:layout_constraintBottom_toBottomOf="@id/demo_2_image"
             app:layout_constraintStart_toStartOf="parent"
@@ -49,7 +51,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:paddingStart="@dimen/margin_large"
-            android:paddingEnd="0dp"
+            android:paddingEnd="@dimen/padding_normal"
             android:background="@color/white"
             android:backgroundTint="@color/white"
             android:clipToPadding="false"
@@ -69,39 +71,49 @@
             android:layout_marginTop="@dimen/margin_large"
             app:layout_constraintTop_toBottomOf="@id/demo_2_image"
             app:layout_constraintStart_toStartOf="parent"/>-->
+
+        <View
+                android:id="@+id/demo_2_app_icon"
+                android:background="@drawable/app_icon_alt"
+                android:layout_width="65dp"
+                android:layout_height="65dp"
+                android:layout_marginTop="@dimen/margin_XL"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
         <TextView
                 android:id="@+id/demo_2_details_header"
                 android:ellipsize="marquee"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text"
-                android:textStyle="bold"
-                android:textSize="36sp"
+                android:textColor="@color/text_dark"
+                android:textSize="34sp"
                 android:textAlignment="center"
-                android:fontFamily="sans-serif-light"
-                android:text="Metamorphosis"
+                android:fontFamily="sans-serif-medium"
+                android:text="The Dark Knight"
                 android:paddingTop="16dp"
-                android:paddingBottom="8dp"
+                android:layout_marginStart="@dimen/margin_large"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
+                app:layout_constraintStart_toEndOf="@+id/demo_2_app_icon"/>
 
-        <TextView
-                android:ellipsize="marquee"
-                android:layout_width="0dp"
+        <RatingBar
+                style="@style/customRatingBar"
+                android:id="@+id/deal_item_rating_bar"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text"
-                android:textSize="26sp"
-                android:textAlignment="center"
-                android:fontFamily="sans-serif"
-                android:text="$4.55"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="@dimen/margin_large"
-                app:layout_constraintTop_toTopOf="@id/demo_2_details_header"
-                app:layout_constraintBottom_toBottomOf="@id/demo_2_details_header"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintVertical_bias="0.71"/>
-
+                android:layout_gravity="center_vertical"
+                android:foregroundGravity="center_vertical"
+                android:isIndicator="false"
+                android:numStars="5"
+                android:progressBackgroundTint="@color/colorPrimaryVeryLight"
+                android:progressTint="@color/gold"
+                android:rating="4"
+                android:secondaryProgressTint="@color/colorPrimaryVeryLight"
+                android:theme="@style/customRatingBar"
+                android:layout_marginBottom="6dp"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="@dimen/margin_normal"
+                app:layout_constraintTop_toBottomOf="@+id/demo_2_details_header"
+                app:layout_constraintStart_toEndOf="@+id/demo_2_app_icon"/>
 
         <TextView
                 android:id="@+id/demo_2_text_details"
@@ -113,19 +125,20 @@
                 android:textSize="16sp"
                 android:textAlignment="textStart"
                 android:lineSpacingMultiplier="1.1"
-                android:text="Calm your mind with this collection of serene arctic landscapes from all around the world."
-                android:layout_marginTop="8dp"
+                android:text="When the menace known as The Joker emerges from his mysterious past, he wreaks havoc and chaos on the people of Gotham.."
+                android:layout_marginTop="@dimen/margin_large"
                 android:layout_marginBottom="8dp"
-                android:layout_marginEnd="@dimen/margin_large"
-                app:layout_constraintTop_toBottomOf="@id/demo_2_details_header"
-                app:layout_constraintStart_toStartOf="@id/demo_2_details_header"
+                android:layout_marginEnd="@dimen/margin_medium"
+                app:layout_constraintTop_toBottomOf="@id/demo_2_app_icon"
+                app:layout_constraintStart_toStartOf="@id/demo_2_app_icon"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintVertical_bias="0.61"/>
 
         <View
                 android:id="@+id/demo_2_details_divider"
                 android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginTop="24dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/margin_large"
                 android:layout_marginBottom="24dp"
                 android:layout_marginEnd="14dp"
                 android:background="@color/light_gray"
@@ -142,7 +155,7 @@
                 android:textAlignment="center"
                 android:fontFamily="sans-serif-light"
                 android:text="Select type"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="@dimen/margin_large"
                 android:layout_marginBottom="8dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/demo_2_details_divider"/>
@@ -153,84 +166,79 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="@dimen/margin_large"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/demo_2_details_tags_label">
 
             <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                     android:text="SD"
-                    android:textStyle="bold"
                     android:textColor="@color/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:paddingStart="@dimen/padding_large"
                     android:paddingEnd="@dimen/padding_large"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="6dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
                     android:backgroundTint="@color/light_gray"
                     app:tl_radius="16dp"/>
 
             <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                     android:text="HD"
-                    android:textStyle="bold"
                     android:textColor="@color/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:paddingStart="@dimen/padding_large"
                     android:paddingEnd="@dimen/padding_large"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="6dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
                     android:backgroundTint="@color/light_gray"
                     app:tl_radius="16dp"/>
 
             <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                     android:text="UHD"
-                    android:textStyle="bold"
                     android:textColor="@color/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:paddingStart="@dimen/padding_large"
                     android:paddingEnd="@dimen/padding_large"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="6dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
                     android:backgroundTint="@color/light_gray"
                     app:tl_radius="16dp"/>
 
             <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                     android:text="4K"
-                    android:textStyle="bold"
                     android:textColor="@color/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:paddingStart="@dimen/padding_large"
                     android:paddingEnd="@dimen/padding_large"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="6dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
                     android:backgroundTint="@color/light_gray"
                     app:tl_radius="16dp"/>
 
             <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                     android:text="8K"
-                    android:textStyle="bold"
                     android:textColor="@color/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:paddingStart="@dimen/padding_large"
                     android:paddingEnd="@dimen/padding_large"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="6dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
                     android:backgroundTint="@color/light_gray"
                     app:tl_radius="16dp"/>
         </LinearLayout>
 
         <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                 android:id="@+id/demo_2_details_add"
-                android:backgroundTint="@color/colorPrimaryDark"
+                android:backgroundTint="@color/colorPrimaryLight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
@@ -239,7 +247,7 @@
                 android:textColor="@color/white"
                 android:textAppearance="@style/TextAppearance.AppCompat.Button"
                 android:layout_marginEnd="12dp"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="@dimen/margin_XXL"
                 android:elevation="1dp"
                 android:translationZ="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -258,9 +266,9 @@
                 android:textSize="22sp"
                 android:textAlignment="center"
                 android:fontFamily="sans-serif"
-                android:text="Related Items"
+                android:text="Similar movies"
                 android:paddingBottom="8dp"
-                android:layout_marginTop="@dimen/margin_XXL"
+                android:layout_marginTop="@dimen/margin_XL"
                 app:layout_constraintTop_toBottomOf="@id/demo_2_details_add"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
@@ -280,6 +288,7 @@
             android:paddingStart="@dimen/margin_medium"
             android:paddingEnd="@dimen/margin_medium"
             android:backgroundTint="@color/white"
+            android:visibility="visible"
             app:cl_placeholder="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -293,6 +302,7 @@
                 android:layout_height="24dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/demo_2_book"
                 app:layout_constraintStart_toStartOf="parent"/>
 
         <View
@@ -316,6 +326,7 @@
                 android:layout_height="24dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/demo_2_book"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
     </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout>
@@ -326,7 +337,6 @@
             android:layout_height="?attr/actionBarSize"
             android:elevation="0dp"
             android:clipToPadding="true"
-            android:tag="toolbar"
             android:background="@color/overlay_light"
             app:titleTextColor="@color/white"
             app:navigationIcon="@drawable/ic_arrow_back"

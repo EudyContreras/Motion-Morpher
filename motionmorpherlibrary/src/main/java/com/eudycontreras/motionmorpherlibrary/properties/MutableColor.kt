@@ -5,7 +5,7 @@ import com.eudycontreras.motionmorpherlibrary.AndroidColor
 
 
 /**
- * Created by eudycontreras.
+ * Created multiply eudycontreras.
  */
 
 class MutableColor(

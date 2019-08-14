@@ -1,6 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 
 open class ValueHolder<T>(
@@ -8,6 +10,12 @@ open class ValueHolder<T>(
         var interpolator: TimeInterpolator? = null,
         values: Array<T>
     ) {
+
+    open var interpolateOffsetStart: Float = MIN_OFFSET
+    open var interpolateOffsetEnd: Float = MAX_OFFSET
+
+    open var durationOffsetStart: Float = MIN_OFFSET
+    open var durationOffsetEnd: Float = MAX_OFFSET
 
     open var values: Array<T> = values
         set(value) {
@@ -26,7 +34,7 @@ open class ValueHolder<T>(
 
     var shareInterpolate: Boolean = false
 
-    var type: String = type
+    var propertyName: String = type
         private set
 
     fun set(values: Array<T>) {
@@ -41,7 +49,7 @@ open class ValueHolder<T>(
         this.canInterpolate = other.canInterpolate
         this.multiplier = other.multiplier
         this.increase = other.increase
-        this.type = other.type
+        this.propertyName = other.propertyName
         this.values = other.values
         this.interpolator = other.interpolator
     }
@@ -53,7 +61,7 @@ open class ValueHolder<T>(
         if (!values.contentEquals(other.values)) return false
         if (increase != other.increase) return false
         if (multiplier != other.multiplier) return false
-        if (type != other.type) return false
+        if (propertyName != other.propertyName) return false
 
         return true
     }
@@ -62,7 +70,7 @@ open class ValueHolder<T>(
         var result = values.contentHashCode()
         result = 31 * result + increase.hashCode()
         result = 31 * result + multiplier.hashCode()
-        result = 31 * result + type.hashCode()
+        result = 31 * result + propertyName.hashCode()
         return result
     }
 

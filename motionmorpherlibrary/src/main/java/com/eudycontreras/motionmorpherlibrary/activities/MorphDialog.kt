@@ -8,10 +8,12 @@ import android.view.*
 import androidx.annotation.LayoutRes
 import androidx.annotation.StyleRes
 import androidx.fragment.app.DialogFragment
+import com.eudycontreras.motionmorpherlibrary.Action
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.R
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
+import java.util.*
 
 
 /**
@@ -30,7 +32,8 @@ sealed class MorphDialog : DialogFragment() {
     protected lateinit var morpher: Morpher
     protected lateinit var layout: ViewGroup
 
-    protected var showListener: ArrayList<((MorphLayout) -> Unit)?> = ArrayList()
+    protected var createListener: LinkedList<((MorphLayout) -> Unit)?> = LinkedList()
+    protected var dismissRequestListener: LinkedList<Action> = LinkedList()
 
     @LayoutRes protected var layoutId: Int = -1
 
@@ -60,10 +63,11 @@ sealed class MorphDialog : DialogFragment() {
                     return
                 }
                 if (morpher.isMorphed) {
-                    morpher.morphFrom(onEnd = { super.onBackPressed() })
+                    dismissRequestListener.forEach {
+                        it?.invoke()
+                    }
                     return
                 }
-
                 super.onBackPressed()
             }
         }.apply {
@@ -75,8 +79,26 @@ sealed class MorphDialog : DialogFragment() {
         }
     }
 
-    fun addShowListener(listener: ((MorphLayout) -> Unit)? ) {
-        this.showListener.add(listener)
+    fun addCreateListener(listener: ((MorphLayout) -> Unit)? ) {
+        this.createListener.add(listener)
+    }
+
+    fun addDismissRequestListener(listener: Action ) {
+        this.dismissRequestListener.add(listener)
+    }
+
+    fun requestDismiss() {
+        dialog?.onBackPressed()
+    }
+
+    override fun dismiss() {
+        if (morpher.isMorphing) {
+            return
+        }
+        if (morpher.isMorphed) {
+            return
+        }
+        super.dismiss()
     }
 
     fun show(listener: ((MorphLayout) -> Unit)? = null ) {
@@ -91,7 +113,7 @@ sealed class MorphDialog : DialogFragment() {
         fragmentTransaction.addToBackStack(null)
 
         listener?.let {
-            addShowListener(it)
+            addCreateListener(it)
         }
 
         this.show(fragmentTransaction, this::class.java.simpleName)
@@ -111,7 +133,7 @@ sealed class MorphDialog : DialogFragment() {
             fragment.morpher = morpher
             fragment.layoutId = layoutId
             fragment.layoutTheme = layoutTheme
-            fragment.addShowListener(showListener)
+            fragment.addCreateListener(showListener)
             return fragment
         }
 
@@ -127,8 +149,10 @@ sealed class MorphDialog : DialogFragment() {
 
             morphView.post {
                 morpher.endView = morphView
-                showListener.forEach { it?.invoke(morphView) }
+                morpher.endView.morphVisibility = View.INVISIBLE
+                createListener.forEach { it?.invoke(morphView) }
             }
+            layout.background.alpha = 0
 
             morpher.backgroundDimListener = {
                 layout.background.alpha = (it * 255).toInt()

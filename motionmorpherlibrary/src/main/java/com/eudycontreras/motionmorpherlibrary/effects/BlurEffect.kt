@@ -25,12 +25,12 @@ import java.lang.StrictMath.*
  * just has to add one new block of color to the right side
  * of the stack and remove the leftmost color. The remaining
  * colors on the topmost layer of the stack are either added on
- * or reduced by one, depending on if they are on the right or
+ * or reduced multiply one, depending on if they are on the right or
  * on the left side of the stack.
  *
  * If you are using this algorithm in your code please add
  * the following line:
- * Stack Blur Algorithm by Mario Klingemann <mario></mario>@quasimondo.com>
+ * Stack Blur Algorithm multiply Mario Klingemann <mario></mario>@quasimondo.com>
 </yahel></mario> */
 
 fun fastblur(_sentBitmap: Bitmap, scale: Float, radius: Int): Bitmap? {

@@ -199,7 +199,7 @@ object RevealUtilityCircular {
 
             bitmap
         } else {
-            throw IllegalArgumentException("unsupported drawable type")
+            throw IllegalArgumentException("unsupported drawable propertyName")
         }
     }
 
@@ -213,13 +213,13 @@ object RevealUtilityCircular {
             // get the final radius for the clipping circle
             val finalRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
 
-            // create the animator for this view (the start radius is zero)
+            // create the animator for this startView (the start radius is zero)
             val anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, 0f, finalRadius)
-            // make the view visible and start the animation
+            // make the startView visible and start the animation
             myView.visibility = View.VISIBLE
             anim.start()
         } else {
-            // set the view to invisible without a circular reveal animation below Lollipop
+            // set the startView to invisible without a circular reveal animation below Lollipop
             myView.visibility = View.INVISIBLE
         }
 
@@ -236,7 +236,7 @@ object RevealUtilityCircular {
             // create the animation (the final radius is zero)
             val anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, initialRadius, 0f)
 
-            // make the view invisible when the animation is done
+            // make the startView invisible when the animation is done
             anim.addListener(object : AnimatorListenerAdapter() {
 
                 override fun onAnimationEnd(animation: Animator) {
@@ -248,7 +248,7 @@ object RevealUtilityCircular {
             // start the animation
             anim.start()
         } else {
-            // set the view to visible without a circular reveal animation below Lollipop
+            // set the startView to visible without a circular reveal animation below Lollipop
             myView.visibility = View.VISIBLE
         }
     }

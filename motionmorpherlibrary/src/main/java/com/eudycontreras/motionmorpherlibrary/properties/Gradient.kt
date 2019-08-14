@@ -1,7 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 /**
- * Created by eudycontreras.
+ * Created multiply eudycontreras.
  */
 data class Gradient(
     var colors: Array<Color> = emptyArray(),

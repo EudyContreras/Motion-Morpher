@@ -11,7 +11,9 @@ import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
+import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.properties.AnimationStagger
 import kotlinx.android.synthetic.main.activity_demo1.*
 
 
@@ -50,7 +52,7 @@ class ActivityDemo1 : MorphActivity() {
 
         /**
          * Optionally assign the base interpolators to use when
-         * morphing into and from a view
+         * morphing into and from a startView
          */
         morpher.morphIntoInterpolator = FastOutSlowInInterpolator()
         morpher.morphFromInterpolator = FastOutSlowInInterpolator()
@@ -62,29 +64,29 @@ class ActivityDemo1 : MorphActivity() {
          * If no custom values are defined the default values will be used
          */
 
-        morpher.endStateChildMorphIntoDescriptor = Morpher.ChildAnimationDescriptor(
-            type = Morpher.AnimationType.REVEAL,
+        morpher.containerChildStateIn = Morpher.ChildAnimationDescriptor(
+            type = AnimationType.REVEAL,
             animateOnOffset = 0f,
             durationMultiplier = -0.2f,
             defaultTranslateMultiplierX = 0.12f,
             defaultTranslateMultiplierY = 0.12f,
             interpolator = DecelerateInterpolator(),
-            stagger = Morpher.AnimationStagger(0.14f)
+            stagger = AnimationStagger(0.14f)
         )
 
-        morpher.endStateChildMorphFromDescriptor = Morpher.ChildAnimationDescriptor(
-            type = Morpher.AnimationType.CONCEAL,
+        morpher.containerChildStateOut = Morpher.ChildAnimationDescriptor(
+            type = AnimationType.CONCEAL,
             animateOnOffset = 0f,
             durationMultiplier = -0.8f,
             defaultTranslateMultiplierX = 0.18f,
             defaultTranslateMultiplierY = 0.18f,
             interpolator = AccelerateInterpolator(),
-            stagger = Morpher.AnimationStagger(0.15f),
+            stagger =  AnimationStagger(0.15f),
             reversed = true
         )
  
-        morpher.startStateChildMorphIntoDescriptor = Morpher.ChildAnimationDescriptor(
-            type = Morpher.AnimationType.REVEAL,
+        morpher.placeholderChildStateIn = Morpher.ChildAnimationDescriptor(
+            type = AnimationType.REVEAL,
             animateOnOffset = 0f,
             durationMultiplier = 0.2f,
             defaultTranslateMultiplierX = 0f,
@@ -92,8 +94,8 @@ class ActivityDemo1 : MorphActivity() {
             interpolator = AccelerateInterpolator()
         )
 
-        morpher.startStateChildMorphFromDescriptor = Morpher.ChildAnimationDescriptor(
-            type = Morpher.AnimationType.CONCEAL,
+        morpher.placeholderChildStateOut = Morpher.ChildAnimationDescriptor(
+            type = AnimationType.CONCEAL,
             animateOnOffset = 0f,
             durationMultiplier = 0f,
             defaultTranslateMultiplierX = 0f,
@@ -111,18 +113,18 @@ class ActivityDemo1 : MorphActivity() {
              * If no descriptor is specified the default values will be used
              *
              */
-            morpher.endStateMorphIntoDescriptor.propertyScaleX.fromValue = (startState.width) / (endState.width)
-            morpher.endStateMorphIntoDescriptor.propertyScaleY.fromValue = (startState.width) / (endState.width)
+            morpher.containerStateIn.propertyScaleX.fromValue = (startState.width) / (endState.width)
+            morpher.containerStateIn.propertyScaleY.fromValue = (startState.width) / (endState.width)
 
-            morpher.endStateMorphIntoDescriptor.propertyScaleX.toValue = 1f
-            morpher.endStateMorphIntoDescriptor.propertyScaleY.toValue = 1f
+            morpher.containerStateIn.propertyScaleX.toValue = 1f
+            morpher.containerStateIn.propertyScaleY.toValue = 1f
 
-            morpher.endStateMorphIntoDescriptor.propertyAlpha.startOffset = 0.30f
-            morpher.endStateMorphIntoDescriptor.propertyAlpha.endOffset = 1f
+            morpher.containerStateIn.propertyAlpha.interpolateOffsetStart = 0.30f
+            morpher.containerStateIn.propertyAlpha.interpolateOffsetEnd = 1f
 
-            morpher.endStateMorphIntoDescriptor.propertyScaleX.interpolator = FastOutSlowInInterpolator()
-            morpher.endStateMorphIntoDescriptor.propertyScaleY.interpolator = FastOutSlowInInterpolator()
-            morpher.endStateMorphIntoDescriptor.propertyAlpha.interpolator = DecelerateInterpolator()
+            morpher.containerStateIn.propertyScaleX.interpolator = FastOutSlowInInterpolator()
+            morpher.containerStateIn.propertyScaleY.interpolator = FastOutSlowInInterpolator()
+            morpher.containerStateIn.propertyAlpha.interpolator = DecelerateInterpolator()
 
 
             /**
@@ -134,21 +136,21 @@ class ActivityDemo1 : MorphActivity() {
              * If no descriptor is specified the default values will be used
              *
              */
-            morpher.startStateMorphIntoDescriptor.propertyScaleX.toValue = (endState.width) / (startState.width)
-            morpher.startStateMorphIntoDescriptor.propertyScaleY.toValue = (endState.width) / (startState.width)
+            morpher.placeholderStateIn.propertyScaleX.toValue = (endState.width) / (startState.width)
+            morpher.placeholderStateIn.propertyScaleY.toValue = (endState.width) / (startState.width)
 
-            morpher.startStateMorphIntoDescriptor.propertyScaleX.fromValue = 1f
-            morpher.startStateMorphIntoDescriptor.propertyScaleY.fromValue = 1f
+            morpher.placeholderStateIn.propertyScaleX.fromValue = 1f
+            morpher.placeholderStateIn.propertyScaleY.fromValue = 1f
 
-            morpher.startStateMorphIntoDescriptor.propertyAlpha.fromValue = 1f
-            morpher.startStateMorphIntoDescriptor.propertyAlpha.toValue = 0f
+            morpher.placeholderStateIn.propertyAlpha.fromValue = 1f
+            morpher.placeholderStateIn.propertyAlpha.toValue = 0f
 
-            morpher.startStateMorphIntoDescriptor.propertyAlpha.startOffset = 0f
-            morpher.startStateMorphIntoDescriptor.propertyAlpha.endOffset = 0.3f
+            morpher.placeholderStateIn.propertyAlpha.interpolateOffsetStart = 0f
+            morpher.placeholderStateIn.propertyAlpha.interpolateOffsetEnd = 0.3f
 
-            morpher.startStateMorphIntoDescriptor.propertyScaleX.interpolator = FastOutSlowInInterpolator()
-            morpher.startStateMorphIntoDescriptor.propertyScaleY.interpolator = FastOutSlowInInterpolator()
-            morpher.startStateMorphIntoDescriptor.propertyAlpha.interpolator = AccelerateInterpolator()
+            morpher.placeholderStateIn.propertyScaleX.interpolator = FastOutSlowInInterpolator()
+            morpher.placeholderStateIn.propertyScaleY.interpolator = FastOutSlowInInterpolator()
+            morpher.placeholderStateIn.propertyAlpha.interpolator = AccelerateInterpolator()
 
 
             /**
@@ -160,21 +162,21 @@ class ActivityDemo1 : MorphActivity() {
              * If no descriptor is specified the default values will be used
              *
              */
-            morpher.endStateMorphFromDescriptor.propertyScaleX.fromValue = 1f
-            morpher.endStateMorphFromDescriptor.propertyScaleY.fromValue = 1f
+            morpher.containerStateOut.propertyScaleX.fromValue = 1f
+            morpher.containerStateOut.propertyScaleY.fromValue = 1f
 
-            morpher.endStateMorphFromDescriptor.propertyScaleX.toValue = (startState.width) / (endState.width)
-            morpher. endStateMorphFromDescriptor.propertyScaleY.toValue = (startState.width) / (endState.width)
+            morpher.containerStateOut.propertyScaleX.toValue = (startState.width) / (endState.width)
+            morpher. containerStateOut.propertyScaleY.toValue = (startState.width) / (endState.width)
 
-            morpher.endStateMorphFromDescriptor.propertyAlpha.fromValue = 1f
-            morpher.endStateMorphFromDescriptor.propertyAlpha.toValue = 0f
+            morpher.containerStateOut.propertyAlpha.fromValue = 1f
+            morpher.containerStateOut.propertyAlpha.toValue = 0f
 
-            morpher.endStateMorphFromDescriptor.propertyAlpha.startOffset = 0f
-            morpher.endStateMorphFromDescriptor.propertyAlpha.endOffset = 0.3f
+            morpher.containerStateOut.propertyAlpha.interpolateOffsetStart = 0f
+            morpher.containerStateOut.propertyAlpha.interpolateOffsetEnd = 0.3f
 
-            morpher.endStateMorphFromDescriptor.propertyScaleX.interpolator = FastOutSlowInInterpolator()
-            morpher.endStateMorphFromDescriptor.propertyScaleY.interpolator = FastOutSlowInInterpolator()
-            morpher.endStateMorphFromDescriptor.propertyAlpha.interpolator = AccelerateInterpolator()
+            morpher.containerStateOut.propertyScaleX.interpolator = FastOutSlowInInterpolator()
+            morpher.containerStateOut.propertyScaleY.interpolator = FastOutSlowInInterpolator()
+            morpher.containerStateOut.propertyAlpha.interpolator = AccelerateInterpolator()
 
             /**
              * Assign the animation descriptor for the start state start layout
@@ -185,34 +187,34 @@ class ActivityDemo1 : MorphActivity() {
              * If no descriptor is specified the default values will be used
              *
              */
-            morpher.startStateMorphFromDescriptor.propertyScaleX.fromValue = (endState.width) / (startState.width)
-            morpher.startStateMorphFromDescriptor.propertyScaleY.fromValue = (endState.width) / (startState.width)
+            morpher.placeholderStateOut.propertyScaleX.fromValue = (endState.width) / (startState.width)
+            morpher.placeholderStateOut.propertyScaleY.fromValue = (endState.width) / (startState.width)
 
-            morpher.startStateMorphFromDescriptor.propertyScaleX.toValue = 1f
-            morpher.startStateMorphFromDescriptor.propertyScaleY.toValue = 1f
+            morpher.placeholderStateOut.propertyScaleX.toValue = 1f
+            morpher.placeholderStateOut.propertyScaleY.toValue = 1f
 
-            morpher.startStateMorphFromDescriptor.propertyAlpha.fromValue = 0f
-            morpher.startStateMorphFromDescriptor.propertyAlpha.toValue = 1f
+            morpher.placeholderStateOut.propertyAlpha.fromValue = 0f
+            morpher.placeholderStateOut.propertyAlpha.toValue = 1f
 
-            morpher.startStateMorphFromDescriptor.propertyAlpha.startOffset = 0.3f
-            morpher.startStateMorphFromDescriptor.propertyAlpha.endOffset = 1f
+            morpher.placeholderStateOut.propertyAlpha.interpolateOffsetStart = 0.3f
+            morpher.placeholderStateOut.propertyAlpha.interpolateOffsetEnd = 1f
 
-            morpher.startStateMorphFromDescriptor.propertyScaleX.interpolator = FastOutSlowInInterpolator()
-            morpher.startStateMorphFromDescriptor.propertyScaleY.interpolator = FastOutSlowInInterpolator()
-            morpher.startStateMorphFromDescriptor.propertyAlpha.interpolator = DecelerateInterpolator()
+            morpher.placeholderStateOut.propertyScaleX.interpolator = FastOutSlowInInterpolator()
+            morpher.placeholderStateOut.propertyScaleY.interpolator = FastOutSlowInInterpolator()
+            morpher.placeholderStateOut.propertyAlpha.interpolator = DecelerateInterpolator()
 
         }
         /**
-         *  Set the starting view to morph from. The view
-         *  must be a morphable layout/view
+         *  Set the starting startView to morph from. The startView
+         *  must be a morphable layout/startView
          */
         morpher.startView = fab as MorphLayout
 
         /**
-         * When the resulting view from a morph is a dialog
+         * When the resulting startView from a morph is a dialog
          * or a fragment a MorphDialog must be created using the layout id
-         * of the resulting view. The layout must be a MorphContainer containing both
-         * the End view and a mock of the start view. THis is needed for when doing some sort
+         * of the resulting startView. The layout must be a MorphContainer containing both
+         * the End startView and a mock of the start startView. THis is needed for when doing some sort
          * of overlapping between two different layouts or for shared animations where and element
          * from the starting layout will become part of the end layout.
          * MorphDialogs are useful when morphing between two completely
@@ -225,7 +227,7 @@ class ActivityDemo1 : MorphActivity() {
          */
         val dialog = MorphDialog.instance(this, morpher, R.layout.activity_demo1_details, R.style.AppTheme_Dialog)
 
-        dialog.addShowListener {
+        dialog.addCreateListener {
             val details = DetailsDemo1(this, dialog)
         }
 

@@ -12,6 +12,11 @@ import kotlin.reflect.KProperty
  * @since July 12 2019
  */
 
+const val MAX_OFFSET: Float = 1f
+const val MIN_OFFSET: Float = 0f
+
+const val DEFAULT_COLOR = 0x000000
+
 fun interpolate(from: Int, to: Int, fraction: Float): Float {
     return from + (to - from) * fraction
 }
@@ -25,12 +30,18 @@ fun interpolate(from: Double, to: Double, fraction: Double): Double {
 }
 
 fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float): Float {
-    return (value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin
+    return mapRange(value, fromMin, fromMax, toMin, toMax, toMin, toMax)
 }
 
 fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float, clampMin: Float, clampMax: Float): Float {
     return clamp((value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin, clampMin, clampMax)
 }
+
+/*fun calculateMaxDistance(sceneRoot: View, focalX: Int, focalY: Int): Double {
+    val maxX = max(focalX, sceneRoot.width - focalX)
+    val maxY = max(focalY, sceneRoot.height - focalY)
+    return hypot(maxX.toDouble(), maxY.toDouble())
+}*/
 
 inline fun <reified T> any(vararg args: T, predicate: (any: T) -> Boolean): Boolean {
     return args.any(predicate)

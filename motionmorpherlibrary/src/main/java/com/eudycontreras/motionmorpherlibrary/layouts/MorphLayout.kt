@@ -3,13 +3,11 @@ package com.eudycontreras.motionmorpherlibrary.layouts
 import android.content.res.ColorStateList
 import android.graphics.drawable.*
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
-import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
-import com.eudycontreras.motionmorpherlibrary.properties.Margings
-import com.eudycontreras.motionmorpherlibrary.properties.Paddings
-import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
+import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 
 /**
@@ -50,6 +48,9 @@ interface MorphLayout {
     var morphMargings: Margings
     var morphPaddings: Paddings
     val coordinates: IntArray
+    val centerLocation: Coordinates
+    val parentLayout: ViewGroup?
+    val siblings: List<MorphLayout>?
 
     var animate: Boolean
     var mutateCorners: Boolean

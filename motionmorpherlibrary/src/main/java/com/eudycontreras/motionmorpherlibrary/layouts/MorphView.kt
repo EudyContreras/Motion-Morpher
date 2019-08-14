@@ -18,10 +18,7 @@ import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.getProperties
 import com.eudycontreras.motionmorpherlibrary.extensions.setProperties
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
-import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
-import com.eudycontreras.motionmorpherlibrary.properties.Margings
-import com.eudycontreras.motionmorpherlibrary.properties.Paddings
-import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
+import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -229,6 +226,20 @@ class MorphView: MorphLayout {
             bounds.paddings.bottom = value.bottom
         }
 
+    override val centerLocation: Coordinates
+        get() = Coordinates(
+            x = windowLocationX + morphWidth / 2,
+            y = windowLocationY + morphHeight / 2
+        )
+
+    override val siblings: List<MorphLayout>?
+        get() = parentLayout?.children?.minusElement(view)?.map { if (it is MorphLayout) it else makeMorphable(it) }?.toList()
+
+    override val parentLayout: ViewGroup?
+        get() = view.parent?.let {
+            it as ViewGroup
+        }
+
     private var isActionButton: Boolean = false
 
     private var isTextView: Boolean = false
@@ -414,7 +425,7 @@ class MorphView: MorphLayout {
 
                     this.view.drawable?.let { this.view.setImageDrawable(it) }
 
-   /*                 val parent = view.parent as ViewGroup
+   /*                 val parent = startView.parent as ViewGroup
 
                     parent.addView(this)*/
                 }

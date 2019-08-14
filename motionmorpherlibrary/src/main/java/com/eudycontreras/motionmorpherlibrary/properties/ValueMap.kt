@@ -1,6 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 open class ValueMap<T>(
         type: String,
@@ -10,17 +12,23 @@ open class ValueMap<T>(
         var interpolator: TimeInterpolator? = null
     ) {
 
+    open var interpolateOffsetStart: Float = MIN_OFFSET
+    open var interpolateOffsetEnd: Float = MAX_OFFSET
+
+    open var durationOffsetStart: Float = MIN_OFFSET
+    open var durationOffsetEnd: Float = MAX_OFFSET
+
     open val canInterpolate: Boolean
         get() = fromValue != toValue
 
-    var by: Float = 1f
+    var multiply: Float = 1f
 
     fun set(value: T) {
         this.fromValue = value
         this.toValue = value
     }
 
-    var type: String = type
+    var propertyName: String = type
         private set
 
     fun flip() {
@@ -30,9 +38,9 @@ open class ValueMap<T>(
     }
 
     fun copy(other: ValueMap<T>) {
-        this.by = other.by
+        this.multiply = other.multiply
         this.add = other.add
-        this.type = other.type
+        this.propertyName = other.propertyName
         this.fromValue = other.fromValue
         this.toValue = other.toValue
         this.interpolator = other.interpolator
@@ -45,8 +53,8 @@ open class ValueMap<T>(
         if (fromValue != other.fromValue) return false
         if (toValue != other.toValue) return false
         if (add != other.add) return false
-        if (by != other.by) return false
-        if (type != other.type) return false
+        if (multiply != other.multiply) return false
+        if (propertyName != other.propertyName) return false
 
         return true
     }
@@ -55,8 +63,8 @@ open class ValueMap<T>(
         var result = fromValue?.hashCode() ?: 0
         result = 31 * result + (toValue?.hashCode() ?: 0)
         result = 31 * result + (add?.hashCode() ?: 0)
-        result = 31 * result + by.hashCode()
-        result = 31 * result + type.hashCode()
+        result = 31 * result + multiply.hashCode()
+        result = 31 * result + propertyName.hashCode()
         return result
     }
 

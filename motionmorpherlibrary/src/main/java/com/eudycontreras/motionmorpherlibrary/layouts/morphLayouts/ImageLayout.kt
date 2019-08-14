@@ -11,6 +11,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
+import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.R
 import com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
 import com.eudycontreras.motionmorpherlibrary.doWith
@@ -20,11 +21,9 @@ import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.CIRCULAR
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout.Companion.RECTANGULAR
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
-import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
-import com.eudycontreras.motionmorpherlibrary.properties.Margings
-import com.eudycontreras.motionmorpherlibrary.properties.Paddings
-import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
+import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bind
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Binder
@@ -233,6 +232,21 @@ class ImageLayout : RoundedImageView, MorphLayout {
             bounds.paddings.bottom = value.bottom
         }
 
+    override val centerLocation: Coordinates
+        get() = Coordinates(
+            x = windowLocationX + morphWidth / 2,
+            y = windowLocationY + morphHeight / 2
+        )
+
+    override val siblings: List<MorphLayout>?
+        get() = parentLayout?.children?.minusElement(this)?.map {
+            if (it is MorphLayout) it
+            else MorphView.makeMorphable(it)}?.toList()
+
+    override val parentLayout: ViewGroup?
+        get() = parent?.let {
+            it as ViewGroup
+        }
 
     override var animate: Boolean = true
 
@@ -264,7 +278,6 @@ class ImageLayout : RoundedImageView, MorphLayout {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         setUpAttributes(attrs)
     }
-
 
     private fun setUpAttributes(attrs: AttributeSet) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ImageLayout)
