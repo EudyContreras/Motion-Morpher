@@ -21,6 +21,7 @@ import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.lang.StrictMath.round
 
 /**
  * @Project MotionMorpher
@@ -154,7 +155,7 @@ class MorphView: MorphLayout {
         }
     override val windowLocationY: Int
         get() {
-            view.getLocationInWindow(location)
+            view.getLocationOnScreen(location)
             return location[1]
         }
 
@@ -227,10 +228,15 @@ class MorphView: MorphLayout {
         }
 
     override val centerLocation: Coordinates
-        get() = Coordinates(
-            x = windowLocationX + morphWidth / 2,
-            y = windowLocationY + morphHeight / 2
-        )
+        get() {
+            val location = IntArray(2)
+            view.getLocationOnScreen(location)
+            location[0] += round(view.translationX)
+            location[0] += view.width / 2
+            location[1] += round(view.translationY)
+            location[1] += view.height / 2
+            return Coordinates(location[0].toFloat(), location[1].toFloat())
+        }
 
     override val siblings: List<MorphLayout>?
         get() = parentLayout?.children?.minusElement(view)?.map { if (it is MorphLayout) it else makeMorphable(it) }?.toList()

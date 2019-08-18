@@ -149,8 +149,6 @@ class Morpher(private val context: Context) {
         endingState = endingView.getProperties()
         startingState = startingView.getProperties()
 
-        siblingInteraction?.buildInteraction(startView, endView)
-
         mappings = if (morphChildren) {
             getChildMappings(startingView, endingView, useDeepChildSearch)
         } else emptyList()
@@ -191,7 +189,7 @@ class Morpher(private val context: Context) {
         }
 
         children.forEach {
-            //applyChildProperties(it, startingState, endingState)
+            applyChildProperties(it)
             it.morphPivotY = it.morphHeight * MIN_OFFSET
         } // TODO("Find out how to calculate this dynamically")
 
@@ -595,10 +593,15 @@ class Morpher(private val context: Context) {
             isMorphed = true
         }
 
+        siblingInteraction?.buildInteraction(startView, endView)
+
         performSetup()
 
-        startingView.hide(overlayCrossfadeDurationOut)
-        endingView.show(overlayCrossfadeDurationIn)
+        endingState.alpha = 1f
+        endView.morphAlpha = 1f
+       /* endingView.show(overlayCrossfadeDurationIn) {
+            startingView.hide(overlayCrossfadeDurationOut)
+        }*/
 
         applyIntoTransitionDrawable(context, mappings)
 
@@ -636,7 +639,7 @@ class Morpher(private val context: Context) {
             startingView.show(overlayCrossfadeDurationIn)
             endingView.hide(overlayCrossfadeDurationOut)
 
-            //applyProps(endView, endingState)
+            applyProps(endView, endingState)
 
             isMorphing = false
             isMorphed = true
@@ -675,14 +678,11 @@ class Morpher(private val context: Context) {
 
         var remainingDuration: Long
 
-        val animator: ValueAnimator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
-
         val animateMappings = mappings.isNotEmpty() && morphChildren
 
-        animator.addListener(MorphAnimationListener(onStart, onEnd))
-        animator.addUpdateListener {
+        val updater: (Float) -> Unit = {
 
-            val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+            val fraction = it.clamp(MIN_OFFSET, MAX_OFFSET)
 
             val interpolatedFraction = interpolator?.getInterpolation(fraction) ?: fraction
 
@@ -715,8 +715,6 @@ class Morpher(private val context: Context) {
                 AnimationType.REVEAL -> {
                     val dimFraction = mapRange(interpolatedFraction, dimPropertyInto.interpolateOffsetStart, dimPropertyInto.interpolateOffsetEnd, MIN_OFFSET, MAX_OFFSET)
 
-                    siblingInteraction?.animate(fraction, AnimationType.REVEAL)
-
                     backgroundDimListener?.invoke(dimPropertyInto.fromValue + (dimPropertyInto.toValue - dimPropertyInto.fromValue) * dimFraction)
 
                     if (containerStateIn.morphStates.isNotEmpty())
@@ -730,8 +728,6 @@ class Morpher(private val context: Context) {
                 }
                 AnimationType.CONCEAL -> {
                     val dimFraction = mapRange(interpolatedFraction, dimPropertyFrom.interpolateOffsetStart, dimPropertyFrom.interpolateOffsetEnd, MIN_OFFSET, MAX_OFFSET)
-
-                    siblingInteraction?.animate(fraction, AnimationType.CONCEAL)
 
                     backgroundDimListener?.invoke(dimPropertyFrom.fromValue + (dimPropertyFrom.toValue - dimPropertyFrom.fromValue) * dimFraction)
 
@@ -754,9 +750,16 @@ class Morpher(private val context: Context) {
             transitionOffsetListener?.invoke(interpolatedFraction)
         }
 
-        animator.interpolator = null
-        animator.duration = duration
-        animator.start()
+        if (siblingInteraction != null) {
+            siblingInteraction?.playWith(animationType, duration, updater, onStart, onEnd)
+        } else {
+            val animator: ValueAnimator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+            animator.interpolator = null
+            animator.duration = duration
+            animator.addUpdateListener { updater(it.animatedValue as Float) }
+            animator.addListener(MorphAnimationListener(onStart, onEnd))
+            animator.start()
+        }
     }
 
     private fun moveWithOffset(
@@ -814,19 +817,6 @@ class Morpher(private val context: Context) {
             }
         }
         return mappings
-    }
-
-    private fun animateChildren(
-        animDescriptor: ChildAnimationDescriptor,
-        children: List<View>,
-        inDuration: Long
-    ) {
-        if (children.isEmpty())
-            return
-
-        val duration = animDescriptor.duration ?: inDuration
-
-        animateChildren(children, animDescriptor, duration)
     }
 
     fun applyProps(view: MorphLayout, props: Properties) {
@@ -919,35 +909,36 @@ class Morpher(private val context: Context) {
         remainingDuration: Long
     ){
         for(state in descriptor.morphStates){
-           val layout = state.morphView
 
-           val scaleX = descriptor.propertyScaleX
-           val scaleY = descriptor.propertyScaleY
-           val alpha = descriptor.propertyAlpha
+            val layout = state.morphView
 
-           val scaleXFraction = mapRange(fraction, scaleX.interpolateOffsetStart, scaleX.interpolateOffsetEnd, startValue, endValue, startValue, endValue)
-           val scaleYFraction = mapRange(fraction, scaleY.interpolateOffsetStart, scaleY.interpolateOffsetEnd, startValue, endValue, startValue, endValue)
-           val alphaFraction = mapRange(fraction, alpha.interpolateOffsetStart, alpha.interpolateOffsetEnd, startValue, endValue, startValue, endValue)
+            val scaleX = descriptor.propertyScaleX
+            val scaleY = descriptor.propertyScaleY
+            val alpha = descriptor.propertyAlpha
 
-           val scaleXInterpolation = descriptor.propertyScaleX.interpolator?.getInterpolation(scaleXFraction) ?: scaleXFraction
-           val scaleYInterpolation = descriptor.propertyScaleY.interpolator?.getInterpolation(scaleYFraction) ?: scaleYFraction
-           val alphaInterpolation = descriptor.propertyAlpha.interpolator?.getInterpolation(alphaFraction) ?: alphaFraction
+            val scaleXFraction = mapRange(fraction, scaleX.interpolateOffsetStart, scaleX.interpolateOffsetEnd, startValue, endValue, startValue, endValue)
+            val scaleYFraction = mapRange(fraction, scaleY.interpolateOffsetStart, scaleY.interpolateOffsetEnd, startValue, endValue, startValue, endValue)
+            val alphaFraction = mapRange(fraction, alpha.interpolateOffsetStart, alpha.interpolateOffsetEnd, startValue, endValue, startValue, endValue)
 
-           val scaleXDelta = scaleX.fromValue + (scaleX.toValue - scaleX.fromValue) * scaleXInterpolation
-           val scaleYDelta = scaleY.fromValue + (scaleY.toValue - scaleY.fromValue) * scaleYInterpolation
-           val alphaDelta =  alpha.fromValue  + (alpha.toValue  - alpha.fromValue)  * alphaInterpolation
+            val scaleXInterpolation = descriptor.propertyScaleX.interpolator?.getInterpolation(scaleXFraction) ?: scaleXFraction
+            val scaleYInterpolation = descriptor.propertyScaleY.interpolator?.getInterpolation(scaleYFraction) ?: scaleYFraction
+            val alphaInterpolation = descriptor.propertyAlpha.interpolator?.getInterpolation(alphaFraction) ?: alphaFraction
 
-           layout.morphScaleX = scaleXDelta
-           layout.morphScaleY = scaleYDelta
-           layout.morphAlpha = alphaDelta
+            val scaleXDelta = scaleX.fromValue + (scaleX.toValue - scaleX.fromValue) * scaleXInterpolation
+            val scaleYDelta = scaleY.fromValue + (scaleY.toValue - scaleY.fromValue) * scaleYInterpolation
+            val alphaDelta =  alpha.fromValue  + (alpha.toValue  - alpha.fromValue)  * alphaInterpolation
 
-           if (childDescriptor == null)
-               return
+            layout.morphScaleX = scaleXDelta
+            layout.morphScaleY = scaleYDelta
+            layout.morphAlpha = alphaDelta
 
-           if (animateChildren && !descriptor.childrenRevealed  && interpolatedFraction >= childDescriptor.animateOnOffset) {
-               descriptor.childrenRevealed = true
-               animateChildren(childDescriptor, state.children, remainingDuration)
-           }
+            if (childDescriptor == null)
+                return
+
+            if (animateChildren && !descriptor.childrenRevealed  && interpolatedFraction >= childDescriptor.animateOnOffset) {
+                descriptor.childrenRevealed = true
+                animateChildren(state.children,  childDescriptor, remainingDuration)
+            }
        }
     }
 
@@ -1003,10 +994,12 @@ class Morpher(private val context: Context) {
     private fun <T: View> animateChildren(
         inChildren: List<T>,
         descriptor: ChildAnimationDescriptor,
-        totalDuration: Long
+        inDuration: Long
     ) {
         if (inChildren.isEmpty())
             return
+
+        val totalDuration = descriptor.duration ?: inDuration
 
         val startDelay = descriptor.delay ?: 0L
 
@@ -1163,7 +1156,7 @@ class Morpher(private val context: Context) {
         val y: Float,
         val width: Float,
         val height: Float,
-        val alpha: Float,
+        var alpha: Float,
         val elevation: Float,
         var translationX: Float,
         var translationY: Float,
@@ -1452,7 +1445,7 @@ class Morpher(private val context: Context) {
                              type = type,
                              animateOnOffset = MIN_OFFSET,
                              durationMultiplier = MIN_OFFSET,
-                             defaultTranslateMultiplierX = 0.02f,
+                             defaultTranslateMultiplierX = 0.0f,
                              defaultTranslateMultiplierY = 0.02f,
                              interpolator = DecelerateInterpolator(),
                              stagger = AnimationStagger(0.12f),

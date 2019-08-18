@@ -2,7 +2,6 @@ package com.eudycontreras.motionmorpher.examples.demo2
 
 import android.os.Bundle
 import android.view.ViewGroup
-import android.view.animation.AnticipateOvershootInterpolator
 import androidx.core.view.children
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
@@ -10,16 +9,14 @@ import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
-import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.interactions.Explode
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
-import com.eudycontreras.motionmorpherlibrary.properties.AnimationStagger
+import com.eudycontreras.motionmorpherlibrary.properties.Stretch
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bind
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Binder
 import kotlinx.android.synthetic.main.activity_demo2.*
-import kotlinx.android.synthetic.main.activity_demo2.view.*
 import kotlinx.android.synthetic.main.activity_demo2_card.view.*
 
 class ActivityDemo2 : MorphActivity() {
@@ -40,41 +37,55 @@ class ActivityDemo2 : MorphActivity() {
         setContentView(R.layout.activity_demo2)
 
         choreographer = Choreographer(this)
-            .withDefaultDuration(350)
 
-        choreographer.morpher.morphIntoDuration = 1450
-        choreographer.morpher.morphFromDuration = 1450
+        /*cardLayout.setOnClickListener {
+            testChoreographer()
+        }*/
+
+        testMorphing()
+    }
+
+    override fun getRoot(): ViewGroup {
+        return this.findViewById(R.id.root)
+    }
+
+    fun testMorphing() {
+
+        val interpolator = FastOutSlowInInterpolator()
+
+        choreographer = Choreographer(this)
+
+        choreographer.morpher.morphIntoDuration = 450
+        choreographer.morpher.morphFromDuration = 400
 
         choreographer.morpher.animateChildren = true
         choreographer.morpher.useArcTranslator = false
 
-        choreographer.morpher.morphIntoInterpolator = FastOutSlowInInterpolator()
-        choreographer.morpher.morphFromInterpolator = FastOutSlowInInterpolator()
+        choreographer.morpher.morphIntoInterpolator = interpolator
+        choreographer.morpher.morphFromInterpolator = interpolator
 
-        val interaction = Explode(Explode.Type.TIGHT)
-        interaction.duration = 1450
-        interaction.animationStagger = AnimationStagger(0.50f)
-        interaction.outInterpolator = FastOutSlowInInterpolator()
-        interaction.inInterpolator = FastOutSlowInInterpolator()
+        choreographer.morpher.containerChildStateIn.durationMultiplier = -0.35f
+        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierX = 0f
+        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierY = 0.04f
+        choreographer.morpher.containerChildStateIn.interpolator = FastOutSlowInInterpolator()
 
-        val morphRoot = MorphView.makeMorphable(grid)
+        choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 1f).apply {
+            outInterpolator = interpolator
+            inInterpolator = interpolator
+            //animationStaggerOut = AnimationStagger(0.35f, type = Stagger.INCREMENTAL)
+            //animationStaggerIn = AnimationStagger(0.45f, type = Stagger.DECREMENTAL)
+            //stretch = Stretch(1f, 0.25f)
+        }
 
         val dialog = MorphDialog.instance(this, choreographer.morpher, R.layout.activity_demo2_details, R.style.AppTheme_Dialog)
-
-        choreographer.morpher.siblingInteraction = interaction
-
-            dialog.addCreateListener {
+        dialog.addCreateListener {
             DetailsDemo2(this, dialog)
         }
 
         dialog.addDismissRequestListener {
-            interaction.animationStagger = AnimationStagger(0.50f)
-            //interaction.play(AnimationType.CONCEAL)
             choreographer.morpher.morphFrom(
                 onEnd = { super.onBackPressed() },
-                onStart = {
-
-                }
+                onStart = {}
             )
         }
 
@@ -82,26 +93,15 @@ class ActivityDemo2 : MorphActivity() {
             child.setOnClickListener { start ->
                 choreographer.morpher.startView = child as MorphLayout
 
-
                 dialog.show {
-
-                    //interaction.buildInteraction(start as MorphLayout, it)
-                    interaction.animationStagger = AnimationStagger(0f)
-                    //interaction.staggerMultiplier = 1.6f
-                    //interaction.play(AnimationType.REVEAL)
-
                     choreographer.morpher.morphInto()
                 }
             }
         }
     }
 
-    override fun getRoot(): ViewGroup {
-        return this.findViewById(R.id.root)
-    }
-
     fun testChoreographer() {
-        val card = grid.cardLayout as ConstraintLayout
+        val card = cardLayout as ConstraintLayout
 
         if (!::actions.isInitialized) {
             actions = MorphView.makeMorphable(card.demo_2_actions)
@@ -129,10 +129,10 @@ class ActivityDemo2 : MorphActivity() {
         Binder.createBinding(Bind.UNIDIRECTIONAL, card.morphCornerRadii, image.morphCornerRadii)
 
         choreographer
-            .withDefaultInterpolator(interpolator)
+         //   .withDefaultInterpolator(interpolator)
             .withDefaultDuration(300)
 
-            .animate(card)
+           /* .animate(card)
             .withPivot(0.5f, 0.5f)
             .rotateTo(360f)
             .withDuration(1000)
@@ -148,7 +148,7 @@ class ActivityDemo2 : MorphActivity() {
 
             .thenAnimate()
             .resizeTo(root.viewBounds)
-            /*.positionAt(root.viewBounds)*/
+            *//*.positionAt(root.viewBounds)*//*
             .cornerRadiusTo(root.morphCornerRadii)
             .withDuration(1000)
 
@@ -168,8 +168,25 @@ class ActivityDemo2 : MorphActivity() {
 
             .andReverseAnimate(icon1, icon2, icon3)
             .withDuration(1000)
+*/
+            .animate(card)
+            .withDuration(500)
+            .withInterpolator(FastOutSlowInInterpolator())
+            .withStretch(Stretch(0.5f, 0.5f,0.2f))
+            .anchorTo(Anchor.BOTTOM, root)
 
-            .thenAnimate(card)
+            .thenAnimate()
+            .withDuration(3600)
+            .withInterpolator(FastOutSlowInInterpolator())
+            .withStretch(Stretch(0.5f, 0.15f, 0.2f, 0f, 1f))
+            .anchorTo(Anchor.TOP, root)
+
+            .thenAnimate()
+            .withStartDelay(500)
+            .withDuration(500)
+            .anchorTo(Anchor.CENTER, root)
+
+           /* .thenAnimate(card)
             .withStartDelay(500)
             .withDuration(500)
             .anchorTo(Anchor.TOP_LEFT, root)
@@ -220,7 +237,7 @@ class ActivityDemo2 : MorphActivity() {
             .thenAnimate()
             .zTranslateTo(10.dp)
             .alphaTo(1f)
-            .withDuration(1000)
+            .withDuration(1000)*/
 
             .build()
             .start()

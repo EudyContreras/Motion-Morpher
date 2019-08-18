@@ -3,13 +3,15 @@ package com.eudycontreras.motionmorpherlibrary.interactions
 import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
+import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
+import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.mapRange
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import java.util.*
-import kotlin.collections.LinkedHashMap
 import kotlin.math.hypot
 import kotlin.math.round
+import kotlin.math.roundToLong
 
 
 /**
@@ -18,76 +20,39 @@ import kotlin.math.round
  * @since August 12 2019
  */
 
-
+/**
+ * The effect should be able to have an incremental/decremental stagger effect
+ * and a stretch effect which should be share or divided.
+ *
+ * The Stretch should work in this way: 0 means that there is no stretch
+ * 0.2 stretchOffset means that the stretch should happen for 20% of the animation before the translation
+ * start. The stretch should happen in the direction of the translation.
+ */
 class Explode(
     var type: Type = Type.LOOSE,
-    override var duration: Long = 0L,
     override var amountMultiplier: Float = MAX_OFFSET
 ): Interaction() {
 
-    private lateinit var mappingsX: Array<AnimatedFloatValue>
-    private lateinit var mappingsY: Array<AnimatedFloatValue>
+    var stretch: Stretch? = null
 
-    private var nodesGroups: Map<Float, List<Node>> = LinkedHashMap()
+    private var nodes: LinkedList<Node> = LinkedList()
 
-    private var siblings: List<MorphLayout>? = null
-        set(value) {
-            field = value
-            mappingsX = Array(siblings?.size ?: 0) { AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET) }
-            mappingsY = Array(siblings?.size ?: 0) { AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET) }
-        }
+    private lateinit var parentBounds: ViewBounds
 
-    override fun createInteraction(
-        startView: MorphLayout,
-        endView: MorphLayout
-    ) {
-        siblings = startView.siblings
-
-        val epicenter = Coordinates(
-            startView.windowLocationX.toFloat() + startView.morphWidth / 2,
-            startView.windowLocationY.toFloat() + startView.morphHeight / 2
-        )
-
-        val boundsStart: ViewBounds = startView.viewBounds
-        val boundsEnd: ViewBounds = endView.viewBounds
-
-        val widthDelta = if (type == Type.LOOSE) (boundsStart.width) else 0f
-        val heightDelta = if (type == Type.LOOSE) (boundsStart.height) else 0f
-
-        val maxX = round((boundsEnd.right - boundsStart.right) - widthDelta)
-        val maxY = round((boundsEnd.bottom - boundsStart.bottom) - heightDelta)
-        val minX = round((boundsEnd.left - boundsStart.left) + widthDelta)
-        val minY = round((boundsEnd.top - boundsStart.top) + heightDelta)
-
-        siblings?.let { siblingCollection ->
-            for ((index, sibling) in siblingCollection.withIndex()) {
-
-                val centerPoint = sibling.centerLocation
-
-                val xDifference = centerPoint.x - epicenter.x
-                val yDifference = centerPoint.y - epicenter.y
-
-                val xDelta = if (type == Type.LOOSE) xDifference else 0f
-                val yDelta = if (type == Type.LOOSE) yDifference else 0f
-
-                if (xDifference > 0) mappingsX[index].toValue = maxX + xDelta
-                if (yDifference > 0) mappingsY[index].toValue = maxY + yDelta
-                if (xDifference < 0) mappingsX[index].toValue = minX + xDelta
-                if (yDifference < 0) mappingsY[index].toValue = minY + yDelta
-            }
-        }
-    }
+    private lateinit var epicenter: Coordinates
 
     override fun buildInteraction(
         startView: MorphLayout,
         endView: MorphLayout
     ) {
-        val nodes: LinkedList<Node> = LinkedList()
+        parentBounds = startView.getParentBounds() ?: endView.viewBounds
 
-        val epicenter = Coordinates(
+        epicenter = Coordinates(
             startView.windowLocationX.toFloat() + startView.morphWidth / 2,
             startView.windowLocationY.toFloat() + startView.morphHeight / 2
         )
+
+        val nodes: LinkedList<Node> = LinkedList()
 
         val boundsStart: ViewBounds = startView.viewBounds
         val boundsEnd: ViewBounds = endView.viewBounds
@@ -117,131 +82,230 @@ class Explode(
                 val mappingX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET)
                 val mappingY = AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET)
 
+                val scaleX = AnimatedFloatValue(AnimatedValue.SCALE_X, MAX_OFFSET, MAX_OFFSET)
+                val scaleY = AnimatedFloatValue(AnimatedValue.SCALE_Y, MAX_OFFSET, MAX_OFFSET)
+
                 val xDelta = if (type == Type.LOOSE) xDifference else 0f
                 val yDelta = if (type == Type.LOOSE) yDifference else 0f
 
-                if (xDifference > 0) mappingX.toValue = maxX + (xDelta * amountMultiplier)
-                if (yDifference > 0) mappingY.toValue = maxY + (yDelta * amountMultiplier)
-                if (xDifference < 0) mappingX.toValue = minX + (xDelta * amountMultiplier)
-                if (yDifference < 0) mappingY.toValue = minY + (yDelta * amountMultiplier)
+                if (xDifference > 0) {
+                    mappingX.toValue = maxX + xDelta
+                    sibling.morphPivotX = 0f
+                }
+                if (yDifference > 0) {
+                    mappingY.toValue = maxY + yDelta
+                    sibling.morphPivotY = 0f
+                }
+                if (xDifference < 0) {
+                    mappingX.toValue = minX + xDelta
+                    sibling.morphPivotX = sibling.morphWidth
+                }
+                if (yDifference < 0) {
+                    mappingY.toValue = minY + yDelta
+                    sibling.morphPivotY = sibling.morphHeight
+                }
 
                 val animationNode = Node(
                     view = sibling,
                     distance = distance,
-                    valueX = mappingX,
-                    valueY = mappingY
+                    translationX = mappingX,
+                    translationY = mappingY,
+                    scaleX = scaleX,
+                    scaleY = scaleY,
+                    centerLocation = centerPoint,
+                    epicenter = false
                 )
                 nodes.add(animationNode)
             }
-            collection
         }
 
-        nodesGroups = nodes.sortedByDescending { it.distance }.groupBy { it.distance }
+        val animationNode = Node(
+            view = endView,
+            distance = 0f,
+            translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+            translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+            scaleX = AnimatedFloatValue(AnimatedValue.SCALE_X, MAX_OFFSET, MAX_OFFSET),
+            scaleY = AnimatedFloatValue(AnimatedValue.SCALE_Y, MAX_OFFSET, MAX_OFFSET),
+            centerLocation = epicenter,
+            epicenter = true
+        )
 
-        animationStagger?.let {
+        nodes.add(animationNode)
+
+        this.nodes = LinkedList(nodes.sortedByDescending { it.distance })
+
+        animationStaggerOut?.let {
             applyStagger(it, AnimationType.REVEAL)
         }
     }
 
     override fun applyStagger(animationStagger: AnimationStagger, animationType: AnimationType) {
-        val inDuration = duration
-        val stagger = (inDuration * animationStagger.staggerOffset)
-        val durationDelta = (inDuration - stagger)
-        val delayAddition = stagger / nodesGroups.size
+        /**
+         * If the stagger offset is 0 or the duration is 0 return.
+         */
+        if (animationStagger.staggerOffset == 0F || duration == 0L)
+            return
+
+        /**
+         * When an epicenter is available sort and group the list of nodes by distance.
+         */
+        val nodesGroups = when (animationType) {
+            AnimationType.CONCEAL -> nodes.sortedBy { it.distance }.groupBy { it.distance }
+            AnimationType.REVEAL -> nodes.sortedByDescending { it.distance }.groupBy { it.distance }
+        }
+
+        /**
+         * The total amount of stagger is created by multiplying the duration by the offset of the stagger.
+         * A staggerOffset of 0.5 means that the next animation should wait until the previous
+         * animation is halfway in order to start.
+         */
+        val stagger = (duration * animationStagger.staggerOffset)
+
+        /**
+         * The duration delta is calculated by removing the total amount stagger from
+         * the total amount of duration of the animation as a whole. Regardless of the amount of
+         * stagger. The duration must remain constant.
+         */
+        val durationDelta = (duration - stagger)
+
+        /**
+         * The delay addition is the value added upon each iteration. This value is incremental
+         * and is created dividing the total amount of stagger by the number of items to animate
+         * if incremental fragmentation is used the delay addition must be divided by 2.
+         * After each iteration upon which the stagger value is assigned to each node the delay
+         * addition of the stagger will increase.
+         */
+        val delayAddition: Float
+
+        /**
+         * Holds the value to be added to or subtracted from the delay addition in order to
+         * create the incremental or decremental effect.
+         */
+        val fragmentation: Float
+
+        /**
+         * The accumulator value is used for accumulating the amount of fragmentation needed
+         * in order to reach the final desired delay value by the end of the iteration. This
+         * accumulator is added to or subtracted from the delay addition in order to create
+         * incremental or decremental stagger effects..
+         */
+        var accumulator: Float
+
+        when (animationStagger.type) {
+            Stagger.INCREMENTAL -> {
+                delayAddition = (stagger / (nodesGroups.size - 1)) / 2
+                fragmentation = (stagger / (nodesGroups.size - 1)) / (nodesGroups.size - 2)
+                accumulator = 0f
+            }
+            Stagger.DECREMENTAL -> {
+                delayAddition = (stagger / (nodesGroups.size - 1))
+                fragmentation = (stagger / (nodesGroups.size - 1)) / (nodesGroups.size - 2)
+                accumulator =  (stagger / (nodesGroups.size - 1)) / 2
+            }
+            Stagger.LINEAR -> {
+                delayAddition = (stagger / (nodesGroups.size - 1))
+                fragmentation = 0f
+                accumulator = 0f
+            }
+        }
+
+        /**
+         * The amount of the delay added to each node. The delay is incremented upon each
+         * iteration and the final value should be equal the total stagger of the animation.
+         */
         var delay = 0f
 
-        if (animationType == AnimationType.CONCEAL) {
-            for (nodeEntry in nodesGroups.entries.reversed()) {
-                val startOffset = delay / inDuration
-                val endOffset = (delay + durationDelta) / inDuration
+        for (nodeEntry in nodesGroups.entries) {
+            /**
+             * The start offset the point within the main animation in which the current element
+             * should start animating. This is used for mapping animations to a 0f to 1f fraction.
+             */
+            val startOffset = delay / duration
+            /**
+             * The end offset the point within the main animation in which the current element
+             * should stop animating. This is used for mapping animations to a 0f to 1f fraction.
+             */
+            val endOffset = (delay + durationDelta) / duration
 
-                for(node in nodeEntry.value.reversed()) {
-                    node.startOffset = startOffset
-                    node.endOffset = endOffset
-                }
-
-                delay += delayAddition
+            for(node in nodeEntry.value) {
+                node.startOffset = startOffset
+                node.endOffset = endOffset
+                node.stagger = delay.roundToLong()
             }
-        } else {
-            for (nodeEntry in nodesGroups.entries) {
-                val startOffset = delay / inDuration
-                val endOffset = (delay + durationDelta) / inDuration
 
-                for(node in nodeEntry.value) {
-                    node.startOffset = startOffset
-                    node.endOffset = endOffset
+            when (animationStagger.type) {
+                Stagger.INCREMENTAL -> {
+                    delay +=  (delayAddition + accumulator)
+                    accumulator += fragmentation
                 }
-
-                delay += delayAddition
+                Stagger.DECREMENTAL -> {
+                    delay +=  (delayAddition + accumulator)
+                    accumulator -= fragmentation
+                }
+                Stagger.LINEAR -> {
+                    delay +=  delayAddition
+                }
             }
         }
     }
 
     override fun animate(fraction: Float, animationType: AnimationType) {
-        for (entry in nodesGroups.entries) {
-            for (node in entry.value) {
+        for (node in nodes) {
 
-                if (fraction >= node.startOffset && fraction <= node.endOffset) {
+            if (fraction < node.startOffset || fraction > node.endOffset)
+                continue
 
-                    val mappedRation = mapRange(fraction, node.startOffset, node.endOffset, MIN_OFFSET, MAX_OFFSET)
+            val mappedRation = mapRange(fraction, node.startOffset, node.endOffset, MIN_OFFSET, MAX_OFFSET)
 
-                    val animatedX = node.valueX
-                    val animatedY = node.valueY
+            if (node.epicenter) {
+                morphUpdater?.invoke(mappedRation)
+                continue
+            }
 
-                    when(animationType) {
-                        AnimationType.REVEAL -> {
-                            val interpolatedFraction = outInterpolator?.getInterpolation(mappedRation) ?: mappedRation
+            val translationX = node.translationX
+            val translationY = node.translationY
 
-                            node.view.morphTranslationX = (animatedX.fromValue + (animatedX.toValue - animatedX.fromValue) * interpolatedFraction)
-                            node.view.morphTranslationY = (animatedY.fromValue + (animatedY.toValue - animatedY.fromValue) * interpolatedFraction)
-                        }
-                        AnimationType.CONCEAL -> {
-                            val interpolatedFraction = inInterpolator?.getInterpolation(mappedRation) ?: mappedRation
+            when(animationType) {
+                AnimationType.REVEAL -> {
+                    val interpolatedFraction = outInterpolator?.getInterpolation(mappedRation) ?: mappedRation
 
-                            node.view.morphTranslationX = (animatedX.toValue + (animatedX.fromValue - animatedX.toValue) * interpolatedFraction)
-                            node.view.morphTranslationY = (animatedY.toValue + (animatedY.fromValue - animatedY.toValue) * interpolatedFraction)
-                        }
+                    node.view.morphTranslationX = (translationX.fromValue + (translationX.toValue - translationX.fromValue) * interpolatedFraction) * amountMultiplier
+                    node.view.morphTranslationY = (translationY.fromValue + (translationY.toValue - translationY.fromValue) * interpolatedFraction) * amountMultiplier
+
+                    stretch?.let {
+                        StretchAnimationHelper.applyStretch(node.view, translationY, it, node.view.morphTranslationY)
+                    }
+                }
+                AnimationType.CONCEAL -> {
+                    val interpolatedFraction = inInterpolator?.getInterpolation(mappedRation) ?: mappedRation
+
+                    node.view.morphTranslationX = (translationX.toValue + (translationX.fromValue - translationX.toValue) * interpolatedFraction)
+                    node.view.morphTranslationY = (translationY.toValue + (translationY.fromValue - translationY.toValue) * interpolatedFraction)
+
+                    stretch?.let {
+                        StretchAnimationHelper.applyStretch(node.view, translationY, it, node.view.morphTranslationY)
                     }
                 }
             }
         }
     }
 
-    override fun applyInteraction(fraction: Float, animationType: AnimationType) {
-          val siblings = this.siblings ?: return
-
-          for ((index, sibling) in siblings.withIndex()) {
-              val animatedX = mappingsX[index]
-              val animatedY = mappingsY[index]
-
-              when(animationType) {
-                  AnimationType.REVEAL -> {
-                      val interpolatedFraction = outInterpolator?.getInterpolation(fraction) ?: fraction
-
-                      sibling.morphTranslationX = (animatedX.fromValue + (animatedX.toValue - animatedX.fromValue) * interpolatedFraction) * amountMultiplier
-                      sibling.morphTranslationY = (animatedY.fromValue + (animatedY.toValue - animatedY.fromValue) * interpolatedFraction) * amountMultiplier
-                  }
-                  AnimationType.CONCEAL -> {
-                      val interpolatedFraction = inInterpolator?.getInterpolation(fraction) ?: fraction
-
-                      sibling.morphTranslationX = (animatedX.toValue + (animatedX.fromValue - animatedX.toValue) * interpolatedFraction) * amountMultiplier
-                      sibling.morphTranslationY = (animatedY.toValue + (animatedY.fromValue - animatedY.toValue) * interpolatedFraction) * amountMultiplier
-                  }
-              }
-          }
-    }
-
     data class Node(
         val view: MorphLayout,
         val distance: Float,
-        val valueX: AnimatedFloatValue,
-        val valueY: AnimatedFloatValue
+        val scaleX: AnimatedFloatValue,
+        val scaleY: AnimatedFloatValue,
+        val translationX: AnimatedFloatValue,
+        val translationY: AnimatedFloatValue,
+        val centerLocation: Coordinates,
+        val epicenter: Boolean
     ) {
+        var stagger: Long = 0L
         var startOffset: Float = MIN_OFFSET
         var endOffset: Float = MAX_OFFSET
 
         override fun toString(): String {
-            return "Distance: $distance, ValueX: ${valueX.toValue} ValueY: ${valueY.toValue}"
+            return "Distance: $distance, Stagger: $stagger Start: $startOffset End: $endOffset"
         }
     }
 

@@ -156,12 +156,12 @@ class ImageLayout : RoundedImageView, MorphLayout {
 
     override val windowLocationX: Int
         get() {
-            this.getLocationInWindow(location)
+            getLocationInWindow(location)
             return location[0]
         }
     override val windowLocationY: Int
         get() {
-            this.getLocationInWindow(location)
+            getLocationOnScreen(location)
             return location[1]
         }
 
@@ -233,10 +233,15 @@ class ImageLayout : RoundedImageView, MorphLayout {
         }
 
     override val centerLocation: Coordinates
-        get() = Coordinates(
-            x = windowLocationX + morphWidth / 2,
-            y = windowLocationY + morphHeight / 2
-        )
+        get() {
+            val location = IntArray(2)
+            getLocationOnScreen(location)
+            location[0] += StrictMath.round(translationX)
+            location[0] += width / 2
+            location[1] += StrictMath.round(translationY)
+            location[1] += height / 2
+            return Coordinates(location[0].toFloat(), location[1].toFloat())
+        }
 
     override val siblings: List<MorphLayout>?
         get() = parentLayout?.children?.minusElement(this)?.map {

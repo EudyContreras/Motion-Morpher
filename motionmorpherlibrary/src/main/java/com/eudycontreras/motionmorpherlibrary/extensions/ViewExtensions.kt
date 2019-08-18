@@ -76,7 +76,9 @@ fun MorphLayout.hide(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null
 fun MorphLayout.show(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null) {
     if (duration == 0L) {
         morphAlpha = 1f
-        morphVisibility = View.VISIBLE
+        if (morphVisibility != View.VISIBLE) {
+            morphVisibility = View.VISIBLE
+        }
         onEnd?.invoke()
         return
     }

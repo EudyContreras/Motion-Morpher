@@ -7,7 +7,8 @@
         android:clipChildren="false"
         android:clipToPadding="false"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        tools:context=".examples.demo2.ActivityDemo2">
     <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -16,88 +17,86 @@
             android:useDefaultMargins="true"
             android:clipChildren="false"
             android:clipToPadding="false"
-            android:id="@+id/grid"
-            tools:context=".examples.demo2.ActivityDemo2">
-
+            android:id="@+id/grid">
         <include
                 android:id="@+id/cardLayout"
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-              android:layout_height="40dp"
+              android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
         <include
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="65dp"
                 android:layout_columnWeight="1"
                 layout="@layout/activity_demo2_card"/>
 

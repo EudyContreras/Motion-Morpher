@@ -4,6 +4,7 @@ import androidx.core.math.MathUtils.clamp
 import com.eudycontreras.motionmorpherlibrary.observable.ObservableProperty
 import com.eudycontreras.motionmorpherlibrary.observable.ObservableValue
 import com.eudycontreras.motionmorpherlibrary.observable.PropertyChangeObservable
+import kotlin.math.hypot
 import kotlin.reflect.KProperty
 
 /**
@@ -35,6 +36,12 @@ fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: 
 
 fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float, clampMin: Float, clampMax: Float): Float {
     return clamp((value - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin, clampMin, clampMax)
+}
+
+fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double {
+    val x = (x2 - x1)
+    val y = (y2 - y1)
+    return hypot(x.toDouble(), y.toDouble())
 }
 
 /*fun calculateMaxDistance(sceneRoot: View, focalX: Int, focalY: Int): Double {

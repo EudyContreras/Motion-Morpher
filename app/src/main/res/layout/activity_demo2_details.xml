@@ -20,6 +20,7 @@
             android:tag="demo2Image"
             android:id="@+id/demo_2_image"
             android:src="@drawable/background11"
+            android:backgroundTint="@color/white"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:layout_width="match_parent"

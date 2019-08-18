@@ -146,14 +146,12 @@ sealed class MorphDialog : DialogFragment() {
             layoutInflater.inflate(layoutId, layout, true)
 
             morphView = layout.getChildAt(0) as ConstraintLayout
-
+            morphView.morphAlpha = 0f
             morphView.post {
                 morpher.endView = morphView
-                morpher.endView.morphVisibility = View.INVISIBLE
                 createListener.forEach { it?.invoke(morphView) }
             }
             layout.background.alpha = 0
-
             morpher.backgroundDimListener = {
                 layout.background.alpha = (it * 255).toInt()
             }

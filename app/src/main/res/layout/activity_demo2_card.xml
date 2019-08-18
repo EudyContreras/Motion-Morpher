@@ -2,14 +2,15 @@
 <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:elevation="0dp"
         android:translationZ="3dp"
         android:background="@color/white"
         android:backgroundTint="@color/white"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="2dp"
+        android:layout_gravity="center"
         app:cl_clipCorners="true"
         app:cl_shapeType="RECTANGULAR"
         app:cl_radius="6dp">

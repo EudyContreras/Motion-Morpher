@@ -5,6 +5,7 @@ import android.graphics.drawable.*
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
+import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.properties.*
@@ -77,6 +78,38 @@ interface MorphLayout {
     fun updateCorners(index: Int, corner: Float): Boolean
     fun getMorphShape(): MorphShape
     fun setLayer(layer: Int)
+    fun getParentBounds(): ViewBounds? {
+        return parentLayout?.let {
+            val bounds = ViewBounds(it)
+
+            val coordinates = IntArray(2)
+            it.getLocationOnScreen(coordinates)
+
+            bounds.top = it.top
+            bounds.left = it.left
+            bounds.right = it.right
+            bounds.bottom = it.bottom
+
+            bounds.paddings.top = it.paddingTop.toFloat()
+            bounds.paddings.start = it.paddingStart.toFloat()
+            bounds.paddings.end = it.paddingEnd.toFloat()
+            bounds.paddings.bottom = it.paddingBottom.toFloat()
+
+            bounds.x = coordinates[0]
+            bounds.y = coordinates[1]
+
+            bounds.width = it.width.toFloat()
+            bounds.height = it.height.toFloat()
+
+            doWith(it.layoutParams as ViewGroup.MarginLayoutParams) { margin ->
+                bounds.margings.top = margin.topMargin.toFloat()
+                bounds.margings.start = margin.marginStart.toFloat()
+                bounds.margings.end = margin.marginEnd.toFloat()
+                bounds.margings.bottom = margin.bottomMargin.toFloat()
+            }
+            bounds
+        }
+    }
 
     fun applyDrawable(shape: Int = RECTANGULAR, topLeft: Float = 0f, topRight: Float = 0f, bottomRight: Float = 0f, bottomLeft: Float = 0f) {
         var drawable = GradientDrawable()
