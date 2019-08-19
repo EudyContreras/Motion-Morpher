@@ -2,9 +2,6 @@ package com.eudycontreras.motionmorpherlibrary.helpers
 
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.distance
-import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
-import com.eudycontreras.motionmorpherlibrary.interactions.Explode
-import com.eudycontreras.motionmorpherlibrary.properties.AnimationStagger
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.StrictMath.round
@@ -53,7 +50,7 @@ class StaggerAnimationHelper {
 
     companion object {
 
-        fun applyStagger(
+     /*   fun applyStagger(
             bounds: Bounds,
             epicenter: Coordinates,
             animationType: AnimationType,
@@ -91,7 +88,7 @@ class StaggerAnimationHelper {
                     }
                 }
             }
-        }
+        }*/
 
         fun getStagger(bounds: Bounds, epicenter: Coordinates, center: Coordinates, speed: Float, duration: Long): Long {
             val directionMultiplier = -1f

@@ -8,6 +8,4 @@ data class AnimationStagger(
     var staggerOffset: Float = MIN_OFFSET,
     var staggerMultiplier: Float = MAX_OFFSET,
     var type: Stagger = Stagger.LINEAR
-) {
-    var speed: Float = 3f
-}
+)

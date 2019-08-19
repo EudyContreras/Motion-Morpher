@@ -55,8 +55,8 @@ class ActivityDemo2 : MorphActivity() {
 
         choreographer = Choreographer(this)
 
-        choreographer.morpher.morphIntoDuration = 450
-        choreographer.morpher.morphFromDuration = 400
+        choreographer.morpher.morphIntoDuration = 650
+        choreographer.morpher.morphFromDuration = 650
 
         choreographer.morpher.animateChildren = true
         choreographer.morpher.useArcTranslator = false
@@ -64,17 +64,25 @@ class ActivityDemo2 : MorphActivity() {
         choreographer.morpher.morphIntoInterpolator = interpolator
         choreographer.morpher.morphFromInterpolator = interpolator
 
-        choreographer.morpher.containerChildStateIn.durationMultiplier = -0.35f
-        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierX = 0f
+        choreographer.morpher.dimPropertyInto.interpolateOffsetStart = 0.4f
+        choreographer.morpher.dimPropertyInto.interpolateOffsetEnd = 1.0f
+
+        choreographer.morpher.dimPropertyFrom.interpolateOffsetStart = 0f
+        choreographer.morpher.dimPropertyFrom.interpolateOffsetEnd = 0.6f
+
+        choreographer.morpher.containerChildStateIn.animateOnOffset = 0f
+        choreographer.morpher.containerChildStateIn.durationMultiplier = -0.15f
+        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierX = 0.04f
         choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierY = 0.04f
-        choreographer.morpher.containerChildStateIn.interpolator = FastOutSlowInInterpolator()
+        choreographer.morpher.containerChildStateIn.stagger?.staggerOffset = 0.07f
+        choreographer.morpher.containerChildStateIn.interpolator = interpolator
 
         choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 1f).apply {
             outInterpolator = interpolator
             inInterpolator = interpolator
-            //animationStaggerOut = AnimationStagger(0.35f, type = Stagger.INCREMENTAL)
-            //animationStaggerIn = AnimationStagger(0.45f, type = Stagger.DECREMENTAL)
-            //stretch = Stretch(1f, 0.25f)
+            //animationStaggerOut = AnimationStagger(0f, type = Stagger.LINEAR)
+            //animationStaggerIn = AnimationStagger(0f, type = Stagger.LINEAR)
+            //stretch = Stretch(1f, 0.1f)
         }
 
         val dialog = MorphDialog.instance(this, choreographer.morpher, R.layout.activity_demo2_details, R.style.AppTheme_Dialog)

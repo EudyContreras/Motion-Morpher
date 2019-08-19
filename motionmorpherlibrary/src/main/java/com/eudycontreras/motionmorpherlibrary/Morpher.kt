@@ -12,7 +12,6 @@ import android.view.View.*
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.view.animation.Interpolator
 import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
@@ -95,8 +94,8 @@ class Morpher(private val context: Context) {
 
     var arcTranslationControlPoint: Coordinates? = null
 
-    var morphIntoInterpolator: Interpolator? = null
-    var morphFromInterpolator: Interpolator? = null
+    var morphIntoInterpolator: TimeInterpolator? = null
+    var morphFromInterpolator: TimeInterpolator? = null
 
     var useDeepChildSearch: Boolean = true
     var useArcTranslator: Boolean = true
@@ -667,7 +666,7 @@ class Morpher(private val context: Context) {
         startingProps: Properties,
         endingProps: Properties,
         mappings: List<MorphMap>,
-        interpolator: Interpolator?,
+        interpolator: TimeInterpolator?,
         curveTranslationHelper: CurvedTranslationHelper,
         duration: Long,
         onStart: Action,
@@ -713,10 +712,6 @@ class Morpher(private val context: Context) {
 
             when (animationType) {
                 AnimationType.REVEAL -> {
-                    val dimFraction = mapRange(interpolatedFraction, dimPropertyInto.interpolateOffsetStart, dimPropertyInto.interpolateOffsetEnd, MIN_OFFSET, MAX_OFFSET)
-
-                    backgroundDimListener?.invoke(dimPropertyInto.fromValue + (dimPropertyInto.toValue - dimPropertyInto.fromValue) * dimFraction)
-
                     if (containerStateIn.morphStates.isNotEmpty())
                         animateContainers(containerStateIn, containerChildStateIn, MIN_OFFSET, MAX_OFFSET, fraction, interpolatedFraction, remainingDuration)
 
@@ -727,10 +722,6 @@ class Morpher(private val context: Context) {
                         animateContainers(otherStateIn, null, MIN_OFFSET, MAX_OFFSET, fraction, interpolatedFraction, remainingDuration)
                 }
                 AnimationType.CONCEAL -> {
-                    val dimFraction = mapRange(interpolatedFraction, dimPropertyFrom.interpolateOffsetStart, dimPropertyFrom.interpolateOffsetEnd, MIN_OFFSET, MAX_OFFSET)
-
-                    backgroundDimListener?.invoke(dimPropertyFrom.fromValue + (dimPropertyFrom.toValue - dimPropertyFrom.fromValue) * dimFraction)
-
                     if (containerStateOut.morphStates.isNotEmpty())
                         animateContainers(containerStateOut, containerChildStateOut, MIN_OFFSET, MAX_OFFSET, fraction, interpolatedFraction, remainingDuration)
 
@@ -751,12 +742,29 @@ class Morpher(private val context: Context) {
         }
 
         if (siblingInteraction != null) {
-            siblingInteraction?.playWith(animationType, duration, updater, onStart, onEnd)
+            siblingInteraction?.playWith(animationType, duration, dimPropertyInto, dimPropertyFrom, backgroundDimListener, updater, onStart, onEnd)
         } else {
             val animator: ValueAnimator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
             animator.interpolator = null
             animator.duration = duration
-            animator.addUpdateListener { updater(it.animatedValue as Float) }
+            animator.addUpdateListener {
+                val fraction = it.animatedValue as Float
+
+                updater(fraction)
+
+                when (animationType) {
+                    AnimationType.REVEAL -> {
+                        val dimFraction = mapRange(fraction, dimPropertyInto.interpolateOffsetStart, dimPropertyInto.interpolateOffsetEnd, MIN_OFFSET, MAX_OFFSET)
+
+                        backgroundDimListener?.invoke(dimPropertyInto.fromValue + (dimPropertyInto.toValue - dimPropertyInto.fromValue) * dimFraction)
+                    }
+                    AnimationType.CONCEAL -> {
+                        val dimFraction = mapRange(fraction, dimPropertyFrom.interpolateOffsetStart, dimPropertyFrom.interpolateOffsetEnd, MIN_OFFSET, MAX_OFFSET)
+
+                        backgroundDimListener?.invoke(dimPropertyFrom.fromValue + (dimPropertyFrom.toValue - dimPropertyFrom.fromValue) * dimFraction)
+                    }
+                }
+            }
             animator.addListener(MorphAnimationListener(onStart, onEnd))
             animator.start()
         }
@@ -1445,7 +1453,7 @@ class Morpher(private val context: Context) {
                              type = type,
                              animateOnOffset = MIN_OFFSET,
                              durationMultiplier = MIN_OFFSET,
-                             defaultTranslateMultiplierX = 0.0f,
+                             defaultTranslateMultiplierX = 0.02f,
                              defaultTranslateMultiplierY = 0.02f,
                              interpolator = DecelerateInterpolator(),
                              stagger = AnimationStagger(0.12f),
@@ -1457,7 +1465,7 @@ class Morpher(private val context: Context) {
                              type = type,
                              animateOnOffset = MIN_OFFSET,
                              durationMultiplier = -0.8f,
-                             defaultTranslateMultiplierX = 0.0f,
+                             defaultTranslateMultiplierX = 0.1f,
                              defaultTranslateMultiplierY = 0.1f,
                              interpolator = AccelerateInterpolator(),
                              stagger = AnimationStagger(0.13f),

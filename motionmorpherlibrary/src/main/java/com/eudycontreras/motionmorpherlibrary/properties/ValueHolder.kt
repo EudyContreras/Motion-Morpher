@@ -3,7 +3,6 @@ package com.eudycontreras.motionmorpherlibrary.properties
 import android.animation.TimeInterpolator
 import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
-import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 
 open class ValueHolder<T>(
         type: String,
@@ -22,8 +21,6 @@ open class ValueHolder<T>(
             field = value
             canInterpolate = field.isNotEmpty() && field.distinct().size > 1
         }
-
-    var interpolation: Interpolation = Interpolation.DEDICATED
 
     var canInterpolate: Boolean = false
         protected set

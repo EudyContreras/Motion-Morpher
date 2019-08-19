@@ -9,6 +9,17 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  
  
 enum class Interpolation {
-    SHARED,
-    DEDICATED
+    SPRING_IN,
+    REVERSED_OUT,
+    ELASTIC_OUT,
+    QUART_OUT,
+    QUART_IN_OUT,
+    CIRC_IN,
+    CIRC_OUT,
+    CIRC_IN_OUT,
+    EXP_OUT,
+    EXP_IN_OUT,
+    QUINT_IN_OUT,
+    CUBIC_IN_OUT,
+    FAST_OUT_SLOW_IN
 }

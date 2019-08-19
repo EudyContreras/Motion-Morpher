@@ -37,22 +37,19 @@ class Explode(
 
     private var nodes: LinkedList<Node> = LinkedList()
 
-    private lateinit var parentBounds: ViewBounds
-
-    private lateinit var epicenter: Coordinates
+    private lateinit var endView: MorphLayout
+    private lateinit var startView: MorphLayout
 
     override fun buildInteraction(
         startView: MorphLayout,
         endView: MorphLayout
     ) {
-        parentBounds = startView.getParentBounds() ?: endView.viewBounds
-
-        epicenter = Coordinates(
-            startView.windowLocationX.toFloat() + startView.morphWidth / 2,
-            startView.windowLocationY.toFloat() + startView.morphHeight / 2
-        )
+        this.endView = endView
+        this.startView = startView
 
         val nodes: LinkedList<Node> = LinkedList()
+
+        val epicenter = startView.centerLocation
 
         val boundsStart: ViewBounds = startView.viewBounds
         val boundsEnd: ViewBounds = endView.viewBounds
@@ -82,55 +79,23 @@ class Explode(
                 val mappingX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET)
                 val mappingY = AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET)
 
-                val scaleX = AnimatedFloatValue(AnimatedValue.SCALE_X, MAX_OFFSET, MAX_OFFSET)
-                val scaleY = AnimatedFloatValue(AnimatedValue.SCALE_Y, MAX_OFFSET, MAX_OFFSET)
-
                 val xDelta = if (type == Type.LOOSE) xDifference else 0f
                 val yDelta = if (type == Type.LOOSE) yDifference else 0f
 
-                if (xDifference > 0) {
-                    mappingX.toValue = maxX + xDelta
-                    sibling.morphPivotX = 0f
-                }
-                if (yDifference > 0) {
-                    mappingY.toValue = maxY + yDelta
-                    sibling.morphPivotY = 0f
-                }
-                if (xDifference < 0) {
-                    mappingX.toValue = minX + xDelta
-                    sibling.morphPivotX = sibling.morphWidth
-                }
-                if (yDifference < 0) {
-                    mappingY.toValue = minY + yDelta
-                    sibling.morphPivotY = sibling.morphHeight
-                }
+                if (xDifference > 0) mappingX.toValue = maxX + xDelta
+                if (yDifference > 0) mappingY.toValue = maxY + yDelta
+                if (xDifference < 0) mappingX.toValue = minX + xDelta
+                if (yDifference < 0) mappingY.toValue = minY + yDelta
 
                 val animationNode = Node(
                     view = sibling,
                     distance = distance,
                     translationX = mappingX,
-                    translationY = mappingY,
-                    scaleX = scaleX,
-                    scaleY = scaleY,
-                    centerLocation = centerPoint,
-                    epicenter = false
+                    translationY = mappingY
                 )
                 nodes.add(animationNode)
             }
         }
-
-        val animationNode = Node(
-            view = endView,
-            distance = 0f,
-            translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-            translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-            scaleX = AnimatedFloatValue(AnimatedValue.SCALE_X, MAX_OFFSET, MAX_OFFSET),
-            scaleY = AnimatedFloatValue(AnimatedValue.SCALE_Y, MAX_OFFSET, MAX_OFFSET),
-            centerLocation = epicenter,
-            epicenter = true
-        )
-
-        nodes.add(animationNode)
 
         this.nodes = LinkedList(nodes.sortedByDescending { it.distance })
 
@@ -139,21 +104,35 @@ class Explode(
         }
     }
 
-    override fun applyStagger(animationStagger: AnimationStagger, animationType: AnimationType) {
+    override fun applyStagger(animationStagger: AnimationStagger?, animationType: AnimationType) {
         /**
-         * If the stagger offset is 0 or the duration is 0 return.
+         * If the stagger is null or the offset is 0 or the duration is 0 return.
          */
-        if (animationStagger.staggerOffset == 0F || duration == 0L)
+        if (animationStagger == null || animationStagger.staggerOffset == 0F || duration == 0L) {
+            val animationNode = Node(
+                view = endView,
+                distance = 0f,
+                translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                epicenter = true
+            )
+            nodes.addFirst(animationNode)
             return
+        }
 
         /**
          * When an epicenter is available sort and group the list of nodes by distance.
          */
         val nodesGroups = when (animationType) {
-            AnimationType.CONCEAL -> nodes.sortedBy { it.distance }.groupBy { it.distance }
-            AnimationType.REVEAL -> nodes.sortedByDescending { it.distance }.groupBy { it.distance }
+            AnimationType.CONCEAL -> {
+                nodes = LinkedList(nodes.filter { it.distance != 0f }.sortedBy { it.distance })
+                nodes.groupBy { it.distance }
+            }
+            AnimationType.REVEAL -> {
+                nodes = LinkedList(nodes.sortedByDescending { it.distance })
+                nodes.groupBy { it.distance }
+            }
         }
-
         /**
          * The total amount of stagger is created by multiplying the duration by the offset of the stagger.
          * A staggerOffset of 0.5 means that the next animation should wait until the previous
@@ -247,9 +226,39 @@ class Explode(
                 }
             }
         }
+
+        when (animationType) {
+            AnimationType.REVEAL -> {
+                val last = nodes.last()
+                val animationNode = Node(
+                    view = endView,
+                    distance = 0f,
+                    translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                    translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                    epicenter = true
+                )
+                animationNode.copyOffsets(last)
+                nodes.add(animationNode)
+            }
+            AnimationType.CONCEAL -> {
+                val first = nodes.first()
+                val animationNode = Node(
+                    view = endView,
+                    distance = 0f,
+                    translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                    translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                    epicenter = true
+                )
+                animationNode.copyOffsets(first)
+                nodes.addFirst(animationNode)
+            }
+        }
     }
 
     override fun animate(fraction: Float, animationType: AnimationType) {
+        if (amountMultiplier == 0f)
+            return
+
         for (node in nodes) {
 
             if (fraction < node.startOffset || fraction > node.endOffset)
@@ -279,8 +288,8 @@ class Explode(
                 AnimationType.CONCEAL -> {
                     val interpolatedFraction = inInterpolator?.getInterpolation(mappedRation) ?: mappedRation
 
-                    node.view.morphTranslationX = (translationX.toValue + (translationX.fromValue - translationX.toValue) * interpolatedFraction)
-                    node.view.morphTranslationY = (translationY.toValue + (translationY.fromValue - translationY.toValue) * interpolatedFraction)
+                    node.view.morphTranslationX = (translationX.toValue + (translationX.fromValue - translationX.toValue) * interpolatedFraction) * amountMultiplier
+                    node.view.morphTranslationY = (translationY.toValue + (translationY.fromValue - translationY.toValue) * interpolatedFraction) * amountMultiplier
 
                     stretch?.let {
                         StretchAnimationHelper.applyStretch(node.view, translationY, it, node.view.morphTranslationY)
@@ -293,16 +302,18 @@ class Explode(
     data class Node(
         val view: MorphLayout,
         val distance: Float,
-        val scaleX: AnimatedFloatValue,
-        val scaleY: AnimatedFloatValue,
         val translationX: AnimatedFloatValue,
         val translationY: AnimatedFloatValue,
-        val centerLocation: Coordinates,
-        val epicenter: Boolean
+        val epicenter: Boolean = false
     ) {
         var stagger: Long = 0L
         var startOffset: Float = MIN_OFFSET
         var endOffset: Float = MAX_OFFSET
+
+        fun copyOffsets(other: Node) {
+            this.startOffset = other.startOffset
+            this.endOffset = other.endOffset
+        }
 
         override fun toString(): String {
             return "Distance: $distance, Stagger: $stagger Start: $startOffset End: $endOffset"

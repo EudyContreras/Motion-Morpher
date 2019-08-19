@@ -1,7 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
-import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 
 class AnimatedValueArray<T>(
         val propertyName: String,
@@ -14,8 +13,6 @@ class AnimatedValueArray<T>(
                 field = value
                 canInterpolate = field.isNotEmpty() && field.distinct().size > 1
             }
-
-        var interpolation: Interpolation = Interpolation.DEDICATED
 
         var canInterpolate: Boolean = false
             private set
