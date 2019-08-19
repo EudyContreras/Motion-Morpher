@@ -9,15 +9,19 @@ import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
+import android.widget.TextView
 import androidx.core.view.children
+import com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
 import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
+import com.eudycontreras.motionmorpherlibrary.extensions.getProperties
+import com.eudycontreras.motionmorpherlibrary.extensions.setProperties
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
-import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
-import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
-import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
+import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.lang.StrictMath.round
 
 /**
  * @Project MotionMorpher
@@ -43,11 +47,13 @@ class MorphView: MorphLayout {
         get() = view.width.toFloat()
         set(value) {
             view.layoutParams.width = value.toInt()
+            recomputeChange()
         }
     override var morphHeight: Float
         get() = view.height.toFloat()
         set(value) {
             view.layoutParams.height = value.toInt()
+            recomputeChange()
         }
     override var morphAlpha: Float
         get() = view.alpha
@@ -122,7 +128,10 @@ class MorphView: MorphLayout {
     override var morphCornerRadii: CornerRadii
         get() = cornerRadii
         set(value) {
-            updateCorners(value)
+            cornerRadii = value
+            if (::mutableDrawable.isInitialized) {
+                mutableDrawable.cornerRadii = cornerRadii.corners
+            }
         }
     override val morphChildCount: Int
         get() = if (view is ViewGroup) view.childCount else 0
@@ -134,6 +143,8 @@ class MorphView: MorphLayout {
         }
     override var mutateCorners: Boolean = true
 
+    override var placeholder: Boolean = false
+
     override val morphTag: Any?
         get() = view.tag
 
@@ -144,17 +155,30 @@ class MorphView: MorphLayout {
         }
     override val windowLocationY: Int
         get() {
-            view.getLocationInWindow(location)
+            view.getLocationOnScreen(location)
             return location[1]
         }
 
     override val morphShape: Int
         get() = shape
 
-    override var morphBackground: Drawable
+
+    override var mutableBackground: GradientDrawable
+        get() = mutableDrawable
+        set(value) {
+            this.mutableDrawable = value
+        }
+
+    override var morphBackground: Drawable?
         get() = view.background
         set(value) {
             view.background = value
+        }
+
+    override val coordinates: IntArray
+        get() {
+            view.getLocationInWindow(location)
+            return location
         }
 
     override val viewBounds: ViewBounds
@@ -164,32 +188,79 @@ class MorphView: MorphLayout {
             bounds.right = view.right
             bounds.bottom = view.bottom
 
-            bounds.paddings.top = view.paddingTop
-            bounds.paddings.start = view.paddingStart
-            bounds.paddings.end = view.paddingEnd
-            bounds.paddings.bottom = view.paddingBottom
+            bounds.paddings.top = view.paddingTop.toFloat()
+            bounds.paddings.start = view.paddingStart.toFloat()
+            bounds.paddings.end = view.paddingEnd.toFloat()
+            bounds.paddings.bottom = view.paddingBottom.toFloat()
+
+            bounds.x = coordinates[0]
+            bounds.y = coordinates[1]
+
+            bounds.width = morphWidth
+            bounds.height = morphHeight
 
             doWith(view.layoutParams as ViewGroup.MarginLayoutParams) {
-                bounds.margins.top = it.topMargin
-                bounds.margins.start = it.marginStart
-                bounds.margins.end = it.marginEnd
-                bounds.margins.bottom = it.bottomMargin
+                bounds.margings.top = it.topMargin.toFloat()
+                bounds.margings.start = it.marginStart.toFloat()
+                bounds.margings.end = it.marginEnd.toFloat()
+                bounds.margings.bottom = it.bottomMargin.toFloat()
             }
 
             return bounds
         }
 
+    override var morphMargings: Margings
+        get() = viewBounds.margings
+        set(value) {
+            bounds.margings.top = value.top
+            bounds.margings.start = value.start
+            bounds.margings.end = value.end
+            bounds.margings.bottom = value.bottom
+        }
+
+    override var morphPaddings: Paddings
+        get() = viewBounds.paddings
+        set(value) {
+            bounds.paddings.top = value.top
+            bounds.paddings.start = value.start
+            bounds.paddings.end = value.end
+            bounds.paddings.bottom = value.bottom
+        }
+
+    override val centerLocation: Coordinates
+        get() {
+            val location = IntArray(2)
+            view.getLocationOnScreen(location)
+            location[0] += round(view.translationX)
+            location[0] += view.width / 2
+            location[1] += round(view.translationY)
+            location[1] += view.height / 2
+            return Coordinates(location[0].toFloat(), location[1].toFloat())
+        }
+
+    override val siblings: List<MorphLayout>?
+        get() = parentLayout?.children?.minusElement(view)?.map { if (it is MorphLayout) it else makeMorphable(it) }?.toList()
+
+    override val parentLayout: ViewGroup?
+        get() = view.parent?.let {
+            it as ViewGroup
+        }
+
+    private var isActionButton: Boolean = false
+
+    private var isTextView: Boolean = false
+
+    override var animatedContainer: Boolean = false
+
     override var animate: Boolean = true
 
-    private var bounds: ViewBounds = ViewBounds()
+    private var bounds: ViewBounds = ViewBounds(this.getView())
 
     private var shape: Int = MorphLayout.RECTANGULAR
 
     private val location: IntArray = IntArray(2)
 
     private var cornerRadii: CornerRadii = CornerRadii()
-
-    private var drawListener: DrawDispatchListener? = null
 
     private lateinit var mutableDrawable: GradientDrawable
 
@@ -201,55 +272,48 @@ class MorphView: MorphLayout {
 
     constructor(view: View, shape: Int, topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
         this.view = view
+
         applyDrawable(shape, topLeft, topRight, bottomRight, bottomLeft)
+
+        this.view.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            bounds = ViewBounds(this.getView())
+        }
+
+        if (view is RoundedImageView) {
+            morphCornerRadii = view.corners
+
+            cornerRadii.changeListener.add {
+                for (index in 0 until it.size) {
+                    view.corners.corners[index] = it[index]
+                }
+            }
+        }
     }
 
-    override fun applyDrawable(shape: Int, topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
-        var drawable = GradientDrawable()
+    private fun recomputeChange() {
+        if (shape == MorphLayout.CIRCULAR && morphBackground !is VectorDrawable) {
 
-        if (view.background is VectorDrawable || view.background is BitmapDrawable) {
-            return
-        }
+            val drawable = (morphBackground as GradientDrawable).mutate() as GradientDrawable
 
-        drawable = if (view.background is GradientDrawable) {
-            (view.background as GradientDrawable).mutate() as GradientDrawable
-        } else {
-            drawable.mutate() as GradientDrawable
-        }
-
-        if (view.backgroundTintList != null) {
-            drawable.color = view.backgroundTintList
-        } else {
-            drawable.color = view.solidColor.toStateList()
-        }
-
-        drawable.shape = if (shape == MorphLayout.RECTANGULAR) {
-            GradientDrawable.RECTANGLE
-        } else
-            GradientDrawable.OVAL
-
-        if (shape == MorphLayout.RECTANGULAR) {
             val corners = floatArrayOf(
-                topLeft, topLeft,
-                topRight, topRight,
-                bottomRight, bottomRight,
-                bottomLeft, bottomLeft
+                morphWidth, morphHeight,
+                morphWidth, morphHeight,
+                morphWidth, morphHeight,
+                morphWidth, morphHeight
             )
+
+            drawable.cornerRadii = corners
 
             cornerRadii = CornerRadii(corners)
 
-            drawable.cornerRadii = cornerRadii.corners
-        } else {
-            mutateCorners = false
+            mutableDrawable = drawable
+            morphBackground = drawable
         }
-
-        mutableDrawable = drawable
-        view.background = drawable
     }
 
     override fun getView(): View = view
 
-    override fun isFloatingActionButton(): Boolean = false
+    override fun isFloatingActionButton(): Boolean = isActionButton
 
     override fun hasVectorDrawable(): Boolean {
         return view.background is VectorDrawable
@@ -288,13 +352,16 @@ class MorphView: MorphLayout {
     }
 
     override fun updateCorners(cornerRadii: CornerRadii): Boolean {
+        return updateCorners(cornerRadii.corners)
+    }
+
+    fun updateCorners(cornerRadii: FloatArray): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return false
         }
 
         for (index in 0 until cornerRadii.size) {
-            val corner = cornerRadii[index]
-            this.cornerRadii[index] = corner
+            this.cornerRadii[index] = cornerRadii[index]
         }
 
         mutableDrawable.cornerRadii = this.cornerRadii.corners
@@ -308,6 +375,10 @@ class MorphView: MorphLayout {
 
         cornerRadii[index] = corner
         mutableDrawable.cornerRadii = cornerRadii.corners
+
+        if (view is RoundedImageView) {
+            view.updateCornerRadii(index, corner)
+        }
         return true
     }
 
@@ -326,7 +397,7 @@ class MorphView: MorphLayout {
     override fun hasChildren(): Boolean = this.morphChildCount > 0
 
     override fun getChildren(): Sequence<View> {
-        return if (view is ViewGroup) view.children.asSequence() else emptySequence()
+        return if (view is ViewGroup) view.children else emptySequence()
     }
 
     override fun setLayer(layer: Int) {
@@ -334,4 +405,38 @@ class MorphView: MorphLayout {
     }
 
     override fun toString(): String = view.tag.toString()
+
+    companion object {
+
+        fun makeMorphable(view: View): MorphLayout {
+            if (view is MorphLayout) {
+                return view
+            }
+            if (view is RoundedImageView) {
+                return MorphView(view, MorphLayout.RECTANGULAR)
+            }
+            if (view is TextView) {
+                return MorphView(view, MorphLayout.RECTANGULAR).apply { isTextView = true }
+            }
+            if (view is FloatingActionButton) {
+                MorphView(view, MorphLayout.CIRCULAR).apply {
+                    (this.view as FloatingActionButton).setProperties(view.getProperties())
+                    this.view.layoutParams = view.layoutParams
+                    this.view.backgroundTintList = view.backgroundTintList
+                    this.view.supportImageTintList = view.supportImageTintList
+                    this.view.compatElevation = view.compatElevation
+                    this.view.customSize = view.customSize
+                    this.isActionButton = true
+                    this.applyDrawable(MorphLayout.CIRCULAR)
+
+                    this.view.drawable?.let { this.view.setImageDrawable(it) }
+
+   /*                 val parent = startView.parent as ViewGroup
+
+                    parent.addView(this)*/
+                }
+            }
+            return MorphView(view)
+        }
+    }
 }

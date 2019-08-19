@@ -8,6 +8,7 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
 
 
+
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
@@ -54,30 +55,75 @@ fun View.show(duration: Long = 0L, onEnd: Action = null) {
         .start()
 }
 
-fun MorphLayout.hide(duration: Long = 0L, onEnd: Action = null) {
+fun MorphLayout.hide(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null) {
     if (duration == 0L) {
-        this.morphAlpha = 0f
+        morphAlpha = 0f
+        morphVisibility = View.INVISIBLE
         onEnd?.invoke()
         return
     }
     this.animator()
         .alpha(0f)
-        .withEndAction(onEnd)
+        .withEndAction {
+            morphVisibility = View.INVISIBLE
+            onEnd?.invoke()
+        }
+        .setStartDelay(delay)
         .setDuration(duration)
         .start()
 }
 
-fun MorphLayout.show(duration: Long = 0L, onEnd: Action = null) {
+fun MorphLayout.show(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null) {
     if (duration == 0L) {
-        this.morphAlpha = 1f
+        morphAlpha = 1f
+        if (morphVisibility != View.VISIBLE) {
+            morphVisibility = View.VISIBLE
+        }
         onEnd?.invoke()
         return
+    }
+    if (morphVisibility != View.VISIBLE) {
+        morphVisibility = View.VISIBLE
     }
     this.animator()
         .alpha(1f)
         .withEndAction(onEnd)
+        .setStartDelay(delay)
         .setDuration(duration)
         .start()
+}
+
+fun MorphLayout.applyProps(props: Morpher.Properties) {
+    morphX = props.x
+    morphY = props.y
+    morphAlpha = props.alpha
+    morphElevation = props.elevation
+    morphTranslationX = props.translationX
+    morphTranslationY = props.translationY
+    morphTranslationZ = props.translationZ
+    morphPivotX = morphWidth
+    morphPivotY = morphHeight
+    morphRotation = props.rotation
+    morphRotationX = props.rotationX
+    morphRotationY = props.rotationY
+    morphScaleX = props.scaleX
+    morphScaleY = props.scaleY
+    morphStateList = props.stateList
+    morphWidth = props.width
+    morphHeight = props.height
+
+    if (hasGradientDrawable() && mutateCorners) {
+        updateCorners(0, props.cornerRadii[0])
+        updateCorners(1, props.cornerRadii[1])
+        updateCorners(2, props.cornerRadii[2])
+        updateCorners(3, props.cornerRadii[3])
+        updateCorners(4, props.cornerRadii[4])
+        updateCorners(5, props.cornerRadii[5])
+        updateCorners(6, props.cornerRadii[6])
+        updateCorners(7, props.cornerRadii[7])
+    }
+
+    updateLayout()
 }
 
 fun MorphLayout.getProperties(): Morpher.Properties {
@@ -102,7 +148,7 @@ fun MorphLayout.getProperties(): Morpher.Properties {
     val color = this.morphColor
     val stateList = this.morphStateList
     val cornerRadii = this.morphCornerRadii.getCopy()
-    val background = this.morphBackground.constantState?.newDrawable()
+    val background = this.morphBackground!!.constantState?.newDrawable()
     val hasVectorBackground = this.hasVectorDrawable()
     val hasBitmapBackground = this.hasBitmapDrawable()
     val hasGradientBackground = this.hasGradientDrawable()

@@ -42,7 +42,7 @@ class ScaleUtility {
 
         // The start bounds are the global visible rectangle of the thumbnail,
         // and the final bounds are the global visible rectangle of the container
-        // view. Also set the container view's offset as the origin for the
+        // startView. Also set the container startView's staggerOffset as the origin for the
         // bounds, since that's the origin for the positioning animation
         // properties (X, Y).
         thumbView.getGlobalVisibleRect(startBoundsInt)
@@ -75,20 +75,20 @@ class ScaleUtility {
             startBounds.bottom += deltaHeight.toInt()
         }
 
-        // Hide the thumbnail and show the zoomed-in view. When the animation
-        // begins, it will position the zoomed-in view in the place of the
+        // Hide the thumbnail and show the zoomed-in startView. When the animation
+        // begins, it will position the zoomed-in startView in the place of the
         // thumbnail.
         thumbView.alpha = 0f
         expandedImageView.visibility = View.VISIBLE
 
-        // Set the pivot point for SCALE_X and SCALE_Y transformations
-        // to the top-left corner of the zoomed-in view (the default
-        // is the center of the view).
+        // Set the scalePivot point for SCALE_X and SCALE_Y transformations
+        // to the top-left corner of the zoomed-in startView (the default
+        // is the center of the startView).
         expandedImageView.pivotX = 0f
         expandedImageView.pivotY = 0f
 
         // Construct and run the parallel animation of the four translation and
-        // scale properties (X, Y, SCALE_X, and SCALE_Y).
+        // scaleTo properties (X, Y, SCALE_X, and SCALE_Y).
         currentAnimator = AnimatorSet().apply {
             play(ObjectAnimator.ofFloat(
                 expandedImageView,

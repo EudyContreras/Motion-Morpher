@@ -7,7 +7,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
  * @since July 20 2019
  */
  
-data class Point<T>(
-    var x: T,
-    var y: T
+open class Point<T>(
+   open var x: T,
+   open var y: T
 )

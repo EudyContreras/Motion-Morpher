@@ -3,8 +3,6 @@ package com.eudycontreras.motionmorpherlibrary.extensions
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
-import com.eudycontreras.motionmorpherlibrary.Morpher
-import com.eudycontreras.motionmorpherlibrary.TranslationPositions
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
@@ -66,14 +64,4 @@ fun Context.getStatusBarHeight(): Int {
         result = resources.getDimensionPixelSize(resourceId)
     }
     return result
-}
-
-infix fun TranslationPositions.and(other: Morpher.TranslationPosition): TranslationPositions = TranslationPositions.of(other, *this.toTypedArray())
-
-infix fun TranslationPositions.has(other: TranslationPositions) = this.containsAll(other)
-
-infix fun TranslationPositions.has(other: Morpher.TranslationPosition) = this.contains(other)
-
-fun TranslationPositions.get(item: Morpher.TranslationPosition): Morpher.TranslationPosition {
-    return this.first { it == item}
 }

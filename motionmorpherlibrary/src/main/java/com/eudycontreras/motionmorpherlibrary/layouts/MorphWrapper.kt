@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.IdRes
 import com.eudycontreras.motionmorpherlibrary.R
+import com.eudycontreras.motionmorpherlibrary.interfaces.Clipable
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
 
 
@@ -16,7 +17,7 @@ import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.FrameLayout
  * @since July 19 2019
  */
 
-class MorphWrapper : FrameLayout, MorphContainer {
+class MorphWrapper : FrameLayout, MorphContainer, Clipable {
 
     @IdRes private var startViewId: Int = -1
     @IdRes private var endViewId: Int = -1
@@ -66,20 +67,7 @@ class MorphWrapper : FrameLayout, MorphContainer {
 
     override fun dispatchDraw(canvas: Canvas) {
 
-        val count = canvas.saveCount
-
-        val top = 0f
-        val left = 0f
-        val bottom = top + morphHeight
-        val right = left + morphWidth
-
-        mask.rewind()
-        mask.addRoundRect(left, top, right, bottom, morphCornerRadii.corners, Path.Direction.CCW)
-        mask.close()
-
-        canvas.clipPath(mask)
-
-        canvas.restoreToCount(count)
+        clipChildren(mask, canvas, cornerRadii.corners, morphWidth, morphHeight)
 
         super.dispatchDraw(canvas)
     }
@@ -90,5 +78,9 @@ class MorphWrapper : FrameLayout, MorphContainer {
 
     override fun getEndState(): MorphLayout {
         return this.findViewById<View>(endViewId) as MorphLayout
+    }
+
+    override fun hasStartState(): Boolean {
+        return startViewId != -1
     }
 }

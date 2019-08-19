@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="0dp"
+        android:translationZ="3dp"
+        android:background="@color/white"
+        android:backgroundTint="@color/white"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="2dp"
+        android:layout_gravity="center"
+        app:cl_clipCorners="true"
+        app:cl_shapeType="RECTANGULAR"
+        app:cl_radius="6dp">
+
+    <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
+            android:tag="demo2Image"
+            android:id="@+id/demo_2_image"
+            android:src="@drawable/background11"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+            android:id="@+id/demo_2_header"
+            android:ellipsize="marquee"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textAlignment="center"
+            android:text="The Dark Knight"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp"
+            android:background="@color/overlay_dark"
+            app:layout_constraintBottom_toBottomOf="@id/demo_2_image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:tag="demo2actions"
+            android:id="@+id/demo_2_actions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="@dimen/margin_medium"
+            android:paddingEnd="@dimen/margin_medium"
+            android:background="@color/white"
+            android:backgroundTint="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/demo_2_image">
+
+        <View
+                android:id="@+id/demo_2_favorite"
+                android:layout_weight="1"
+                android:backgroundTint="@color/icon_light"
+                android:background="@drawable/ic_favorite"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/demo_2_book"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+        <View
+                android:id="@+id/demo_2_book"
+                android:layout_weight="1.4"
+                android:backgroundTint="@color/icon_light"
+                android:background="@drawable/ic_bookmark"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        <View
+                android:id="@+id/demo_2_share"
+                android:layout_weight="1"
+                android:backgroundTint="@color/icon_light"
+                android:background="@drawable/ic_share"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/demo_2_book"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout>

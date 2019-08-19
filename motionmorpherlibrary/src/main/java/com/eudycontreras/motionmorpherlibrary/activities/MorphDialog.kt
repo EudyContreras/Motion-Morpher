@@ -8,9 +8,12 @@ import android.view.*
 import androidx.annotation.LayoutRes
 import androidx.annotation.StyleRes
 import androidx.fragment.app.DialogFragment
+import com.eudycontreras.motionmorpherlibrary.Action
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.R
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
+import java.util.*
 
 
 /**
@@ -22,14 +25,15 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphWrapper
  
 sealed class MorphDialog : DialogFragment() {
 
-    lateinit var morphView: MorphWrapper
+    lateinit var morphView: ConstraintLayout
 
     protected lateinit var activity: MorphActivity
 
     protected lateinit var morpher: Morpher
     protected lateinit var layout: ViewGroup
 
-    protected var showListener: ArrayList<((MorphWrapper) -> Unit)?> = ArrayList()
+    protected var createListener: LinkedList<((MorphLayout) -> Unit)?> = LinkedList()
+    protected var dismissRequestListener: LinkedList<Action> = LinkedList()
 
     @LayoutRes protected var layoutId: Int = -1
 
@@ -59,10 +63,11 @@ sealed class MorphDialog : DialogFragment() {
                     return
                 }
                 if (morpher.isMorphed) {
-                    morpher.morphFrom(onEnd = { super.onBackPressed() })
+                    dismissRequestListener.forEach {
+                        it?.invoke()
+                    }
                     return
                 }
-
                 super.onBackPressed()
             }
         }.apply {
@@ -74,11 +79,29 @@ sealed class MorphDialog : DialogFragment() {
         }
     }
 
-    fun addShowListener(listener: ((MorphWrapper) -> Unit)? ) {
-        this.showListener.add(listener)
+    fun addCreateListener(listener: ((MorphLayout) -> Unit)? ) {
+        this.createListener.add(listener)
     }
 
-    fun show(listener: ((MorphWrapper) -> Unit)? = null ) {
+    fun addDismissRequestListener(listener: Action ) {
+        this.dismissRequestListener.add(listener)
+    }
+
+    fun requestDismiss() {
+        dialog?.onBackPressed()
+    }
+
+    override fun dismiss() {
+        if (morpher.isMorphing) {
+            return
+        }
+        if (morpher.isMorphed) {
+            return
+        }
+        super.dismiss()
+    }
+
+    fun show(listener: ((MorphLayout) -> Unit)? = null ) {
         val prev = activity.supportFragmentManager.findFragmentByTag(this::class.java.simpleName)
 
         val fragmentTransaction = activity.supportFragmentManager.beginTransaction()
@@ -90,7 +113,7 @@ sealed class MorphDialog : DialogFragment() {
         fragmentTransaction.addToBackStack(null)
 
         listener?.let {
-            addShowListener(it)
+            addCreateListener(it)
         }
 
         this.show(fragmentTransaction, this::class.java.simpleName)
@@ -102,7 +125,7 @@ sealed class MorphDialog : DialogFragment() {
             morpher: Morpher,
             @LayoutRes layoutId: Int,
             @StyleRes layoutTheme: Int,
-            showListener: ((MorphWrapper) -> Unit)? = null
+            showListener: ((MorphLayout) -> Unit)? = null
         ): MorphDialogImpl {
 
             val fragment = MorphDialogImpl()
@@ -110,7 +133,7 @@ sealed class MorphDialog : DialogFragment() {
             fragment.morpher = morpher
             fragment.layoutId = layoutId
             fragment.layoutTheme = layoutTheme
-            fragment.addShowListener(showListener)
+            fragment.addCreateListener(showListener)
             return fragment
         }
 
@@ -120,14 +143,15 @@ sealed class MorphDialog : DialogFragment() {
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
             layout = inflater.inflate(R.layout.morph_dialog_container, container) as ViewGroup
-            inflater.inflate(layoutId, layout, true)
-            morphView = layout.getChildAt(0) as MorphWrapper
+            layoutInflater.inflate(layoutId, layout, true)
 
+            morphView = layout.getChildAt(0) as ConstraintLayout
+            morphView.morphAlpha = 0f
             morphView.post {
                 morpher.endView = morphView
-                showListener.forEach { it?.invoke(morphView) }
+                createListener.forEach { it?.invoke(morphView) }
             }
-
+            layout.background.alpha = 0
             morpher.backgroundDimListener = {
                 layout.background.alpha = (it * 255).toInt()
             }

@@ -14,6 +14,20 @@
         <attr name="mw_bottomRightCornerRadius" format="dimension" />
     </declare-styleable>
 
+   <!-- <declare-styleable name="MorphWrapperConstraint">
+        <attr name="mwc_startLayout" format="reference"/>
+        <attr name="mwc_endLayout" format="reference"/>
+        <attr name="mwc_shapeType" format="enum">
+            <enum name="CIRCULAR" value="0"/>
+            <enum name="RECTANGULAR" value="1"/>
+        </attr>
+        <attr name="mwc_radius" format="dimension"/>
+        <attr name="mwc_topLeftCornerRadius" format="dimension" />
+        <attr name="mwc_topRightCornerRadius" format="dimension" />
+        <attr name="mwc_bottomLeftCornerRadius" format="dimension" />
+        <attr name="mwc_bottomRightCornerRadius" format="dimension" />
+    </declare-styleable>
+-->
     <declare-styleable name="ConstraintLayout">
         <attr name="cl_state" format="enum">
             <enum name="START" value="0"/>
@@ -23,8 +37,12 @@
             <enum name="CIRCULAR" value="0"/>
             <enum name="RECTANGULAR" value="1"/>
         </attr>
-        <attr name="cl_radius" format="dimension"/>
+        <attr name="cl_placeholder" format="boolean"/>
+        <attr name="cl_animatedContainer" format="boolean"/>
+        <attr name="cl_clipCorners" format="boolean"/>
         <attr name="cl_animate" format="boolean"/>
+
+        <attr name="cl_radius" format="dimension"/>
         <attr name="cl_topLeftCornerRadius" format="dimension" />
         <attr name="cl_topRightCornerRadius" format="dimension" />
         <attr name="cl_bottomLeftCornerRadius" format="dimension" />
@@ -40,8 +58,13 @@
             <enum name="CIRCULAR" value="0"/>
             <enum name="RECTANGULAR" value="1"/>
         </attr>
-        <attr name="fl_radius" format="dimension"/>
+
+        <attr name="fl_placeholder" format="boolean"/>
+        <attr name="fl_animatedContainer" format="boolean"/>
+        <attr name="fl_clipCorners" format="boolean"/>
         <attr name="fl_animate" format="boolean"/>
+
+        <attr name="fl_radius" format="dimension"/>
         <attr name="fl_topLeftCornerRadius" format="dimension" />
         <attr name="fl_topRightCornerRadius" format="dimension" />
         <attr name="fl_bottomLeftCornerRadius" format="dimension" />
@@ -57,8 +80,12 @@
             <enum name="CIRCULAR" value="0"/>
             <enum name="RECTANGULAR" value="1"/>
         </attr>
-        <attr name="ll_radius" format="dimension"/>
+        <attr name="ll_placeholder" format="boolean"/>
+        <attr name="ll_animatedContainer" format="boolean"/>
+        <attr name="ll_clipCorners" format="boolean"/>
         <attr name="ll_animate" format="boolean"/>
+
+        <attr name="ll_radius" format="dimension"/>
         <attr name="ll_topLeftCornerRadius" format="dimension" />
         <attr name="ll_topRightCornerRadius" format="dimension" />
         <attr name="ll_bottomLeftCornerRadius" format="dimension" />
@@ -74,8 +101,11 @@
             <enum name="CIRCULAR" value="0"/>
             <enum name="RECTANGULAR" value="1"/>
         </attr>
-        <attr name="vl_radius" format="dimension"/>
+        <attr name="vl_animatedContainer" format="boolean"/>
+        <attr name="vl_placeholder" format="boolean"/>
         <attr name="vl_animate" format="boolean"/>
+
+        <attr name="vl_radius" format="dimension"/>
         <attr name="vl_topLeftCornerRadius" format="dimension" />
         <attr name="vl_topRightCornerRadius" format="dimension" />
         <attr name="vl_bottomLeftCornerRadius" format="dimension" />
@@ -96,13 +126,45 @@
             <enum name="CIRCULAR" value="0"/>
             <enum name="RECTANGULAR" value="1"/>
         </attr>
-        <attr name="tl_radius" format="dimension"/>
+        <attr name="tl_animatedContainer" format="boolean"/>
+        <attr name="tl_placeholder" format="boolean"/>
         <attr name="tl_animate" format="boolean"/>
+
+        <attr name="tl_radius" format="dimension"/>
         <attr name="tl_topLeftCornerRadius" format="dimension" />
         <attr name="tl_topRightCornerRadius" format="dimension" />
         <attr name="tl_bottomLeftCornerRadius" format="dimension" />
         <attr name="tl_bottomRightCornerRadius" format="dimension" />
     </declare-styleable>
 
+    <declare-styleable name="ImageLayout">
+    <attr name="il_state" format="enum">
+        <enum name="START" value="0"/>
+        <enum name="END" value="1"/>
+    </attr>
+    <attr name="il_shapeType" format="enum">
+        <enum name="CIRCULAR" value="0"/>
+        <enum name="RECTANGULAR" value="1"/>
+    </attr>
+    <attr name="il_animatedContainer" format="boolean"/>
+    <attr name="il_placeholder" format="boolean"/>
+    <attr name="il_animate" format="boolean"/>
+
+    <attr name="il_radius" format="dimension"/>
+    <attr name="il_topLeftCornerRadius" format="dimension" />
+    <attr name="il_topRightCornerRadius" format="dimension" />
+    <attr name="il_bottomLeftCornerRadius" format="dimension" />
+    <attr name="il_bottomRightCornerRadius" format="dimension" />
+</declare-styleable>
+
     <declare-styleable name="FabLayout"/>
+
+    <declare-styleable name="RoundedImageView">
+        <attr name="riv_radius" format="dimension"/>
+        <attr name="riv_topLeftCornerRadius" format="dimension" />
+        <attr name="riv_topRightCornerRadius" format="dimension" />
+        <attr name="riv_bottomLeftCornerRadius" format="dimension" />
+        <attr name="riv_bottomRightCornerRadius" format="dimension" />
+    </declare-styleable>
+
 </resources>

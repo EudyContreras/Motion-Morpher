@@ -191,7 +191,7 @@ class RevealUtilityRectangular private constructor(private val target: View) : D
         revealParticle!!.setMaxWidth(revealMaxWidth)
         revealParticle!!.setMaxHeight(revealMaxHeight)
 
-        return Bounds(0f, 0f, usableWidth.toFloat(), usableHeight.toFloat())
+        return Bounds(0, 0, usableWidth.toFloat(), usableHeight.toFloat())
     }
 
     private fun drawReveal(canvas: Canvas) {

@@ -1,12 +1,13 @@
+/*
 package com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts
 
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.drawable.*
 import android.util.AttributeSet
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewPropertyAnimator
+import android.startView.View
+import android.startView.ViewGroup
+import android.startView.ViewPropertyAnimator
 import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
@@ -18,12 +19,13 @@ import com.eudycontreras.motionmorpherlibrary.properties.ViewBounds
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-
+*/
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 19 2019
- */
+ *//*
+
 
 class FabLayout: FloatingActionButton, MorphLayout {
 
@@ -173,10 +175,10 @@ class FabLayout: FloatingActionButton, MorphLayout {
             bounds.paddings.bottom = this.paddingBottom
 
             doWith(layoutParams as ViewGroup.MarginLayoutParams) {
-                bounds.margins.top = it.topMargin
-                bounds.margins.start = it.marginStart
-                bounds.margins.end = it.marginEnd
-                bounds.margins.bottom = it.bottomMargin
+                bounds.margings.top = it.topMargin
+                bounds.margings.start = it.marginStart
+                bounds.margings.end = it.marginEnd
+                bounds.margings.bottom = it.bottomMargin
             }
 
             return bounds
@@ -285,7 +287,7 @@ class FabLayout: FloatingActionButton, MorphLayout {
         }
     }
 
-    override fun getView(): View  = this
+    override fun getStartView(): View  = this
 
     override fun isFloatingActionButton(): Boolean = true
 
@@ -357,3 +359,4 @@ class FabLayout: FloatingActionButton, MorphLayout {
 
     override fun toString(): String = tag.toString()
 }
+*/

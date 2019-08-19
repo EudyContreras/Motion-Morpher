@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#00838F</color>
-    <color name="colorPrimaryDark">#01616B</color>
+    <color name="colorPrimary">#1D1C1C</color>
+    <color name="colorPrimaryDark">#1A1B1B</color>
+    <color name="colorPrimaryLight">#252525</color>
+    <color name="colorPrimaryVeryLight">#333333</color>
+
     <color name="colorAccent">#ffffff</color>
 
     <color name="fab">#F9A825</color>
 
+    <color name="gold">#FF8F00</color>
+    <color name="orange">#ff6d00</color>
+
+    <color name="overlay">#54000000</color>
+    <color name="overlay_dark">#54000000</color>
+    <color name="overlay_light">#12000000</color>
+
+    <color name="light_gray">#DEDEDE</color>
     <color name="shell_white">#FEFEFE</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#212121</color>
     <color name="icon">#616161</color>
+    <color name="icon_light">#CCCCCC</color>
     <color name="icon_dark">#313131</color>
-    <color name="text">#414141</color>
+
+    <color name="text">#484848</color>
+    <color name="text_light">#616161</color>
+    <color name="text_dark">#303030</color>
 </resources>

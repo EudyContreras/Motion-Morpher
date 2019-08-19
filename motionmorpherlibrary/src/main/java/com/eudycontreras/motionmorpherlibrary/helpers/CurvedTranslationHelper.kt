@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.helpers
 
-import com.eudycontreras.motionmorpherlibrary.properties.Coordintates
+import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.StrictMath.pow
 import kotlin.math.round
 
@@ -9,7 +9,6 @@ import kotlin.math.round
  * @author Eudy Contreras.
  * @since July 19 2019
  *
- * Uses algorithm from: http://en.wikipedia.org/wiki/B%C3%A9zier_curve
  */
 
 class CurvedTranslationHelper(
@@ -18,44 +17,55 @@ class CurvedTranslationHelper(
     fromY: Float = 0f,
     toY: Float = 0f
 ) {
-    private var startPoint: Coordintates = Coordintates(fromX, fromY)
-    private var endPoint: Coordintates = Coordintates(toX, toY)
+    private var startPoint: Coordinates = Coordinates(fromX, fromY)
+    private var endPoint: Coordinates = Coordinates(toX, toY)
 
-    private var controlPoint: Coordintates = Coordintates.midPoint(startPoint, endPoint)
+    private var controlPoint: Coordinates = Coordinates.midPoint(startPoint, endPoint)
 
-    fun setStartPoint(start: Coordintates) {
+    fun setStartPoint(start: Coordinates) {
         startPoint = start
     }
 
     fun setStartPoint(x: Float, y: Float) {
-        setStartPoint(Coordintates(x, y))
+        setStartPoint(Coordinates(x, y))
     }
 
-    fun setEndPoint(end: Coordintates) {
+    fun setEndPoint(end: Coordinates) {
         endPoint = end
     }
 
     fun setEndPoint(x: Float, y: Float) {
-        setEndPoint(Coordintates(x, y))
+        setEndPoint(Coordinates(x, y))
     }
 
-    fun setControlPoint(control: Coordintates) {
+    fun setControlPoint(control: Coordinates) {
         controlPoint = control
     }
 
     fun setControlPoint(x: Float, y: Float) {
-        setControlPoint(Coordintates(x, y))
+        setControlPoint(Coordinates(x, y))
     }
 
-    fun getCurvedTranslationX(scale: Float): Double {
-        return calcBezier(scale.toDouble(), startPoint.x, controlPoint.x, endPoint.x)
+    fun getCurvedTranslationX(fraction: Float): Double {
+        return calcBezier(fraction.toDouble(), startPoint.x, controlPoint.x, endPoint.x)
     }
 
-    fun getCurvedTranslationY(scale: Float): Double {
-        return calcBezier(scale.toDouble(), startPoint.y, controlPoint.y, endPoint.y)
+    fun getCurvedTranslationX(fraction: Float, startX: Float, endX: Float, controlX: Float): Double {
+        return calcBezier(fraction.toDouble(), startX, controlX, endX)
     }
 
-    private fun calcBezier(scale: Double, start: Float, control: Float, end: Float): Double {
-        return round(pow(((1.0 - scale)), 2.0) * start) + (2.0 * (1.0 - scale) * scale * control) + (pow(scale, 2.0) * end)
+    fun getCurvedTranslationY(fraction: Float): Double {
+        return calcBezier(fraction.toDouble(), startPoint.y, controlPoint.y, endPoint.y)
+    }
+
+    fun getCurvedTranslationY(fraction: Float, startY: Float, endY: Float, controlY: Float): Double {
+        return calcBezier(fraction.toDouble(), startY, controlY, endY)
+    }
+
+    /**
+     * algorithm from: http://en.wikipedia.org/wiki/B%C3%A9zier_curve
+     */
+    private fun calcBezier(fraction: Double, start: Float, control: Float, end: Float): Double {
+        return round(pow(((1.0 - fraction)), 2.0) * start) + (2.0 * (1.0 - fraction) * fraction * control) + (pow(fraction, 2.0) * end)
     }
 }

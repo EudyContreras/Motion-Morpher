@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools" package="com.eudycontreras.motionmorpher">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.eudycontreras.motionmorpher">
 
     <application
             android:allowBackup="true"
+            android:fullBackupContent="@xml/backup_descriptor"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme" android:fullBackupContent="@xml/backup_descriptor"
+            android:theme="@style/AppTheme"
             tools:ignore="GoogleAppIndexingWarning">
-       <!-- <activity
+        <!--
+         <activity
                 android:name=".examples.demo1.ActivityDemo1"
                 android:label="@string/title_activity_demo1"
                 android:theme="@style/AppTheme.NoActionBar">
-        </activity>-->
-        <activity android:name=".examples.demo1.ActivityDemo1">
+        </activity>
+          <activity
+                android:name=".examples.demo1.ActivityDemo2"
+                android:label="@string/title_activity_demo2"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        -->
+        <activity android:name=".examples.demo2.ActivityDemo2">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
