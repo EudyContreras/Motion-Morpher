@@ -1,0 +1,46 @@
+ELEMENT TYPES:
+
+    1. Persistent element
+        A persistent element’s transformation, such as a navigation icon, starts and ends on screen.
+
+    2. Outgoing element
+        An outgoing element, such as a title, exits the screen by fading out.
+
+    4. Incoming element
+        An incoming element, such as each of these action items, enters the screen by fading in.
+
+    5. Static element
+        A static element, such as the overflow menu, doesn’t transform.
+
+TRANSITION TYPES:
+
+    1. Tween
+        displays a seamless progression of changes applied to a component or element over time.
+        For example, a switch can move smoothly across a screen by tweening to its position,
+        or a floating action button (FAB) can transform into a card by tweening FAB size and corner radius.
+
+    2. Fade (Fade-Through, Dissolve, Crossed-Dissolved)
+        refers to tweening an element’s opacity. Even when elements have properties that don’t have
+        intermediate states, fading can create smooth transitions. For example, an image can transition
+        to another image by fading the opacity of one to reveal the other.
+
+    3. Transform or Morph
+        involves synchronizing element movements to enhance continuity. For example, if a FAB suddenly displays a
+        different icon, it could be distracting. A shared transformation smoothly expresses a change in icons while the icons are in motion.
+
+EASING TYPES:
+
+    1. Standard
+        Used for creating unified expressions (FastOutSlowIn)
+
+    2. Incoming
+        Used for elements entering the scene (LinearOutSlowIn)
+
+    3. Outgoing
+        Used for elements exiting the scene (FastOutLinearIn)
+
+    When creating a morph transition elements coming out of the scene should use exit easing while elements coming into the scene should
+    use enter easing in order to create a persistent and unified effect.
+
+    Outgoing elements dissapear at 30% of the duration while the incoming appear for the rest of the duration.
+    Persistent elements animate through the whole duration.

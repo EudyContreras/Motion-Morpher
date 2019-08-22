@@ -199,7 +199,7 @@ class Morpher(private val context: Context) {
 
         placeholders.forEach {
             // it.morphPivotY = it.morphHeight * MAX_OFFSET
-            //it.morphPivotX = MIN_OFFSET
+            //it.morphPivotX = it.morphWidth * 0.45f
         } // TODO("Find out how to calculate this dynamically")
 
         startingState.translationX =  startingState.windowLocationX.toFloat() - endingState.windowLocationX.toFloat()
@@ -355,7 +355,7 @@ class Morpher(private val context: Context) {
         }
     }
 
-    private fun applyPivots(
+    /*private fun applyPivots(
         start: MorphLayout,
         end: MorphLayout
     ) {
@@ -372,7 +372,7 @@ class Morpher(private val context: Context) {
 
         end.morphWidth = end.morphWidth
         end.morphHeight = end.morphHeight
-    }
+    }*/
 
     private fun adjustChildAnimations(
         endView: MorphLayout,
@@ -817,10 +817,13 @@ class Morpher(private val context: Context) {
                         MorphView.makeMorphable(endChild)
                     }
 
-                    val startProps = start.getProperties()
-                    val endProps = end.getProperties()
+                    if (!end.placeholder) {
 
-                    mappings.add(MorphMap(start, end, startProps, endProps))
+                        val startProps = start.getProperties()
+                        val endProps = end.getProperties()
+
+                        mappings.add(MorphMap(start, end, startProps, endProps))
+                    }
                 }
             }
         }

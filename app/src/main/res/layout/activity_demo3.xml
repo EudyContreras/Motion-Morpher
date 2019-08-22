@@ -9,107 +9,107 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:rowCount="3"
-            android:columnCount="2"
+            android:columnCount="1"
             android:useDefaultMargins="true"
             android:id="@+id/grid"
-            tools:context=".examples.demo2.ActivityDemo3">
+            tools:context=".examples.demo3.ActivityDemo3">
 
         <include
                 android:id="@+id/cardLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
         <include
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
-                layout="@layout/activity_demo2_card"/>
+                layout="@layout/activity_demo3_card"/>
 
     </GridLayout>
 </ScrollView>

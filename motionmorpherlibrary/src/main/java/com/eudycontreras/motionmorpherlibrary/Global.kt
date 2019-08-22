@@ -16,7 +16,9 @@ import kotlin.reflect.KProperty
 const val MAX_OFFSET: Float = 1f
 const val MIN_OFFSET: Float = 0f
 
-const val DEFAULT_COLOR = 0x000000
+const val MIN_DURATION: Long = 0L
+
+const val DEFAULT_COLOR: Int = 0x000000
 
 fun interpolate(from: Int, to: Int, fraction: Float): Float {
     return from + (to - from) * fraction

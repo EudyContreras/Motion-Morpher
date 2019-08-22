@@ -9,7 +9,9 @@ import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
+import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 import com.eudycontreras.motionmorpherlibrary.interactions.Explode
+import com.eudycontreras.motionmorpherlibrary.interpolators.MaterialInterpolator
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
@@ -51,12 +53,12 @@ class ActivityDemo2 : MorphActivity() {
 
     fun testMorphing() {
 
-        val interpolator = FastOutSlowInInterpolator()
+        val interpolator = MaterialInterpolator(Interpolation.FAST_OUT_SLOW_IN)
 
         choreographer = Choreographer(this)
 
-        choreographer.morpher.morphIntoDuration = 650
-        choreographer.morpher.morphFromDuration = 650
+        choreographer.morpher.morphIntoDuration = 1450
+        choreographer.morpher.morphFromDuration = 1350
 
         choreographer.morpher.animateChildren = true
         choreographer.morpher.useArcTranslator = false
@@ -64,20 +66,20 @@ class ActivityDemo2 : MorphActivity() {
         choreographer.morpher.morphIntoInterpolator = interpolator
         choreographer.morpher.morphFromInterpolator = interpolator
 
-        choreographer.morpher.dimPropertyInto.interpolateOffsetStart = 0.4f
-        choreographer.morpher.dimPropertyInto.interpolateOffsetEnd = 1.0f
+        choreographer.morpher.dimPropertyInto.interpolateOffsetStart = 0f
+        choreographer.morpher.dimPropertyInto.interpolateOffsetEnd = 0.7f
 
         choreographer.morpher.dimPropertyFrom.interpolateOffsetStart = 0f
         choreographer.morpher.dimPropertyFrom.interpolateOffsetEnd = 0.6f
 
+        choreographer.morpher.containerChildStateIn.duration = 1300
         choreographer.morpher.containerChildStateIn.animateOnOffset = 0f
-        choreographer.morpher.containerChildStateIn.durationMultiplier = -0.15f
-        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierX = 0.04f
-        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierY = 0.04f
-        choreographer.morpher.containerChildStateIn.stagger?.staggerOffset = 0.07f
-        choreographer.morpher.containerChildStateIn.interpolator = interpolator
+        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierX = 0.02f
+        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierY = 0.02f
+        choreographer.morpher.containerChildStateIn.stagger?.staggerOffset = 0.12f
+        choreographer.morpher.containerChildStateIn.interpolator = FastOutSlowInInterpolator()
 
-        choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 1f).apply {
+        choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 0.7f).apply {
             outInterpolator = interpolator
             inInterpolator = interpolator
             //animationStaggerOut = AnimationStagger(0f, type = Stagger.LINEAR)

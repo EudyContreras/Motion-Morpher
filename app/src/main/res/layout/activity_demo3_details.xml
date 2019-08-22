@@ -17,9 +17,9 @@
         app:layout_constraintVertical_bias="0.7">
 
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
-            android:tag="demo2Image"
-            android:id="@+id/demo_2_image"
-            android:src="@drawable/background11"
+            android:tag="demo3Image"
+            android:id="@+id/demo_3_image"
+            android:src="@drawable/background6"
             android:backgroundTint="@color/white"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
@@ -30,7 +30,7 @@
             app:layout_constraintTop_toTopOf="parent"/>
 
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
-            android:id="@+id/demo_2_header"
+            android:id="@+id/demo_3_header"
             android:ellipsize="marquee"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -38,13 +38,13 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:textAlignment="center"
-            android:text="The Dark Knight"
+            android:text="John Wick: Episode 3"
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:background="@color/overlay_dark"
             android:visibility="visible"
             app:tl_placeholder="true"
-            app:layout_constraintBottom_toBottomOf="@id/demo_2_image"
+            app:layout_constraintBottom_toBottomOf="@id/demo_3_image"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -59,42 +59,45 @@
             android:clipChildren="false"
             app:cl_animate="false"
             app:cl_animatedContainer="true"
-            app:layout_constraintTop_toBottomOf="@id/demo_2_image"
+            app:layout_constraintTop_toBottomOf="@id/demo_3_image"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
         <!-- <View
-            android:id="@+id/demo_2_details_logo"
+            android:id="@+id/demo_3_details_logo"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:background="@drawable/logo_img"
             android:layout_marginStart="@dimen/margin_large"
             android:layout_marginTop="@dimen/margin_large"
-            app:layout_constraintTop_toBottomOf="@id/demo_2_image"
+            app:layout_constraintTop_toBottomOf="@id/demo_3_image"
             app:layout_constraintStart_toStartOf="parent"/>-->
 
         <View
-                android:id="@+id/demo_2_app_icon"
-                android:background="@drawable/app_icon_alt"
+                android:id="@+id/demo_3_app_icon"
+                android:background="@drawable/logo_alt"
                 android:layout_width="65dp"
                 android:layout_height="65dp"
+                android:elevation="4dp"
+                android:translationZ="4dp"
                 android:layout_marginTop="@dimen/margin_XL"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
         <TextView
-                android:id="@+id/demo_2_details_header"
+                android:id="@+id/demo_3_details_header"
                 android:ellipsize="marquee"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_dark"
-                android:textSize="34sp"
+                android:textSize="28sp"
+                android:textStyle="bold"
                 android:textAlignment="center"
-                android:fontFamily="sans-serif-medium"
-                android:text="The Dark Knight"
+                android:fontFamily="sans-serif"
+                android:text="John Wick: Episode 3"
                 android:paddingTop="16dp"
                 android:layout_marginStart="@dimen/margin_large"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/demo_2_app_icon"/>
+                app:layout_constraintStart_toEndOf="@+id/demo_3_app_icon"/>
 
         <RatingBar
                 style="@style/customRatingBar"
@@ -113,11 +116,11 @@
                 android:layout_marginBottom="6dp"
                 android:layout_marginStart="18dp"
                 android:layout_marginTop="@dimen/margin_normal"
-                app:layout_constraintTop_toBottomOf="@+id/demo_2_details_header"
-                app:layout_constraintStart_toEndOf="@+id/demo_2_app_icon"/>
+                app:layout_constraintTop_toBottomOf="@+id/demo_3_details_header"
+                app:layout_constraintStart_toEndOf="@+id/demo_3_app_icon"/>
 
         <TextView
-                android:id="@+id/demo_2_text_details"
+                android:id="@+id/demo_3_text_details"
                 android:ellipsize="marquee"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -130,23 +133,23 @@
                 android:layout_marginTop="@dimen/margin_large"
                 android:layout_marginBottom="8dp"
                 android:layout_marginEnd="@dimen/margin_medium"
-                app:layout_constraintTop_toBottomOf="@id/demo_2_app_icon"
-                app:layout_constraintStart_toStartOf="@id/demo_2_app_icon"
+                app:layout_constraintTop_toBottomOf="@id/demo_3_app_icon"
+                app:layout_constraintStart_toStartOf="@id/demo_3_app_icon"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintVertical_bias="0.61"/>
 
         <View
-                android:id="@+id/demo_2_details_divider"
+                android:id="@+id/demo_3_details_divider"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="@dimen/margin_large"
                 android:layout_marginBottom="24dp"
                 android:layout_marginEnd="14dp"
                 android:background="@color/light_gray"
-                app:layout_constraintTop_toBottomOf="@id/demo_2_text_details"/>
+                app:layout_constraintTop_toBottomOf="@id/demo_3_text_details"/>
 
         <TextView
-                android:id="@+id/demo_2_details_tags_label"
+                android:id="@+id/demo_3_details_tags_label"
                 android:ellipsize="marquee"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -159,17 +162,17 @@
                 android:layout_marginTop="@dimen/margin_large"
                 android:layout_marginBottom="8dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/demo_2_details_divider"/>
+                app:layout_constraintTop_toBottomOf="@+id/demo_3_details_divider"/>
 
         <LinearLayout
-                android:id="@+id/demo_2_details_tags"
+                android:id="@+id/demo_3_details_tags"
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="12dp"
                 android:layout_marginTop="@dimen/margin_large"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/demo_2_details_tags_label">
+                app:layout_constraintTop_toBottomOf="@+id/demo_3_details_tags_label">
 
             <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                     android:text="SD"
@@ -238,7 +241,7 @@
         </LinearLayout>
 
         <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
-                android:id="@+id/demo_2_details_add"
+                android:id="@+id/demo_3_details_add"
                 android:backgroundTint="@color/colorPrimaryLight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -251,14 +254,14 @@
                 android:layout_marginTop="@dimen/margin_XXL"
                 android:elevation="1dp"
                 android:translationZ="4dp"
+                app:tl_radius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/demo_2_details_tags"
-                app:layout_constraintBottom_toTopOf="@id/demo_2_details_related"
-                app:tl_radius="6dp"/>
+                app:layout_constraintTop_toBottomOf="@+id/demo_3_details_tags"
+                app:layout_constraintBottom_toTopOf="@id/demo_3_details_related"/>
 
         <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
-                android:id="@+id/demo_2_details_related"
+                android:id="@+id/demo_3_details_related"
                 android:ellipsize="marquee"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -270,16 +273,16 @@
                 android:text="Similar movies"
                 android:paddingBottom="8dp"
                 android:layout_marginTop="@dimen/margin_XL"
-                app:layout_constraintTop_toBottomOf="@id/demo_2_details_add"
+                app:layout_constraintTop_toBottomOf="@id/demo_3_details_add"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
 
     </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout>
 
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
-            android:tag="demo2actions"
-            android:id="@+id/demo_2_actions"
-            android:layout_width="0dp"
+            android:tag="demo3actions"
+            android:id="@+id/demo_3_actions"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:clipChildren="false"
@@ -290,16 +293,12 @@
             android:paddingEnd="@dimen/margin_medium"
             android:backgroundTint="@color/white"
             android:visibility="visible"
-            android:scaleX="3"
-            android:scaleY="3"
-            android:transformPivotX="50dp"
-            android:transformPivotY="0dp"
             app:cl_placeholder="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/demo_2_image">
+            app:layout_constraintTop_toBottomOf="@id/demo_3_image">
         <View
-                android:id="@+id/demo_2_favorite"
+                android:id="@+id/demo_3_favorite"
                 android:layout_weight="1"
                 android:backgroundTint="@color/icon_light"
                 android:background="@drawable/ic_favorite"
@@ -307,11 +306,11 @@
                 android:layout_height="24dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/demo_2_book"
+                app:layout_constraintEnd_toStartOf="@id/demo_3_book"
                 app:layout_constraintStart_toStartOf="parent"/>
 
         <View
-                android:id="@+id/demo_2_book"
+                android:id="@+id/demo_3_book"
                 android:layout_weight="1.4"
                 android:backgroundTint="@color/icon_light"
                 android:background="@drawable/ic_bookmark"
@@ -323,7 +322,7 @@
                 app:layout_constraintEnd_toEndOf="parent"/>
 
         <View
-                android:id="@+id/demo_2_share"
+                android:id="@+id/demo_3_share"
                 android:layout_weight="1"
                 android:backgroundTint="@color/icon_light"
                 android:background="@drawable/ic_share"
@@ -331,7 +330,7 @@
                 android:layout_height="24dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/demo_2_book"
+                app:layout_constraintStart_toEndOf="@id/demo_3_book"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
     </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout>
@@ -345,7 +344,7 @@
             android:background="@color/overlay_light"
             app:titleTextColor="@color/white"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:menu="@menu/menu_demo_2_details"
+            app:menu="@menu/menu_demo_3_details"
             app:popupTheme="@style/AppTheme.PopupOverlay"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

@@ -1,19 +1,13 @@
-TODO PRIORITY 1:
+TO
 
-    Morph icons
-    Optimize layout transition
-    Cull children for lighter transition
-    Deal with BitmapDrawable transitions (Images)
-    Deal with VectorDrawable transitions (Icons, etc)
-    Allow backgrounds of MorphLayouts to have ripples
-    Each morph animated property should be able to be animated with different timings
+1. Persistent element
+A persistent element’s transformation, such as a navigation icon, starts and ends on screen.
 
-    Test share transitions on the first demo
+2. Outgoing element
+An outgoing element, such as a title, exits the screen by fading out.
 
-    DEMO 2:
-        If a focal element is used. The start layout must bind its transformation to the end layout. The focal element on the end layout must
-        take the shape and form of the element in the start layout
+3. Incoming element
+An incoming element, such as each of these action items, enters the screen by fading in.
 
-
-LIMITATIONS:
-
+4. Static element
+A static element, such as the overflow menu, doesn’t transform.

@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/root"
-        tools:context=".examples.demo2.ActivityDemo2">
+        tools:context=".examples.demo2.ActivityDemo3">
 
     <include
             android:id="@+id/cardLayout"

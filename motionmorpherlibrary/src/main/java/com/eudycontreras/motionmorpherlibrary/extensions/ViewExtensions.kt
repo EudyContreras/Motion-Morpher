@@ -101,8 +101,8 @@ fun MorphLayout.applyProps(props: Morpher.Properties) {
     morphTranslationX = props.translationX
     morphTranslationY = props.translationY
     morphTranslationZ = props.translationZ
-    morphPivotX = morphWidth
-    morphPivotY = morphHeight
+    /*morphPivotX = morphWidth
+    morphPivotY = morphHeight*/
     morphRotation = props.rotation
     morphRotationX = props.rotationX
     morphRotationY = props.rotationY

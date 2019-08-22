@@ -2,7 +2,6 @@ package com.eudycontreras.motionmorpherlibrary.interpolators
 
 import android.animation.TimeInterpolator
 import androidx.core.view.animation.PathInterpolatorCompat
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 import java.lang.StrictMath.pow
 import kotlin.math.sin
@@ -29,7 +28,7 @@ class MaterialInterpolator(private val type: Interpolation? = null): TimeInterpo
             Interpolation.QUINT_IN_OUT -> PathInterpolatorCompat.create(.86f, 0f, .07f, 1f)
             Interpolation.CUBIC_IN_OUT -> PathInterpolatorCompat.create(.645f, .045f, .355f, 1f)
             Interpolation.FAST_OUT_SLOW_IN -> PathInterpolatorCompat.create(.065f, .85f, .18f, 1f)
-            else -> FastOutSlowInInterpolator()
+            else -> PathInterpolatorCompat.create(0.4f, 0.0f, 0.2f, 1f)
     }
 
     override fun getInterpolation(fraction: Float): Float {

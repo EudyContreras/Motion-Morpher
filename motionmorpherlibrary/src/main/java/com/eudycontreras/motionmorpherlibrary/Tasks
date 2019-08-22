@@ -1,0 +1,8 @@
+Staggering:
+    1. Group element by level with adjustable margin
+        Elements grouped horizontally should stagger at the same time if they overlap eachother.
+
+    2. Staggering direction is buggy
+        When animating a directional stagger the growth direction should be taken under consideration
+        in order to animate the items in the right direction
+
