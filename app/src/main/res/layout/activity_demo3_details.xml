@@ -73,16 +73,7 @@
             app:layout_constraintTop_toBottomOf="@id/demo_3_image"
             app:layout_constraintStart_toStartOf="parent"/>-->
 
-        <View
-                android:id="@+id/demo_3_app_icon"
-                android:background="@drawable/app_logo"
-                android:layout_width="65dp"
-                android:layout_height="65dp"
-                android:elevation="4dp"
-                android:translationZ="4dp"
-                android:layout_marginTop="@dimen/margin_XL"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
+
         <TextView
                 android:id="@+id/demo_3_details_header"
                 android:ellipsize="marquee"
@@ -94,9 +85,9 @@
                 android:textAlignment="center"
                 android:fontFamily="sans-serif-black"
                 android:text="John Wick: Episode 3"
-                android:layout_marginStart="@dimen/margin_large"
-                app:layout_constraintTop_toTopOf="@id/demo_3_app_icon"
-                app:layout_constraintStart_toEndOf="@+id/demo_3_app_icon"/>
+                android:layout_marginTop="@dimen/margin_large"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
 
         <RatingBar
                 style="@style/customRatingBar"
@@ -113,10 +104,9 @@
                 android:secondaryProgressTint="@color/colorPrimaryVeryLight"
                 android:theme="@style/customRatingBar"
                 android:layout_marginBottom="6dp"
-                android:layout_marginStart="18dp"
                 android:layout_marginTop="@dimen/margin_normal"
                 app:layout_constraintTop_toBottomOf="@+id/demo_3_details_header"
-                app:layout_constraintStart_toEndOf="@+id/demo_3_app_icon"/>
+                app:layout_constraintStart_toStartOf="parent"/>
 
         <TextView
                 android:id="@+id/demo_3_text_details"
@@ -130,12 +120,11 @@
                 android:lineSpacingMultiplier="1.1"
                 android:text="When the menace known as The Joker emerges from his mysterious past, he wreaks havoc and chaos on the people of Gotham.."
                 android:layout_marginTop="@dimen/margin_large"
-                android:layout_marginBottom="8dp"
                 android:layout_marginEnd="@dimen/margin_medium"
-                app:layout_constraintTop_toBottomOf="@id/demo_3_app_icon"
-                app:layout_constraintStart_toStartOf="@id/demo_3_app_icon"
+                app:layout_constraintTop_toBottomOf="@id/deal_item_rating_bar"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintVertical_bias="0.61"/>
+        />
 
         <View
                 android:id="@+id/demo_3_details_divider"
@@ -241,7 +230,7 @@
 
         <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
                 android:id="@+id/demo_3_details_add"
-                android:backgroundTint="@color/colorPrimaryLight"
+                android:backgroundTint="@color/colorPrimaryVeryLight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
@@ -335,6 +324,18 @@
                 app:layout_constraintEnd_toEndOf="parent"/>
 
     </com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout>
+
+    <View
+            android:id="@+id/demo_3_app_icon"
+            android:background="@drawable/app_logo"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:elevation="4dp"
+            android:translationZ="10dp"
+            android:layout_marginEnd="@dimen/margin_XL"
+            app:layout_constraintTop_toBottomOf="@id/demo_3_image"
+            app:layout_constraintBottom_toBottomOf="@id/demo_3_image"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"

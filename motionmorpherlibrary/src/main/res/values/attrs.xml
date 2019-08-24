@@ -15,25 +15,25 @@
     </declare-styleable>
 
     <declare-styleable name="ViewGroup">
-        <attr name="morphview_shapeType" format="enum">
+        <attr name="morphLayout_shapeType" format="enum">
             <enum name="CIRCULAR" value="0"/>
             <enum name="RECTANGULAR" value="1"/>
         </attr>
-        <attr name="morphview_elementType" format="enum">
+        <attr name="morphLayout_elementType" format="enum">
             <enum name="PERSISTENT" value="0"/>
             <enum name="INCOMING" value="1"/>
             <enum name="OUTGOING" value="2"/>
             <enum name="STATIC" value="3"/>
         </attr>
-        <attr name="morphview_animatedContainer" format="boolean"/>
-        <attr name="morphview_clipToOutline" format="boolean"/>
-        <attr name="morphview_animated" format="boolean"/>
+        <attr name="morphLayout_animatedContainer" format="boolean"/>
+        <attr name="morphLayout_clipToOutline" format="boolean"/>
+        <attr name="morphLayout_animated" format="boolean"/>
 
-        <attr name="morphview_radius" format="dimension"/>
-        <attr name="morphview_topLeftCornerRadius" format="dimension" />
-        <attr name="morphview_topRightCornerRadius" format="dimension" />
-        <attr name="morphview_bottomLeftCornerRadius" format="dimension" />
-        <attr name="morphview_bottomRightCornerRadius" format="dimension" />
+        <attr name="morphLayout_radius" format="dimension"/>
+        <attr name="morphLayout_topLeftCornerRadius" format="dimension" />
+        <attr name="morphLayout_topRightCornerRadius" format="dimension" />
+        <attr name="morphLayout_bottomLeftCornerRadius" format="dimension" />
+        <attr name="morphLayout_bottomRightCornerRadius" format="dimension" />
     </declare-styleable>
 
     <declare-styleable name="View">
