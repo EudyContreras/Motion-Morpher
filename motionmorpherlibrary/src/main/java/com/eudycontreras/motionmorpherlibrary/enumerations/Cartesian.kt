@@ -7,7 +7,8 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  * @since August 15 2019
  */
 
-
 enum class Cartesian {
-    HORIZONTAL, VERTICAL, BOTH
+    HORIZONTAL,
+    VERTICAL,
+    BOTH
 }

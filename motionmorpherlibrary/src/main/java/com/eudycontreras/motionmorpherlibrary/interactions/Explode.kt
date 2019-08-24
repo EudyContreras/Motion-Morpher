@@ -99,40 +99,36 @@ class Explode(
         }
 
         this.nodes = LinkedList(nodes.sortedByDescending { it.distance })
-
-        animationStaggerOut?.let {
-            applyStagger(it, AnimationType.REVEAL)
-        }
     }
 
     override fun applyStagger(animationStagger: AnimationStagger?, animationType: AnimationType) {
         /*
          * If the stagger is null or the offset is 0 or the duration is 0 return.
-         */
-        if (animationStagger == null || animationStagger.staggerOffset == MIN_OFFSET || duration == MIN_DURATION) {
-            val animationNode = Node(
-                view = endView,
-                distance = MIN_OFFSET,
-                translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-                translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-                epicenter = true
-            )
-            nodes.addFirst(animationNode)
-            return
-        }
+                */
+                if (animationStagger == null || animationStagger.staggerOffset == MIN_OFFSET || duration == MIN_DURATION) {
+                    val animationNode = Node(
+                        view = endView,
+                        distance = MIN_OFFSET,
+                        translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                        translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                        epicenter = true
+                    )
+                    nodes.addFirst(animationNode)
+                    return
+                }
 
-        /*
-         * When an epicenter is available sort and group the list of nodes by distance.
-         */
-        val nodesGroups = when (animationType) {
-            AnimationType.CONCEAL -> {
-                nodes = LinkedList(nodes.filter { it.distance != MIN_OFFSET }.sortedBy { it.distance })
-                nodes.groupBy { it.distance }
-            }
-            AnimationType.REVEAL -> {
-                nodes = LinkedList(nodes.sortedByDescending { it.distance })
-                nodes.groupBy { it.distance }
-            }
+            /*
+             * When an epicenter is available sort and group the list of nodes by distance.
+             */
+                val nodesGroups = when (animationType) {
+                AnimationType.CONCEAL -> {
+                    nodes = LinkedList(nodes.filter { it.distance != MIN_OFFSET }.sortedBy { it.distance })
+                    nodes.groupBy { it.distance }
+                }
+                AnimationType.REVEAL -> {
+                    nodes = LinkedList(nodes.sortedByDescending { it.distance })
+                    nodes.groupBy { it.distance }
+                }
         }
         /*
          * The total amount of stagger is created by multiplying the duration by the offset of the stagger.
@@ -286,26 +282,22 @@ class Explode(
             val translationX = node.translationX
             val translationY = node.translationY
 
+            stretch?.let {
+                StretchAnimationHelper.applyStretch(node.view, translationY, it, node.view.morphTranslationY)
+            }
+
             when(animationType) {
                 AnimationType.REVEAL -> {
                     val interpolatedFraction = outInterpolator?.getInterpolation(mappedRation) ?: mappedRation
 
                     node.view.morphTranslationX = (translationX.fromValue + (translationX.toValue - translationX.fromValue) * interpolatedFraction) * amountMultiplier
                     node.view.morphTranslationY = (translationY.fromValue + (translationY.toValue - translationY.fromValue) * interpolatedFraction) * amountMultiplier
-
-                    stretch?.let {
-                        StretchAnimationHelper.applyStretch(node.view, translationY, it, node.view.morphTranslationY)
-                    }
                 }
                 AnimationType.CONCEAL -> {
                     val interpolatedFraction = inInterpolator?.getInterpolation(mappedRation) ?: mappedRation
 
                     node.view.morphTranslationX = (translationX.toValue + (translationX.fromValue - translationX.toValue) * interpolatedFraction) * amountMultiplier
                     node.view.morphTranslationY = (translationY.toValue + (translationY.fromValue - translationY.toValue) * interpolatedFraction) * amountMultiplier
-
-                    stretch?.let {
-                        StretchAnimationHelper.applyStretch(node.view, translationY, it, node.view.morphTranslationY)
-                    }
                 }
             }
         }

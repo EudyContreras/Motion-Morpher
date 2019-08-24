@@ -7,7 +7,6 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  * @since August 07 2019
  */
  
- 
 enum class Pivot {
     ABSOLUTE,
     RELATIVE_TO_SELF,

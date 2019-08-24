@@ -2,8 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.extensions
 
 import android.graphics.drawable.ColorDrawable
 import android.view.View
-import com.eudycontreras.motionmorpherlibrary.Action
-import com.eudycontreras.motionmorpherlibrary.Morpher
+import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
 
@@ -29,41 +28,41 @@ fun View.getColor(default: Int = 0x000000): Int {
     return default
 }
 
-fun View.hide(duration: Long = 0L, onEnd: Action = null) {
-    if (duration == 0L) {
-        this.alpha = 0f
+fun View.hide(duration: Long = MIN_DURATION, onEnd: Action = null) {
+    if (duration == MIN_DURATION) {
+        this.alpha = MIN_OFFSET
         onEnd?.invoke()
         return
     }
     this.animate()
-        .alpha(0f)
+        .alpha(MIN_OFFSET)
         .withEndAction(onEnd)
         .setDuration(duration)
         .start()
 }
 
-fun View.show(duration: Long = 0L, onEnd: Action = null) {
-    if (duration == 0L) {
-        this.alpha = 1f
+fun View.show(duration: Long = MIN_DURATION, onEnd: Action = null) {
+    if (duration == MIN_DURATION) {
+        this.alpha = MAX_OFFSET
         onEnd?.invoke()
         return
     }
     this.animate()
-        .alpha(1f)
+        .alpha(MAX_OFFSET)
         .withEndAction(onEnd)
         .setDuration(duration)
         .start()
 }
 
-fun MorphLayout.hide(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null) {
-    if (duration == 0L) {
-        morphAlpha = 0f
+fun MorphLayout.hide(duration: Long = MIN_DURATION, delay: Long = MIN_DURATION, onEnd: Action = null) {
+    if (duration == MIN_DURATION) {
+        morphAlpha = MIN_OFFSET
         morphVisibility = View.INVISIBLE
         onEnd?.invoke()
         return
     }
     this.animator()
-        .alpha(0f)
+        .alpha(MIN_OFFSET)
         .withEndAction {
             morphVisibility = View.INVISIBLE
             onEnd?.invoke()
@@ -73,9 +72,9 @@ fun MorphLayout.hide(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null
         .start()
 }
 
-fun MorphLayout.show(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null) {
-    if (duration == 0L) {
-        morphAlpha = 1f
+fun MorphLayout.show(duration: Long = MIN_DURATION, delay: Long = MIN_DURATION, onEnd: Action = null) {
+    if (duration == MIN_DURATION) {
+        morphAlpha = MAX_OFFSET
         if (morphVisibility != View.VISIBLE) {
             morphVisibility = View.VISIBLE
         }
@@ -86,7 +85,7 @@ fun MorphLayout.show(duration: Long = 0L, delay: Long = 0L, onEnd: Action = null
         morphVisibility = View.VISIBLE
     }
     this.animator()
-        .alpha(1f)
+        .alpha(MAX_OFFSET)
         .withEndAction(onEnd)
         .setStartDelay(delay)
         .setDuration(duration)

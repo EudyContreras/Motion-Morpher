@@ -2,6 +2,9 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import androidx.annotation.ColorInt
 import com.eudycontreras.motionmorpherlibrary.AndroidColor
+import com.eudycontreras.motionmorpherlibrary.MAX_COLOR
+import com.eudycontreras.motionmorpherlibrary.MIN_COLOR
+import java.lang.StrictMath.round
 
 
 /**
@@ -9,10 +12,10 @@ import com.eudycontreras.motionmorpherlibrary.AndroidColor
  */
 
 class MutableColor(
-    alpha: Int = 255,
-    red: Int = 0,
-    green: Int = 0,
-    blue: Int = 0
+    alpha: Int = MAX_COLOR,
+    red: Int = MIN_COLOR,
+    green: Int = MIN_COLOR,
+    blue: Int = MIN_COLOR
 ) : Color(alpha, red, green, blue) {
 
     constructor(@ColorInt color: Int) : this() {
@@ -30,10 +33,10 @@ class MutableColor(
     }
 
     fun updateColor(
-        alpha: Int = 0,
-        red: Int = 0,
-        green: Int = 0,
-        blue: Int = 0
+        alpha: Int = MIN_COLOR,
+        red: Int = MIN_COLOR,
+        green: Int = MIN_COLOR,
+        blue: Int = MIN_COLOR
     ): MutableColor {
         this.alpha = alpha
         this.red = red
@@ -65,7 +68,7 @@ class MutableColor(
 
     fun subtractAlpha(amount: Float): MutableColor {
         val color = MutableColor(this)
-        color.alpha -= (Math.round(amount * 255))
+        color.alpha -= (round(amount * MAX_COLOR))
         return color
     }
 
@@ -82,7 +85,7 @@ class MutableColor(
     }
 
     fun addAlpha(amount: Float): MutableColor {
-        alpha += clamp((Math.round(amount * 255)))
+        alpha += clamp((round(amount * MAX_COLOR)))
         this.colorChanged = true
         return this
     }
@@ -203,13 +206,13 @@ class MutableColor(
 
     companion object {
 
-        val WHITE: Color = MutableColor(255, 255, 255, 255)
-        val BLACK: Color = MutableColor(255, 0, 0, 0)
-        val RED: Color = MutableColor(255, 255, 0, 0)
-        val GREEN: Color = MutableColor(255, 0, 255, 0)
-        val BLUE: Color = MutableColor(255, 0, 0, 255)
-        val YELLOW: Color = MutableColor(255, 255, 255, 0)
-        val PURPLE: Color = MutableColor(255, 255, 0, 255)
+        val WHITE: Color = MutableColor(MAX_COLOR, MAX_COLOR, MAX_COLOR, MAX_COLOR)
+        val BLACK: Color = MutableColor(MAX_COLOR, MIN_COLOR, MIN_COLOR, MIN_COLOR)
+        val RED: Color = MutableColor(MAX_COLOR, MAX_COLOR, MIN_COLOR, MIN_COLOR)
+        val GREEN: Color = MutableColor(MAX_COLOR, MIN_COLOR, MAX_COLOR, MIN_COLOR)
+        val BLUE: Color = MutableColor(MAX_COLOR, MIN_COLOR, MIN_COLOR, MAX_COLOR)
+        val YELLOW: Color = MutableColor(MAX_COLOR, MAX_COLOR, MAX_COLOR, MIN_COLOR)
+        val PURPLE: Color = MutableColor(MAX_COLOR, MAX_COLOR, MIN_COLOR, MAX_COLOR)
 
         val DEFAULT: Color = MutableColor()
 
@@ -218,11 +221,11 @@ class MutableColor(
         }
 
         fun adjustAlpha(color: MutableColor, factor: Float) {
-            color.updateAlpha((Math.round(color.alpha * factor)))
+            color.updateAlpha((round(color.alpha * factor)))
         }
 
         fun adjustAlpha(@ColorInt color: Int, factor: Float): Int {
-            val alpha = Math.round(AndroidColor.alpha(color) * factor)
+            val alpha = round(AndroidColor.alpha(color) * factor)
             val red = AndroidColor.red(color)
             val green = AndroidColor.green(color)
             val blue = AndroidColor.blue(color)
@@ -241,7 +244,7 @@ class MutableColor(
 
         fun rgb(red: Int, green: Int, blue: Int): MutableColor {
             return MutableColor(
-                alpha = 255,
+                alpha = MAX_COLOR,
                 red = red,
                 green = green,
                 blue = blue
@@ -250,7 +253,7 @@ class MutableColor(
 
         fun rgb(rgb: Int): MutableColor {
             return MutableColor(
-                alpha = 255,
+                alpha = MAX_COLOR,
                 red = rgb,
                 green = rgb,
                 blue = rgb
@@ -268,7 +271,7 @@ class MutableColor(
 
         fun rgba(rgb: Int, alpha: Float): MutableColor {
             return MutableColor(
-                alpha = (alpha * 255).toInt(),
+                alpha = (alpha * MAX_COLOR).toInt(),
                 red = rgb,
                 green = rgb,
                 blue = rgb
@@ -277,7 +280,7 @@ class MutableColor(
 
         fun rgba(red: Int, green: Int, blue: Int, alpha: Float): MutableColor {
             return MutableColor(
-                alpha = (alpha * 255).toInt(),
+                alpha = (alpha * MAX_COLOR).toInt(),
                 red = red,
                 green = green,
                 blue = blue
@@ -302,7 +305,7 @@ class MutableColor(
 
         fun random(): MutableColor {
             return MutableColor(
-                255,
+                MAX_COLOR,
                 (50 until 205).random(),
                 (50 until 205).random(),
                 (50 until 205).random()
@@ -311,7 +314,7 @@ class MutableColor(
 
         fun randomBlue(): MutableColor {
             return MutableColor(
-                255,
+                MAX_COLOR,
                 20,
                 (100 until 205).random(),
                 (130 until 245).random()

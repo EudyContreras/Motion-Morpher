@@ -9,6 +9,7 @@ import androidx.annotation.LayoutRes
 import androidx.annotation.StyleRes
 import androidx.fragment.app.DialogFragment
 import com.eudycontreras.motionmorpherlibrary.Action
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.R
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
@@ -74,7 +75,7 @@ sealed class MorphDialog : DialogFragment() {
             window?.let {
                 it.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 it.requestFeature(Window.FEATURE_NO_TITLE)
-                it.setDimAmount(0f)
+                it.setDimAmount(MIN_OFFSET)
             }
         }
     }
@@ -136,7 +137,6 @@ sealed class MorphDialog : DialogFragment() {
             fragment.addCreateListener(showListener)
             return fragment
         }
-
     }
 
     class MorphDialogImpl: MorphDialog() {
@@ -146,7 +146,7 @@ sealed class MorphDialog : DialogFragment() {
             layoutInflater.inflate(layoutId, layout, true)
 
             morphView = layout.getChildAt(0) as ConstraintLayout
-            morphView.morphAlpha = 0f
+            morphView.morphAlpha = MIN_OFFSET
             morphView.post {
                 morpher.endView = morphView
                 createListener.forEach { it?.invoke(morphView) }

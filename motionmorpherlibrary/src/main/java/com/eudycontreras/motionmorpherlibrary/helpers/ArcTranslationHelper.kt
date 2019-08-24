@@ -1,5 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.helpers
 
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.StrictMath.pow
 import kotlin.math.round
@@ -11,11 +12,11 @@ import kotlin.math.round
  *
  */
 
-class CurvedTranslationHelper(
-    fromX: Float = 0f,
-    toX: Float = 0f,
-    fromY: Float = 0f,
-    toY: Float = 0f
+class ArcTranslationHelper(
+    fromX: Float = MIN_OFFSET,
+    toX: Float = MIN_OFFSET,
+    fromY: Float = MIN_OFFSET,
+    toY: Float = MIN_OFFSET
 ) {
     private var startPoint: Coordinates = Coordinates(fromX, fromY)
     private var endPoint: Coordinates = Coordinates(toX, toY)

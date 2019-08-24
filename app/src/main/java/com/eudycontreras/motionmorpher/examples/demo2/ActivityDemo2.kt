@@ -196,6 +196,8 @@ class ActivityDemo2 : MorphActivity() {
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
+            .thenAnimate()
+
            /* .thenAnimate(card)
             .withStartDelay(500)
             .withDuration(500)

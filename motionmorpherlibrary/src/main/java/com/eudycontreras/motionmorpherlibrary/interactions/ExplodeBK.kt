@@ -145,11 +145,11 @@ class ExplodeBK(
         }
     }
 
-    override fun applyStagger(animationStagger: AnimationStagger, animationType: AnimationType) {
+    override fun applyStagger(stagger: AnimationStagger, animationType: AnimationType) {
 
        */
 /* val inDuration = duration
-        val stagger = (inDuration * animationStagger.staggerOffset)
+        val stagger = (inDuration * stagger.staggerOffset)
         val durationDelta = (inDuration - stagger)
         val delayAddition = stagger / nodesGroups.size
         var delay = 0f

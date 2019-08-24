@@ -1,5 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bindable
 
 /**
@@ -9,11 +10,12 @@ import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bindable
  */
 
 class CornerRadii(
-    topLeft: Float = 0f,
-    topRight: Float = 0f,
-    bottomRight: Float = 0f,
-    bottomLeft: Float = 0f
+    topLeft: Float = MIN_OFFSET,
+    topRight: Float = MIN_OFFSET,
+    bottomRight: Float = MIN_OFFSET,
+    bottomLeft: Float = MIN_OFFSET
 ): Bindable<FloatArray>() {
+
     val topLeft: Float
         get() = corners[0]
 
@@ -39,7 +41,7 @@ class CornerRadii(
 
     constructor(radii: Float): this(radii, radii, radii, radii)
 
-    constructor(): this(0f, 0f, 0f, 0f)
+    constructor(): this(MIN_OFFSET, MIN_OFFSET, MIN_OFFSET, MIN_OFFSET)
 
     fun apply(cornerRadii: CornerRadii) {
         for (index in 0 until cornerRadii.size) {

@@ -2,14 +2,15 @@ package com.eudycontreras.motionmorpherlibrary.interfaces
 
 import android.graphics.Canvas
 import android.graphics.Path
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 @FunctionalInterface interface Clipable {
 
     fun clipChildren(clipPath: Path, canvas: Canvas, corners: FloatArray, width: Float, height: Float) {
         val count = canvas.saveCount
 
-        val top = 0f
-        val left = 0f
+        val top = MIN_OFFSET
+        val left = MIN_OFFSET
         val bottom = top + height
         val right = left + width
 

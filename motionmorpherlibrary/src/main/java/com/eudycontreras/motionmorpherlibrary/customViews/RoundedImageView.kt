@@ -6,6 +6,7 @@ import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
 import android.widget.ImageView
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 
 
@@ -37,7 +38,7 @@ open class RoundedImageView : ImageView {
     private fun setupAttributes(attrs: AttributeSet) {
         val typedArray = context.obtainStyledAttributes(attrs, com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView)
         try {
-            val radius = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_radius, 0f)
+            val radius = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_radius, MIN_OFFSET)
             val topLeft = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_topLeftCornerRadius, radius)
             val topRight = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_topRightCornerRadius, radius)
             val bottomRight = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_bottomRightCornerRadius, radius)
@@ -49,7 +50,7 @@ open class RoundedImageView : ImageView {
         }
     }
 
-    private fun applyCorners(topLeft: Float = 0f, topRight: Float = 0f, bottomRight: Float = 0f, bottomLeft: Float = 0f) {
+    private fun applyCorners(topLeft: Float = MIN_OFFSET, topRight: Float = MIN_OFFSET, bottomRight: Float = MIN_OFFSET, bottomLeft: Float = MIN_OFFSET) {
         corners.apply(topLeft, topRight, bottomRight, bottomLeft)
     }
 
@@ -85,7 +86,7 @@ open class RoundedImageView : ImageView {
             paint.shader = shader
 
             path.rewind()
-            path.addRoundRect(0f, 0f, scaledWidth.toFloat(), scaledHeight.toFloat(), corners.corners, Path.Direction.CCW)
+            path.addRoundRect(MIN_OFFSET, MIN_OFFSET, scaledWidth.toFloat(), scaledHeight.toFloat(), corners.corners, Path.Direction.CCW)
             path.close()
 
             cornersChanged = false

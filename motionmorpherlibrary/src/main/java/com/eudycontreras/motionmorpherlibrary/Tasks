@@ -6,3 +6,5 @@ Staggering:
         When animating a directional stagger the growth direction should be taken under consideration
         in order to animate the items in the right direction
 
+    3. Allow the user to specified if the elements all share a same layout.
+        If the elements all share a same layout the morphing animation doe not need to rebuild

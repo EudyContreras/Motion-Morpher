@@ -267,7 +267,7 @@ class RevealUtilityRectangular private constructor(private val target: View) : D
             val toX = (-((endRadii.topLeft + endRadii.bottomRight) / 6)).toInt() / 2
             val toY = (-((endRadii.topLeft + endRadii.bottomRight) / 6)).toInt() / 2
 
-            val revealAnimator = RevealUtilityRectangular.createRectangularReveal(
+            val revealAnimator = createRectangularReveal(
                 resultView,
                 x.toFloat(),
                 y.toFloat(),
@@ -319,7 +319,7 @@ class RevealUtilityRectangular private constructor(private val target: View) : D
             val toX = (-((startRadii.topLeft + startRadii.bottomRight) / 6)).toInt() / 2
             val toY = (-((startRadii.topLeft + startRadii.bottomRight) / 6)).toInt() / 2
 
-            val revealAnimator = RevealUtilityRectangular.createRectangularReveal(
+            val revealAnimator = createRectangularReveal(
                 sourceView,
                 toX.toFloat(),
                 toY.toFloat(),

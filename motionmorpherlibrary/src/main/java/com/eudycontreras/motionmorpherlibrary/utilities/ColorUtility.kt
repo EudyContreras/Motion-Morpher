@@ -3,6 +3,7 @@ package com.eudycontreras.motionmorpherlibrary.utilities
 
 import androidx.annotation.ColorInt
 import com.eudycontreras.motionmorpherlibrary.AndroidColor
+import com.eudycontreras.motionmorpherlibrary.MAX_COLOR
 import com.eudycontreras.motionmorpherlibrary.properties.Color
 import com.eudycontreras.motionmorpherlibrary.properties.MutableColor
 import kotlin.math.roundToInt
@@ -24,7 +25,7 @@ object ColorUtility {
     }
 
     fun colorDecToHexString(r: Int, g: Int, b: Int): String {
-        return colorDecToHexString(255, r, g, b)
+        return colorDecToHexString(MAX_COLOR, r, g, b)
     }
 
     fun colorDecToHexString(a: Int, r: Int, g: Int, b: Int): String {

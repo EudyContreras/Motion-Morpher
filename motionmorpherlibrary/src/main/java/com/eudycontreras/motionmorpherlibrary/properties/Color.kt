@@ -1,6 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import com.eudycontreras.motionmorpherlibrary.AndroidColor
+import com.eudycontreras.motionmorpherlibrary.MAX_COLOR
+import com.eudycontreras.motionmorpherlibrary.MIN_COLOR
 
 
 /**
@@ -8,10 +10,10 @@ import com.eudycontreras.motionmorpherlibrary.AndroidColor
  */
 
 abstract class Color(
-    var alpha: Int = 255,
-    var red: Int = 0,
-    var green: Int = 0,
-    var blue: Int = 0
+    var alpha: Int = MAX_COLOR,
+    var red: Int = MIN_COLOR,
+    var green: Int = MIN_COLOR,
+    var blue: Int = MIN_COLOR
 ) {
     protected var mTempColor: Int = -1
 
@@ -25,8 +27,8 @@ abstract class Color(
 
     protected fun clamp(color: Int): Int {
         return when {
-            color > 255 -> 255
-            color < 0 -> 0
+            color > MAX_COLOR -> MAX_COLOR
+            color < MIN_COLOR -> MIN_COLOR
             else -> color
         }
     }
@@ -46,7 +48,7 @@ abstract class Color(
         }
 
         fun colorDecToHexString(r: Int, g: Int, b: Int): String {
-            return colorDecToHexString(255, r, g, b)
+            return colorDecToHexString(MAX_COLOR, r, g, b)
         }
 
         fun colorDecToHexString(a: Int, r: Int, g: Int, b: Int): String {

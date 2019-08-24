@@ -1,5 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.helpers
 
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.distance
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
@@ -15,8 +16,8 @@ import java.lang.StrictMath.round
 
 class StaggerAnimationHelper {
 
-/*    fun applyStagger(animationType: AnimationType, nodesGroups: LinkedHashMap<Float, List<Explode.Node>>, animationStagger: AnimationStagger, duration: Long) {
-        val stagger = (duration * animationStagger.staggerOffset)
+/*    fun applyStagger(animationType: AnimationType, nodesGroups: LinkedHashMap<Float, List<Explode.Node>>, stagger: AnimationStagger, duration: Long) {
+        val stagger = (duration * stagger.staggerOffset)
         val durationDelta = (duration - stagger)
         val delayAddition = stagger / nodesGroups.size
         var delay = 0f
@@ -55,7 +56,7 @@ class StaggerAnimationHelper {
             epicenter: Coordinates,
             animationType: AnimationType,
             nodeEntries: List<Explode.Node>,
-            animationStagger: AnimationStagger,
+            stagger: AnimationStagger,
             duration: Long
         ) {
 
@@ -63,7 +64,7 @@ class StaggerAnimationHelper {
 
                 AnimationType.REVEAL -> {
                     for (node in nodeEntries) {
-                        val stagger: Float = getStagger(bounds, epicenter, node.centerLocation, animationStagger.speed, duration).toFloat()
+                        val stagger: Float = getStagger(bounds, epicenter, node.centerLocation, stagger.speed, duration).toFloat()
                         val durationDelta: Float = (duration - stagger)
 
                         val startOffset: Float = stagger / duration
@@ -77,7 +78,7 @@ class StaggerAnimationHelper {
                     for (index in nodeEntries.size - 1 downTo 0) {
                         val node = nodeEntries[index]
 
-                        val stagger = getStagger(bounds, epicenter, node.centerLocation, animationStagger.speed, duration)
+                        val stagger = getStagger(bounds, epicenter, node.centerLocation, stagger.speed, duration)
                         val durationDelta = (duration - stagger)
 
                         val startOffset = stagger / duration
@@ -91,14 +92,18 @@ class StaggerAnimationHelper {
         }*/
 
         fun getStagger(bounds: Bounds, epicenter: Coordinates, center: Coordinates, speed: Float, duration: Long): Long {
-            val directionMultiplier = -1f
+            val directionMultiplier = -MAX_OFFSET
 
-            val distanceFraction = distance(
+            val distanceA = distance(
                 center.x,
                 center.y,
                 epicenter.x,
                 epicenter.y
-            ) / distance(MIN_OFFSET, MIN_OFFSET, bounds.width, bounds.height)
+            )
+
+            val distanceB = distance(MIN_OFFSET, MIN_OFFSET, bounds.width, bounds.height)
+
+            val distanceFraction = distanceA / distanceB
 
             return round(duration * directionMultiplier / speed * distanceFraction)
         }

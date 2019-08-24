@@ -16,7 +16,7 @@ import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
 import com.eudycontreras.motionmorpherlibrary.extensions.*
-import com.eudycontreras.motionmorpherlibrary.helpers.CurvedTranslationHelper
+import com.eudycontreras.motionmorpherlibrary.helpers.ArcTranslationHelper
 import com.eudycontreras.motionmorpherlibrary.interactions.Interaction
 import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
@@ -44,7 +44,7 @@ class Morpher(private val context: Context) {
 
    // private var children: List<MorphLayout> = LinkedList()
 
-    private val curveTranslator = CurvedTranslationHelper()
+    private val curveTranslator = ArcTranslationHelper()
 
     private lateinit var startingView: MorphLayout
     private lateinit var endingView: MorphLayout
@@ -258,12 +258,12 @@ class Morpher(private val context: Context) {
         morphIntoDescriptor.propertyAlpha.fromValue = MIN_OFFSET
         morphIntoDescriptor.propertyAlpha.toValue = MAX_OFFSET
 
-        morphIntoDescriptor.propertyAlpha.interpolateOffsetStart = 0.4f
-        morphIntoDescriptor.propertyAlpha.interpolateOffsetEnd = MAX_OFFSET
+/*        morphIntoDescriptor.propertyAlpha.interpolateOffsetStart = 0.4f
+        morphIntoDescriptor.propertyAlpha.interpolateOffsetEnd = MAX_OFFSET*/
 
         morphIntoDescriptor.propertyScaleX.interpolator = morphIntoInterpolator
         morphIntoDescriptor.propertyScaleY.interpolator = morphIntoInterpolator
-        morphIntoDescriptor.propertyAlpha.interpolator = morphIntoInterpolator
+       /* morphIntoDescriptor.propertyAlpha.interpolator = morphIntoInterpolator*/
 
         morphIntoDescriptor.morphStates = containers.map { MorphState(it).apply {
             children = getAllChildren(morphView, false) { child -> child.tag == null }
@@ -280,12 +280,12 @@ class Morpher(private val context: Context) {
         morphFromDescriptor.propertyAlpha.fromValue = morphIntoDescriptor.propertyAlpha.toValue
         morphFromDescriptor.propertyAlpha.toValue = morphIntoDescriptor.propertyAlpha.fromValue
 
-        morphFromDescriptor.propertyAlpha.interpolateOffsetStart = MIN_OFFSET
-        morphFromDescriptor.propertyAlpha.interpolateOffsetEnd = 0.3f
+        /*morphFromDescriptor.propertyAlpha.interpolateOffsetStart = MIN_OFFSET
+        morphFromDescriptor.propertyAlpha.interpolateOffsetEnd = 0.3f*/
 
         morphFromDescriptor.propertyScaleX.interpolator = morphFromInterpolator
         morphFromDescriptor.propertyScaleY.interpolator = morphFromInterpolator
-        morphFromDescriptor.propertyAlpha.interpolator = morphFromInterpolator
+        //morphFromDescriptor.propertyAlpha.interpolator = morphFromInterpolator
 
         morphFromDescriptor.morphStates = containers.map { MorphState(it).apply {
             children =  getAllChildren(morphView, false) { child -> child.tag == null }
@@ -667,7 +667,7 @@ class Morpher(private val context: Context) {
         endingProps: Properties,
         mappings: List<MorphMap>,
         interpolator: TimeInterpolator?,
-        curveTranslationHelper: CurvedTranslationHelper,
+        curveTranslationHelper: ArcTranslationHelper,
         duration: Long,
         onStart: Action,
         onEnd: Action,
@@ -775,7 +775,7 @@ class Morpher(private val context: Context) {
         startingProps: Properties,
         endingProps: Properties,
         fraction: Float,
-        curveTranslationHelper: CurvedTranslationHelper,
+        curveTranslationHelper: ArcTranslationHelper,
         useArcTranslator: Boolean
     ) {
         if (useArcTranslator) {

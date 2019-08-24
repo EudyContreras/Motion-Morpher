@@ -2,6 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.view.View
 import androidx.core.view.updatePadding
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 /**
  * @Project MotionMorpher
@@ -11,47 +12,39 @@ import androidx.core.view.updatePadding
 
 class Paddings(
     private var view: View? = null,
-    start: Float = 0f,
-    end: Float = 0f,
-    top: Float = 0f,
-    bottom: Float = 0f
+    start: Float = MIN_OFFSET,
+    end: Float = MIN_OFFSET,
+    top: Float = MIN_OFFSET,
+    bottom: Float = MIN_OFFSET
 ) {
 
     var start: Float = start
         set(value) {
             field = value
-            view?.let {
-                it.updatePadding(
-                    left = value.toInt()
-                )
-            }
+            view?.updatePadding(
+                left = value.toInt()
+            )
         }
     var end: Float = end
         set(value) {
             field = value
-            view?.let {
-                it.updatePadding(
-                    right = value.toInt()
-                )
-            }
+            view?.updatePadding(
+                right = value.toInt()
+            )
         }
     var top: Float = top
         set(value) {
             field = value
-            view?.let {
-                it.updatePadding(
-                    top = value.toInt()
-                )
-            }
+            view?.updatePadding(
+                top = value.toInt()
+            )
         }
     var bottom: Float = bottom
         set(value) {
             field = value
-            view?.let {
-                it.updatePadding(
-                    bottom = value.toInt()
-                )
-            }
+            view?.updatePadding(
+                bottom = value.toInt()
+            )
         }
 
     fun getCopy(): Paddings {

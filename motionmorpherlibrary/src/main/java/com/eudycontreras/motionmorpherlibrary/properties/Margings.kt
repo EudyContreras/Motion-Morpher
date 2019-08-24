@@ -2,6 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.view.View
 import android.view.ViewGroup
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 /**
  * @Project MotionMorpher
@@ -11,10 +12,10 @@ import android.view.ViewGroup
 
 class Margings(
     private var view: View? = null,
-    start: Float = 0f,
-    end: Float = 0f,
-    top: Float = 0f,
-    bottom: Float = 0f
+    start: Float = MIN_OFFSET,
+    end: Float = MIN_OFFSET,
+    top: Float = MIN_OFFSET,
+    bottom: Float = MIN_OFFSET
 ) {
 
     val marginParams: ViewGroup.MarginLayoutParams? by lazy {

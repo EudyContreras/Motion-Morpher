@@ -12,13 +12,14 @@ import androidx.core.animation.addListener
 import com.eudycontreras.motionmorpherlibrary.enumerations.*
 import com.eudycontreras.motionmorpherlibrary.extensions.clamp
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
-import com.eudycontreras.motionmorpherlibrary.helpers.CurvedTranslationHelper
+import com.eudycontreras.motionmorpherlibrary.helpers.ArcTranslationHelper
 import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.observable.PropertyChangeObservable
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.utilities.ColorUtility
-import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bindable
+import com.eudycontreras.motionmorpherlibrary.utilities.RevealUtility
 import kotlin.math.abs
 
 
@@ -34,27 +35,33 @@ class Choreographer(context: Context): PropertyChangeObservable() {
     private lateinit var headChoreography: Choreography
     private lateinit var tailChoreography: Choreography
 
-    private val handler: Handler by lazy {
-        Handler()
-    }
-
-    private var listener: ChoreographyListener = ChoreographyListener()
-
     private var defaultInterpolator: TimeInterpolator? = null
 
     private var boundsChanged: Boolean = false
 
-    private var defaultDuration: Long = 0L
+    private var defaultDuration: Long = MIN_DURATION
 
     private var built: Boolean = false
 
+    /**
+     * Returns an instance of the Morpher which can be used for
+     * [Morpher] starting view into and from ending view.
+     */
     val morpher: Morpher = Morpher(context)
 
-    var totalDuration: Long = 0L
+    /**
+     * The total duration which the [Choreographer] will take in order to
+     * animate all the created choreographies.
+     */
+    var totalDuration: Long = MIN_DURATION
         private set
 
-    private val arcTranslator: CurvedTranslationHelper by lazy {
-        CurvedTranslationHelper()
+    private val handler: Handler by lazy {
+        Handler()
+    }
+
+    private val arcTranslator: ArcTranslationHelper by lazy {
+        ArcTranslationHelper()
     }
 
     private var translationXListener: ViewPropertyValueListener = { view, value ->
@@ -65,31 +72,56 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         view.morphTranslationY = value
     }
 
+    /**
+     * Assigns a default duration to use when the [Choreography] to animate has
+     * no defined duration.
+     * @param duration the default duration to use.
+     */
     fun withDefaultDuration(duration: Long): Choreographer {
         this.defaultDuration = duration
         return this
     }
 
+    /**
+     * Assigns a default easing [TimeInterpolator] to use when the [Choreography] to animate has
+     * no defined interpolator.
+     * @param interpolator the default interpolator to use
+     */
     fun withDefaultInterpolator(interpolator: TimeInterpolator): Choreographer {
         this.defaultInterpolator = interpolator
         return this
     }
 
-    fun addListener(listener: ChoreographyListener): Choreographer {
-        this.listener = listener
-        return this
-    }
-
+    /**
+     * Returns the property animator of the given [MorphLayout] in order to perform
+     * stock property animations.
+     * @param view The view to which the property animator belongs to
+     * @return the animator to use for stock property animations.
+     */
     fun animator(view: MorphLayout): ViewPropertyAnimator {
         return view.animator()
     }
 
-    fun animate(vararg view: MorphLayout): Choreography {
-        this.headChoreography = Choreography(this, *view)
-        this.headChoreography.offset = 1f
+    /**
+     * Creates the initial head [Choreography] for the given [MorphLayout].
+     * @param views the views to which the choreography belongs to
+     * @return the created choreography.
+     */
+    fun animate(vararg views: MorphLayout): Choreography {
+        this.headChoreography = Choreography(this, *views)
+        this.headChoreography.offset = MAX_OFFSET
         return headChoreography
     }
 
+    /**
+     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
+     * The choreography will play after the specified offset.
+     * @param choreography the parent choreography of the current.
+     * @param views the views to which the choreography belongs to.
+     * @param offset the time offset to use. The current choreography will play after the
+     * parent choreography has animated to the specified offset.
+     * @return the created choreography.
+     */
     internal fun animateAfter(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreography {
         val properties = getProperties(choreography, *views)
 
@@ -103,18 +135,31 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return tailChoreography
     }
 
+    /**
+     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
+     * The choreography will play after parent choreography is done animating.
+     * @param choreography the parent choreography of the current.
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
     internal fun thenAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
         val properties = getProperties(choreography, *views)
 
         tailChoreography = Choreography(this, *views).apply {
             this.setStartProperties(properties)
             this.parent = choreography
-            this.offset = 1f
+            this.offset = MAX_OFFSET
             choreography.child = this
         }
         return tailChoreography
     }
 
+    /**
+     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
+     * @param choreography the parent choreography of the current.
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
     internal fun alsoAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
         val properties = getProperties(choreography, *views)
 
@@ -126,6 +171,13 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return tailChoreography
     }
 
+    /**
+     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
+     * The choreography is a clone of the parent choreography and will play together with its parent
+     * @param choreography the parent choreography of the current.
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
     internal fun andAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
         tailChoreography = choreography.clone(*views).apply {
             this.views = views
@@ -136,6 +188,15 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return tailChoreography
     }
 
+    /**
+     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
+     * The choreography is a clone of the parent choreography and will play after the specified offset.
+     * @param choreography the parent choreography of the current.
+     * @param views the views to which the choreography belongs to.
+     * @param offset the time offset to use. The current choreography will play after the
+     * parent choreography has animated to the specified offset.
+     * @return the created choreography.
+     */
     internal fun andAnimateAfter(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreography {
         tailChoreography = choreography.clone(*views).apply {
             this.views = views
@@ -148,6 +209,13 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return tailChoreography
     }
 
+    /**
+     * Reverse animates the specified choreography to its initial state for the specified views.
+     * The reverse animation will occur after the parent animation is done animating.
+     * @param choreography the parent choreography of the current.
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
     internal fun reverseAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
         var oldChoreography: Choreography? = null
 
@@ -169,7 +237,7 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
             this.flipValues()
             this.views = views
-            this.offset = 1f
+            this.offset = MAX_OFFSET
             this.reverseToStartState = true
             this.parent = choreography
             this.child = null
@@ -178,6 +246,13 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return tailChoreography
     }
 
+    /**
+     * Reverse animates the specified [Choreography] to its initial state for the specified [MorphLayout].
+     * The reverse animation will occur together with its parent.
+     * @param choreography the parent choreography of the current.
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
     internal fun andReverseAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
         var oldChoreography: Choreography? = null
 
@@ -207,23 +282,112 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return tailChoreography
     }
 
-
-    fun animateChildrenOf(vararg view: MorphLayout): Choreography {
+    /**
+     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The
+     * the animation can optionally play with a specified animation stagger.
+     * @param stagger the stagger to for animating the children
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
+    fun animateChildrenOf(vararg views: MorphLayout, stagger: AnimationStagger? = null): Choreography {
+        this.headChoreography = Choreography(this, *views)
+        this.headChoreography.offset = MAX_OFFSET
+        this.headChoreography.stagger = stagger
         return headChoreography
     }
 
-    internal fun animateChildrenOfAfter(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreography {
+    /**
+     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The
+     * the animation can optionally play with a specified animation stagger. The animation
+     * will play after the specified offset.
+     * @param stagger the stagger to for animating the children
+     * @param views the views to which the choreography belongs to.
+     * @param offset the time offset to use. The current choreography will play after the
+     * parent choreography has animated to the specified offset.
+     * @return the created choreography.
+     */
+    internal fun animateChildrenOfAfter(choreography: Choreography, offset: Float, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
+        val properties = getProperties(choreography, *views)
+
+        tailChoreography =  Choreography(this, *views).apply {
+            this.setStartProperties(properties)
+            this.parent = choreography
+            this.offset = offset
+            this.stagger = stagger
+            this.delay = (choreography.duration * offset).toLong()
+            choreography.child = this
+        }
         return tailChoreography
     }
 
-    internal fun thenAnimateChildrenOf(choreography: Choreography, vararg views: MorphLayout): Choreography {
+    /**
+     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The
+     * the animation can optionally play with a specified animation stagger. The animation
+     * will play after its parent.
+     * @param stagger the stagger to for animating the children
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
+    internal fun thenAnimateChildrenOf(choreography: Choreography, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
+        val properties = getProperties(choreography, *views)
+
+        tailChoreography = Choreography(this, *views).apply {
+            this.setStartProperties(properties)
+            this.parent = choreography
+            this.offset = MAX_OFFSET
+            this.stagger = stagger
+            choreography.child = this
+        }
         return tailChoreography
     }
 
-    internal fun alsoAnimateChildrenOf(choreography: Choreography, vararg views: MorphLayout): Choreography {
+    /**
+     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The
+     * the animation can optionally play with a specified animation stagger. The animation
+     * will play together with its parent.
+     * @param stagger the stagger to for animating the children
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
+    internal fun alsoAnimateChildrenOf(choreography: Choreography, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
+        val properties = getProperties(choreography, *views)
+
+        tailChoreography = Choreography(this, *views).apply {
+            this.setStartProperties(properties)
+            this.parent = choreography
+            this.stagger = stagger
+            choreography.child = this
+        }
         return tailChoreography
     }
 
+    /**
+     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The choreography is
+     * a direct clone of its parent. The animation can optionally play with a specified animation stagger.
+     * The animation will play together with its parent.
+     * @param stagger the stagger to for animating the children
+     * @param views the views to which the choreography belongs to.
+     * @return the created choreography.
+     */
+    internal fun andAnimateChildrenOf(choreography: Choreography, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
+        tailChoreography = choreography.clone(*views).apply {
+            this.views = views
+            this.parent = choreography
+            this.child = null
+            this.stagger = stagger
+            choreography.child = this
+        }
+        return tailChoreography
+    }
+
+    /**
+     * Fetches a map of the properties for the given views. The passed [Choreography] is traversed from
+     * bottom to top in order to find the choreography which belongs to specified [MorphLayout]. When the choreography
+     * is found a map created containing all the animation properties.
+     * @param choreography The choreography to traverse from.
+     * @param views The views to which the choreography requested belongs to.
+     * @return a map of the animation properties with their respective property name.
+     */
     private fun getProperties(choreography: Choreography, vararg views: MorphLayout): Map<String, AnimatedValue<*>>? {
         var properties: Map<String, AnimatedValue<*>>? = null
 
@@ -244,21 +408,20 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return properties
     }
 
-
-    fun bindTo(bindable: Bindable<Float>) {
-
-    }
-
-    fun transitionTo(fraction: Float){
-
-    }
-
+    /**
+     * Starts the choreographies of this [Choreographer] after the specified delay.
+     * @param delay The amount delay to wait for before the animations start.
+     * @see start
+     */
     fun startAfter(delay: Long) {
         handler.postDelayed({
             start()
         }, delay)
     }
 
+    /**
+     * Starts the choreographies of this [Choreographer].
+     */
     fun start() {
         successors(headChoreography) { _, choreography ->
             choreography.control.cancel()
@@ -266,6 +429,10 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Starts the animation for the specified [Choreography].
+     * @param choreography The choreography which is to be started/play.
+     */
     fun startFor(choreography: Choreography) {
         successors(headChoreography) { _, _choreography ->
             if (_choreography == choreography) {
@@ -275,6 +442,10 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Clears the choreographies for this [Choreographer].
+     * @return the choreographer
+     */
     fun clear(): Choreographer {
         if (!::tailChoreography.isInitialized)
             return this
@@ -298,6 +469,10 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return this
     }
 
+    /**
+     * Resets all the choreographies for this [Choreographer].
+     * @return the choreographer
+     */
     fun reset(): Choreographer {
         predecessors(tailChoreography) { _, choreography ->
             choreography.resetProperties()
@@ -305,6 +480,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return this
     }
 
+    /**
+     * Resets all the [Choreography] for the specified [MorphLayout]
+     * @param view The view which will have its choreography reset.
+     * @return the choreographer
+     */
     fun reset(view: MorphLayout): Choreographer {
         predecessors(tailChoreography) { _, choreography ->
             choreography.views.forEach {v ->
@@ -316,6 +496,12 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return this
     }
 
+    /**
+     * Resets the [Choreography] for the specified [MorphLayout] with the specified duration.
+     * @param view the view to which the reset choreography belongs to
+     * @param duration the duration the for the animaation reset
+     * @return the choreographer being used
+     */
     fun resetWithAnimation(view: MorphLayout, duration: Long = defaultDuration): Choreographer {
         predecessors(tailChoreography) { _, choreography ->
             choreography.views.forEach {v ->
@@ -330,6 +516,12 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return this
     }
 
+    /**
+     * Helper method used for traversing the predecessors of the given [Choreography].
+     * @param choreography The [Choreography] to traverse.
+     * @param iterator The iterator which gives access to the traversal control
+     * and the current choreography being traversed.
+     */
     private fun predecessors(choreography: Choreography, iterator: (control: TraverseControl, choreography: Choreography) -> Unit) {
         val traverseControl= TraverseControl()
         var temp: Choreography? = choreography
@@ -342,6 +534,12 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Helper method used for traversing the successors of the given [Choreography].
+     * @param choreography The [Choreography] to traverse.
+     * @param iterator The iterator which gives access to the traversal control
+     * and the current choreography being traversed.
+     */
     private fun successors(choreography: Choreography, iterator: (control: TraverseControl, choreography: Choreography) -> Unit) {
         val traverseControl = TraverseControl()
         var temp: Choreography? = choreography
@@ -354,10 +552,17 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Builds the [Choreographer] by applying the desired values of each [Choreography]
+     * and prepares the choreographies to be played. The build process is called prior
+     * to the start of the choreographer. This process allows for the heavy process of building
+     * a choreography to be done prior to the point at which it will be played.
+     * @return The choreographer being used.
+     */
     internal fun build(): Choreographer {
 
-        var totalDuration: Long = 0
-        var totalDelay: Long = 0
+        var totalDuration: Long = MIN_DURATION
+        var totalDelay: Long = MIN_DURATION
 
         var temp: Choreography? = headChoreography
 
@@ -366,10 +571,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
 
             applyInterpolators(current)
             applyMultipliers(current)
+            applyReveal(current)
             applyAdders(current)
 
             totalDuration += (current.duration.toFloat() * (current.child?.offset?: MAX_OFFSET)).toLong()
-            totalDelay += ((current.parent?.duration?: 0L).toFloat() * current.offset).toLong()
+            totalDelay += ((current.parent?.duration?: MIN_DURATION).toFloat() * current.offset).toLong()
             totalDelay += current.delay
 
             val start: Float = if (current.reverseToStartState) MAX_OFFSET else MIN_OFFSET
@@ -414,6 +620,23 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         return this
     }
 
+    /**
+     * Applies the reveal for the specified choreography. The reveal
+     * is applied to the [Choreography] if it contains a specified [Reveal].
+     * @param choreography The choreography to which its reveal is applied to.
+     */
+    private fun applyReveal(choreography: Choreography) {
+        choreography.reveal?.let {
+            it.duration = choreography.duration
+            it.interpolator = it.interpolator ?: choreography.interpolator
+        }
+    }
+
+    /**
+     * Applies the easing [TimeInterpolator] for the specified [Choreography]. The interpolator
+     * is applied the *Choreography* if it contains a specified Interpolator. If the *Choreography*
+     * @param choreography The choreography to which its reveal is applied to.
+     */
     private fun applyInterpolators(choreography: Choreography) {
         choreography.color.interpolator = choreography.color.interpolator ?: choreography.interpolator
 
@@ -446,6 +669,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         choreography.translateYValues.interpolator = choreography.translateYValues.interpolator ?: choreography.interpolator
     }
 
+    /**
+     * Applies the multiplies for [AnimatedValue] toValue property for each of the animation properties
+     * of the specified [Choreography].
+     * @param choreography The choreography to which its multipliers are applied to.
+     */
     private fun applyMultipliers(choreography: Choreography) {
         if (choreography.width.multiply != null) {
             choreography.width.toValue = choreography.width.fromValue * choreography.width.multiply!!
@@ -470,6 +698,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Applies the adders for [AnimatedValue] toValue property for each of the animation properties
+     * of the specified [Choreography].
+     * @param choreography The choreography to which its adders are applied to.
+     */
     private fun applyAdders(choreography: Choreography) {
         if (choreography.width.add != null) {
             choreography.width.toValue = choreography.width.fromValue + choreography.width.add!!
@@ -494,7 +727,15 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
-    fun animate(choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
+    /**
+     * Animates the specified [Choreography] to specified animation fraction. The total duration
+     * and the current playtime must be known.
+     * @param choreography The choreography to be animated.
+     * @param fraction The fraction to animate to.
+     * @param duration The duration of the animation.
+     * @param currentPlayTime The current playtime of the animation.
+     */
+    private fun animate(choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
         val views = choreography.views
 
         if (views.size == 1) {
@@ -507,6 +748,15 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Animates the specified [MorphLayout] with the specified [Choreography] and to specified animation fraction.
+     * The total duration and the current playtime must be known.
+     * @param view The morph layout to be animated
+     * @param choreography The choreography to be animated.
+     * @param fraction The fraction to animate to.
+     * @param duration The duration of the animation.
+     * @param currentPlayTime The current playtime of the animation.
+     */
     private fun animate(view: MorphLayout, choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
 
         val alphaFraction = choreography.alpha.interpolator?.getInterpolation(fraction) ?: fraction
@@ -541,8 +791,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
 
             if (choreography.useArcTranslator) {
 
-                val arcTranslationX = arcTranslator.getCurvedTranslationX(positionXFraction, choreography.positionX.fromValue, choreography.positionX.toValue, choreography.positionX.toValue)
-                val arcTranslationY = arcTranslator.getCurvedTranslationY(positionYFraction, choreography.positionY.fromValue, choreography.positionY.toValue, choreography.positionY.fromValue)
+                val controlX = choreography.controlPoint?.x ?: choreography.positionX.toValue
+                val controlY = choreography.controlPoint?.y ?: choreography.positionY.fromValue
+
+                val arcTranslationX = arcTranslator.getCurvedTranslationX(positionXFraction, choreography.positionX.fromValue, choreography.positionX.toValue, controlX)
+                val arcTranslationY = arcTranslator.getCurvedTranslationY(positionYFraction, choreography.positionY.fromValue, choreography.positionY.toValue, controlY)
 
                 view.morphTranslationX = arcTranslationX.toFloat()
                 view.morphTranslationY = arcTranslationY.toFloat()
@@ -560,8 +813,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             val translateYFraction = choreography.translateY.interpolator?.getInterpolation(fraction) ?: fraction
 
             if (choreography.useArcTranslator) {
-                val arcTranslationX = arcTranslator.getCurvedTranslationX(translateXFraction, choreography.translateX.fromValue, choreography.translateX.toValue, choreography.translateX.toValue)
-                val arcTranslationY = arcTranslator.getCurvedTranslationY(translateYFraction, choreography.translateY.fromValue, choreography.translateY.toValue, choreography.translateY.fromValue)
+                val controlX = choreography.controlPoint?.x ?: choreography.positionX.toValue
+                val controlY = choreography.controlPoint?.y ?: choreography.positionY.fromValue
+
+                val arcTranslationX = arcTranslator.getCurvedTranslationX(translateXFraction, choreography.translateX.fromValue, choreography.translateX.toValue, controlX)
+                val arcTranslationY = arcTranslator.getCurvedTranslationY(translateYFraction, choreography.translateY.fromValue, choreography.translateY.toValue, controlY)
 
                 view.morphTranslationX = arcTranslationX.toFloat()
                 view.morphTranslationY = arcTranslationY.toFloat()
@@ -628,7 +884,7 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             boundsChanged = true
         }
 
-        if (fraction >= 1f) {
+        if (fraction >= MAX_OFFSET) {
             choreography.done = true
             choreography.doneAction?.invoke(choreography)
         }
@@ -640,7 +896,16 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         boundsChanged = false
     }
 
-    private fun animateThroughPoints(valueHolder: FloatValueHolder, view: MorphLayout, playTime: Long, duration: Long, listener: ViewPropertyValueListener) {
+    /**
+     * Animates the specified [MorphLayout] with the values specified on the  [AnimatedFloatValueArray] to specified animation playtime.
+     * The total duration must be known and a [ViewPropertyValueListener] is used in order to notify the progression of the values.
+     * @param valueHolder The value holder containing the values to animate between
+     * @param view The morph layout to animate
+     * @param playTime The current playtime of the animation.
+     * @param duration The duration of the animation.
+     * @param listener The value progression listener
+     */
+    private fun animateThroughPoints(valueHolder: AnimatedFloatValueArray, view: MorphLayout, playTime: Long, duration: Long, listener: ViewPropertyValueListener) {
         val values = valueHolder.values
         val pointDuration = duration / values.size
 
@@ -663,6 +928,15 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Class which creates a choreography progression listener.
+     * The listener receives notifications upon the end, start and reversal of
+     * a choreography animation.
+     * @param fractionListener The progression listener
+     * @param endListener The listener notified when the animation ends.
+     * @param startListener The listener notified when the animation starts.
+     * @param reverseListener The listener notified when the animation reverses.
+     */
     data class ChoreographyListener(
         var fractionListener: ((remainingTime: Long, fraction: Float) -> Unit)? = null,
         var endListener: Action = null,
@@ -670,16 +944,23 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         var reverseListener: Action = null
     )
 
+    /**
+     * Class containing information about the properties used for animating a [Choreography]
+     * Each choreography uses an animation control for its core animation.
+     * @param choreography The choreography to which the control belongs to.
+     * @param startOffset The offset to which control will start the animation of the choreography
+     * @param endOffset The offset to which control will end the animation of the choreography
+     */
     class ChoreographyControl(
         internal var choreography: Choreography,
         internal var startOffset: Float,
         internal var endOffset: Float
     ) {
 
-        internal var repeatMode: Int = RESTART
         internal var repeatCount: Int = 0
-        internal var mDuration: Long = 0L
-        internal var mStartDelay: Long = 0L
+        internal var repeatMode: Int = RESTART
+        internal var mDuration: Long = MIN_DURATION
+        internal var mStartDelay: Long = MIN_DURATION
 
         internal lateinit  var endListener: (Animator) -> Unit
         internal lateinit var startListener: (Animator) -> Unit
@@ -688,18 +969,30 @@ class Choreographer(context: Context): PropertyChangeObservable() {
 
         internal var animator = ValueAnimator.ofFloat(startOffset, endOffset)
 
+        /**
+         * Pauses the animation used by this control.
+         */
         fun pause() {
             animator.pause()
         }
 
+        /**
+         * Resumes the animation used by this control.
+         */
         fun resume() {
             animator.resume()
         }
 
+        /**
+         * Cancels the animation used by this control.
+         */
         fun cancel() {
             animator.cancel()
         }
 
+        /**
+         * Builds the animation used by this control.
+         */
         internal fun build() {
             animator.addListener(
                 onStart = startListener,
@@ -713,6 +1006,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             animator.repeatMode = repeatMode
         }
 
+        /**
+         * Reverses the animation used by this control with
+         * the specified duration.
+         * @param duration The total duration the reversal animation will last.
+         */
         fun reverse(duration: Long?) {
             animator  = ValueAnimator.ofFloat(MAX_OFFSET, MIN_OFFSET)
 
@@ -723,23 +1021,55 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             animator.start()
         }
 
+        /**
+         * Starts the animation used by this control and returns
+         * and instance of itself.
+         * @return This [ChoreographyControl]
+         */
         internal fun start(): ChoreographyControl {
+            choreography.reveal?.let {
+                RevealUtility.circularReveal(
+                    centerX = it.centerX.toInt(),
+                    centerY = it.centerY.toInt(),
+                    startRadius = it.radiusStart,
+                    resultView = it.view,
+                    interpolator = it.interpolator,
+                    duration = mDuration,
+                    startDelay = mStartDelay
+                )
+            }
             animator.start()
             return this
         }
 
+        /**
+         * Returns the total duration of the animation of this control.
+         * @return the animation duration in milliseconds
+         */
         fun getTotalDuration(): Long {
             return mDuration
         }
 
+        /**
+         * Returns the remaining duration of the animation of this control.
+         * @return the remaining animation duration in milliseconds
+         */
         fun getRemainingDuration(): Long  {
             return mDuration - animator.currentPlayTime
         }
 
+        /**
+         * Returns the total time passed of the animation of this control.
+         * @return the animation time passed in milliseconds
+         */
         fun getElapsedDuration(): Long  {
             return animator.currentPlayTime
         }
 
+        /**
+         * Returns the the start delay of the animation of this control.
+         * @return the animation start delay in milliseconds
+         */
         fun getStartDelay(): Long  {
             return mStartDelay
         }
@@ -751,6 +1081,15 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         }
     }
 
+    /**
+     * Class which holds all the data on how to animate a [MorphLayout] in order
+     * successfully create the desired animation sequence. The choreography is gives
+     * its [Choreographer] instructions on how to animated and holds values for animateable
+     * properties a the specified views.
+     * @param choreographer The [Choreographer] used for animating this choreography
+     * @param views the views which this choreography will animate. This assumes the premise that
+     * all views have similar layout properties.
+     */
     class Choreography (
         var choreographer: Choreographer,
         internal vararg var views: MorphLayout
@@ -764,11 +1103,10 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         internal var reverseToStartState: Boolean = false
         internal var useArcTranslator: Boolean = false
 
-        internal var delay: Long = 0L
-        internal var offset: Float = 0F
-        internal var interval: Long = 0L
-        internal var duration: Long = 0L
-        internal var childStagger: Float = MIN_OFFSET
+        internal var delay: Long = MIN_DURATION
+        internal var offset: Float = MIN_OFFSET
+        internal var interval: Long = MIN_DURATION
+        internal var duration: Long = MIN_DURATION
 
         internal var pivotValueX: Float = 0.5f
         internal var pivotValueY: Float = 0.5f
@@ -779,49 +1117,53 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         internal var pivotValueTypeX: Pivot = Pivot.RELATIVE_TO_SELF
         internal var pivotValueTypeY: Pivot = Pivot.RELATIVE_TO_SELF
 
-        internal val scaleX: AnimatedFloatValue = AnimatedFloatValue(ValueMap.SCALE_X, MAX_OFFSET, MAX_OFFSET)
-        internal val scaleY: AnimatedFloatValue = AnimatedFloatValue(ValueMap.SCALE_Y, MAX_OFFSET, MAX_OFFSET)
+        internal val scaleX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_X, MAX_OFFSET, MAX_OFFSET)
+        internal val scaleY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_Y, MAX_OFFSET, MAX_OFFSET)
 
-        internal val rotation: AnimatedFloatValue = AnimatedFloatValue(ValueMap.ROTATION, MIN_OFFSET, MIN_OFFSET)
-        internal val rotationX: AnimatedFloatValue = AnimatedFloatValue(ValueMap.ROTATION_X, MIN_OFFSET, MIN_OFFSET)
-        internal val rotationY: AnimatedFloatValue = AnimatedFloatValue(ValueMap.ROTATION_Y, MIN_OFFSET, MIN_OFFSET)
+        internal val rotation: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION, MIN_OFFSET, MIN_OFFSET)
+        internal val rotationX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION_X, MIN_OFFSET, MIN_OFFSET)
+        internal val rotationY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION_Y, MIN_OFFSET, MIN_OFFSET)
 
-        internal val positionX: AnimatedFloatValue = AnimatedFloatValue(ValueMap.POSITION_X, MIN_OFFSET, MIN_OFFSET)
-        internal val positionY: AnimatedFloatValue = AnimatedFloatValue(ValueMap.POSITION_Y, MIN_OFFSET, MIN_OFFSET)
+        internal val positionX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.POSITION_X, MIN_OFFSET, MIN_OFFSET)
+        internal val positionY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.POSITION_Y, MIN_OFFSET, MIN_OFFSET)
 
-        internal val translateX: AnimatedFloatValue = AnimatedFloatValue(ValueMap.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET)
-        internal val translateY: AnimatedFloatValue = AnimatedFloatValue(ValueMap.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET)
-        internal val translateZ: AnimatedFloatValue = AnimatedFloatValue(ValueMap.TRANSLATION_Z, MIN_OFFSET, MIN_OFFSET)
+        internal val translateX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET)
+        internal val translateY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET)
+        internal val translateZ: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_Z, MIN_OFFSET, MIN_OFFSET)
 
-        internal var translateXValues: FloatValueHolder = FloatValueHolder(ValueHolder.TRANSLATION_X)
-        internal var translateYValues: FloatValueHolder = FloatValueHolder(ValueHolder.TRANSLATION_Y)
+        internal val width: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.WIDTH, MIN_OFFSET, MIN_OFFSET)
+        internal val height: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.HEIGHT, MIN_OFFSET, MIN_OFFSET)
 
-        internal val width: AnimatedFloatValue = AnimatedFloatValue(ValueMap.WIDTH, MIN_OFFSET, MIN_OFFSET)
-        internal val height: AnimatedFloatValue = AnimatedFloatValue(ValueMap.HEIGHT, MIN_OFFSET, MIN_OFFSET)
+        internal val alpha: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ALPHA, MAX_OFFSET, MAX_OFFSET)
 
-        internal val alpha: AnimatedFloatValue = AnimatedFloatValue(ValueMap.ALPHA, MAX_OFFSET, MAX_OFFSET)
+        internal val color: AnimatedIntValue = AnimatedIntValue(AnimatedValue.COLOR, DEFAULT_COLOR, DEFAULT_COLOR)
 
-        internal val color: AnimatedIntValue = AnimatedIntValue(ValueMap.COLOR, DEFAULT_COLOR, DEFAULT_COLOR)
+        internal val cornerRadii: AnimatedValue<CornerRadii> = AnimatedValue.instance(AnimatedValue.CORNERS, CornerRadii(), CornerRadii())
 
-        internal val cornerRadii: AnimatedValue<CornerRadii> = AnimatedValue.instance(ValueMap.CORNERS, CornerRadii(), CornerRadii())
+        internal val paddings: AnimatedValue<Paddings> = AnimatedValue.instance(AnimatedValue.PADDING, Paddings(), Paddings())
+        internal val margings: AnimatedValue<Margings> = AnimatedValue.instance(AnimatedValue.MARGIN, Margings(), Margings())
 
-        internal val paddings: AnimatedValue<Paddings> = AnimatedValue.instance(ValueMap.PADDING, Paddings(), Paddings())
-        internal val margings: AnimatedValue<Margings> = AnimatedValue.instance(ValueMap.MARGIN, Margings(), Margings())
+        internal var translateXValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.TRANSLATION_X)
+        internal var translateYValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.TRANSLATION_Y)
 
         internal var offsetListener: TransitionOffsetListener = null
 
+        internal var viewParentSize: Dimension = Dimension()
+
         internal val pivotPoint: Coordinates = Coordinates()
 
-        internal val controlPoint: Coordinates? = null
+        internal var controlPoint: Coordinates? = null
 
         internal var doneAction: ChoreographerAction = null
         internal var startAction: ChoreographerAction = null
 
         internal var interpolator: TimeInterpolator? = null
 
-        internal var viewParentSize: Dimension = Dimension()
+        internal var stagger: AnimationStagger? = null
 
         internal var stretch: Stretch? = null
+
+        internal var reveal: Reveal? = null
 
         lateinit var control: ChoreographyControl
         internal var parent: Choreography? = null
@@ -831,6 +1173,10 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             applyDefaultValues()
         }
 
+        /***
+         * A map of the properties or [AnimatedValue] of this [Choreography]
+         * @return a map containing of the properties accessed by their respective names.
+         */
         internal fun properties(): Map<String, AnimatedValue<*>> {
             val properties: HashMap<String, AnimatedValue<*>> = HashMap()
             properties[scaleX.propertyName] = scaleX
@@ -853,13 +1199,21 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return properties
         }
 
-        internal fun propertyHolders(): Map<String, ValueHolder<*>> {
-            val properties: HashMap<String, ValueHolder<*>> = HashMap()
+        /**
+         * A map containing of property sets or [AnimatedValueArray]
+         * @return a map containing of the properties sets accessed by their respective names.
+         */
+        internal fun propertyHolders(): Map<String, AnimatedValueArray<*>> {
+            val properties: HashMap<String, AnimatedValueArray<*>> = HashMap()
             properties[translateX.propertyName] = translateXValues
             properties[translateY.propertyName] = translateYValues
             return properties
         }
 
+        /**
+         * Sets the values for all properties using the given map of properties.
+         * @param properties Map of all the properties to be set.
+         */
         internal fun setStartProperties(properties: Map<String, AnimatedValue<*>>?) {
             if (properties == null)
                 return
@@ -883,8 +1237,12 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             cornerRadii.set(properties[cornerRadii.propertyName]?.toValue as CornerRadii)
         }
 
+        /**
+         * Sets the values for all properties sets using the given map of properties sets.
+         * @param properties Map of all the properties sets to be set.
+         */
         @Suppress("UNCHECKED_CAST")
-        internal fun setStartPropertyHolders(properties: Map<String, ValueHolder<*>>?) {
+        internal fun setStartPropertyHolders(properties: Map<String, AnimatedValueArray<*>>?) {
             if (properties == null)
                 return
 
@@ -892,6 +1250,9 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             translateYValues.values = properties.getValue(translateXValues.propertyName).values as Array<Float>
         }
 
+        /**
+         * Flips the from and to values of each of the animation properties.
+         */
         internal fun flipValues() {
             this.color.flip()
             this.alpha.flip()
@@ -914,6 +1275,11 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             this.translateYValues.values.reverse()
         }
 
+        /**
+         * Applies the default values for each of the animation properties.
+         * the values are assigned using the values of all the animateable properties
+         * of the views to be animated by this [Choreography]
+         */
         private fun applyDefaultValues() {
             this.duration = choreographer.defaultDuration
             this.interpolator = choreographer.defaultInterpolator
@@ -957,6 +1323,10 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             }
         }
 
+        /**
+         * Resets each of the views held by this [Choreography] to their initial
+         * pre animation state.
+         */
         fun resetProperties() {
             if (views.isNotEmpty()) {
                 views.forEach {
@@ -992,34 +1362,128 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             }
         }
 
-        fun withPivot(pivotValues: FloatPoint, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
-            return withPivot(pivotValues.x, pivotValues.y, type)
-        }
+        // NEEDS TESTING
+        /**
+         * Animates the views of this [Choreography] to the left of the specified [MorphLayout] with
+         * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.
+         * @param otherView The layout to which the choreography will animate its views to the left of
+         * @param margin The margin to use between the choreography views and the specified layout.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun toLeftOf(otherView: MorphLayout, margin: Float = MIN_OFFSET, interpolator: TimeInterpolator? = null): Choreography {
+            val view = views[0]
+            val startX: Float = view.windowLocationX.toFloat()
+            val startY: Float = view.windowLocationY.toFloat()
 
-        fun withPivot(pivotX: Float, pivotY: Float, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
-            pivotValueX = pivotX
-            pivotValueY = pivotY
-            pivotValueTypeX = type
-            pivotValueTypeY = type
-            pivotPoint.x = resolveSize(pivotValueTypeX, pivotValueX, width.fromValue, viewParentSize.width)
-            pivotPoint.y = resolveSize(pivotValueTypeY, pivotValueY, height.fromValue, viewParentSize.height)
+            val endX: Float = otherView.windowLocationX.toFloat() - (margin + view.morphWidth)
+            val endY: Float = otherView.windowLocationY.toFloat()
+
+            val differenceX: Float = endX - startX
+            val differenceY: Float = endY - startY
+
+            this.translateX.toValue = differenceX
+            this.translateY.toValue = differenceY
+
+            this.translateX.interpolator = interpolator
+            this.translateY.interpolator = interpolator
+
             return this
         }
 
-        fun withPivotX(pivotX: Float, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
-            pivotValueX = pivotX
-            pivotValueTypeX = type
-            pivotPoint.x = resolveSize(pivotValueTypeX, pivotValueX, width.fromValue, viewParentSize.width)
+        // NEEDS TESTING
+        /**
+         * Animates the views of this [Choreography] to the right of the specified [MorphLayout] with
+         * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.
+         * @param otherView The layout to which the choreography will animate its views to the right of
+         * @param margin The margin to use between the choreography views and the specified layout.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun toRightOf(otherView: MorphView, margin: Float = MIN_OFFSET, interpolator: TimeInterpolator? = null): Choreography {
+            val view = views[0]
+            val startX: Float = view.windowLocationX.toFloat()
+            val startY: Float = view.windowLocationY.toFloat()
+
+            val endX: Float = otherView.windowLocationX.toFloat() + (margin + view.morphHeight)
+            val endY: Float = otherView.windowLocationY.toFloat()
+
+            val differenceX: Float = endX - startX
+            val differenceY: Float = endY - startY
+
+            this.translateX.toValue = differenceX
+            this.translateY.toValue = differenceY
+
+            this.translateX.interpolator = interpolator
+            this.translateY.interpolator = interpolator
+
             return this
         }
 
-        fun withPivotY(pivotY: Float, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
-            pivotValueY = pivotY
-            pivotValueTypeY = type
-            pivotPoint.y = resolveSize(pivotValueTypeY, pivotValueY, height.fromValue, viewParentSize.height)
+        // NEEDS TESTING
+        /**
+         * Animates the views of this [Choreography] to the top of the specified [MorphLayout] with
+         * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.
+         * @param otherView The layout to which the choreography will animate its views to the top of
+         * @param margin The margin to use between the choreography views and the specified layout.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun toTopOf(otherView: MorphView, margin: Float = MIN_OFFSET, interpolator: TimeInterpolator? = null): Choreography {
+            val view = views[0]
+            val startX: Float = view.windowLocationX.toFloat()
+            val startY: Float = view.windowLocationY.toFloat()
+
+            val endX: Float = otherView.windowLocationX.toFloat()
+            val endY: Float = otherView.windowLocationY.toFloat() - (margin + view.morphHeight)
+
+            val differenceX: Float = endX - startX
+            val differenceY: Float = endY - startY
+
+            this.translateX.toValue = differenceX
+            this.translateY.toValue = differenceY
+
+            this.translateX.interpolator = interpolator
+            this.translateY.interpolator = interpolator
+
             return this
         }
 
+        // NEEDS TESTING
+        /**
+         * Animates the views of this [Choreography] to the bottm of the specified [MorphLayout] with
+         * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.
+         * @param otherView The layout to which the choreography will animate its views to the bottom of
+         * @param margin The margin to use between the choreography views and the specified layout.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun toBottomOf(otherView: MorphView, margin: Float = MIN_OFFSET, interpolator: TimeInterpolator? = null): Choreography {
+            val view = views[0]
+            val startX: Float = view.windowLocationX.toFloat()
+            val startY: Float = view.windowLocationY.toFloat()
+
+            val endX: Float = otherView.windowLocationX.toFloat()
+            val endY: Float = otherView.windowLocationY.toFloat() + (margin + view.morphHeight)
+
+            val differenceX: Float = endX - startX
+            val differenceY: Float = endY - startY
+
+            this.translateX.toValue = differenceX
+            this.translateY.toValue = differenceY
+
+            this.translateX.interpolator = interpolator
+            this.translateY.interpolator = interpolator
+
+            return this
+        }
+
+        /**
+         * Animates the views of this [Choreography] to the specified bounds.
+         * @param bounds The bounds to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun positionAt(bounds: Bounds, interpolator: TimeInterpolator? = null): Choreography {
             val startX: Float = bounds.x + ((bounds.width / 2f) - (views[0].morphWidth / 2f))
             val startY: Float = bounds.y + ((bounds.height / 2f) - (views[0].morphHeight / 2f))
@@ -1039,12 +1503,25 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified x position.
+         * @param positionX the position to which the X position value is to be animated to
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xPositionTo(positionX: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.positionX.toValue = positionX
             this.positionX.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified X position from the specified X position.
+         * @param fromValue the position from which the X position value is to be animated from
+         * @param toValue the position to which the X position value is to be animated to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xPositionFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.positionX.fromValue = fromValue
             this.positionX.toValue = toValue
@@ -1052,17 +1529,35 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified X position value property
+         * @param values The property to use for animating the X value of this choreography
+         * @return this choreography.
+         */
         fun xPosition(values: AnimatedFloatValue): Choreography {
             this.positionX.copy(values)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Y position.
+         * @param positionY the position to which the Y position value is to be animated to
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yPositionTo(positionY: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.positionY.toValue = positionY
             this.positionY.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Y position from the specified Y position.
+         * @param fromValue the position from which the Y position value is to be animated from
+         * @param toValue the position to which the Y position value is to be animated to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yPositionFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.positionY.fromValue = fromValue
             this.positionY.toValue = toValue
@@ -1070,17 +1565,36 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Y position value property.
+         * The position.
+         * @param values The property to use for animating the Y value of this choreography
+         * @return this choreography.
+         */
         fun yPosition(values: AnimatedFloatValue): Choreography {
             this.positionY.copy(values)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified X translation.
+         * @param translationX the position to which the X translation value is to be animated to
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xTranslateTo(translationX: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.translateX.toValue = translationX
             this.translateX.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified X translation from the specified X translation.
+         * @param fromValue the position from which the X translation value is to be animated from
+         * @param toValue the position to which the X translation value is to be animated to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xTranslateFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.translateX.fromValue = fromValue
             this.translateX.toValue = toValue
@@ -1088,17 +1602,35 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified X translation value property
+         * @param values The property to use for animating the X value of this choreography
+         * @return this choreography.
+         */
         fun xTranslate(values: AnimatedFloatValue): Choreography {
             this.translateX.copy(values)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Y translation.
+         * @param translationY the position to which the Y translation value is to be animated to
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yTranslateTo(translationY: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.translateY.toValue = translationY
             this.translateY.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Y translation from the specified Y translation.
+         * @param fromValue the position from which the Y translation value is to be animated from
+         * @param toValue the position to which the Y translation value is to be animated to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yTranslateFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.translateY.fromValue = fromValue
             this.translateY.toValue = toValue
@@ -1106,17 +1638,35 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Y translation value property
+         * @param values The property to use for animating the Y value of this choreography
+         * @return this choreography.
+         */
         fun yTranslate(values: AnimatedFloatValue): Choreography {
             this.translateY.copy(values)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Z translation.
+         * @param translationZ the position to which the Z translation value is to be animated to
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun zTranslateTo(translationZ: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.translateZ.toValue = translationZ
             this.translateZ.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Z translation from the specified Z translation.
+         * @param fromValue the position from which the Z translation value is to be animated from
+         * @param toValue the position to which the Z translation value is to be animated to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun zTranslateFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.translateZ.fromValue = fromValue
             this.translateZ.toValue = toValue
@@ -1124,15 +1674,34 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified Z translation value property
+         * @param values The property to use for animating the Z value of this choreography
+         * @return this choreography.
+         */
         fun zTranslate(values: AnimatedFloatValue): Choreography {
             this.translateZ.copy(values)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the specified coordinates using arc translation
+         * The control point is auto calculated if no control point has been specified.
+         * @param coordinates The coordinates to arc translate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography
+         */
         fun arcTranslateTo(coordinates: Coordinates, interpolator: TimeInterpolator? = null): Choreography {
             return arcTranslateTo(coordinates.x, coordinates.y, interpolator)
         }
-
+        /**
+         * Animates the views of this [Choreography] to the specified X and Y translation values using arc translation
+         * The control point is auto calculated if no control point has been specified.
+         * @param translationX The x translation amount to arc translate to.
+         * @param translationY The x translation amount to arc translate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography
+         */
         fun arcTranslateTo(translationX: Float, translationY: Float, interpolator: TimeInterpolator? = null): Choreography {
             translateX.toValue = translationX
             translateY.toValue = translationY
@@ -1142,12 +1711,24 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] between the specified points see: [FloatPoint].
+         * Uses the default interpolator if any is present
+         * @return this choreography
+         */
         fun translateBetween(vararg values: FloatPoint): Choreography {
             translateXValues.values = values.map { it.x }.toTypedArray()
             translateYValues.values = values.map { it.y }.toTypedArray()
+            translateXValues.interpolator = interpolator
+            translateYValues.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] between the specified points see: [FloatPoint].
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography
+         */
         fun translateBetween(interpolator: TimeInterpolator? = null, vararg values: FloatPoint): Choreography {
             translateXValues.values = values.map { it.x }.toTypedArray()
             translateYValues.values = values.map { it.y }.toTypedArray()
@@ -1156,48 +1737,130 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
-        fun xTranslateBetween(value: Float, percentages: IntArray): Choreography {
+        /**
+         * Animates the views of this [Choreography] between the X translation values created
+         * by mapping to the specified percentages. Int based percentages are used.
+         * Ex: 0%, 50%, 120%
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography
+         */
+        fun xTranslateBetween(value: Float, percentages: IntArray, interpolator: TimeInterpolator? = null): Choreography {
             val mapped = percentages.map { it / 100f }.toTypedArray().toFloatArray()
-            return xTranslateBetween(value, mapped)
+            return xTranslateBetween(value, mapped, interpolator)
         }
 
-        fun xTranslateBetween(value: Float, percentages: FloatArray): Choreography {
+        /**
+         * Animates the views of this [Choreography] between the X translation values created
+         * by mapping to the specified percentages. Float based percentages are used where
+         * 0.5f equals 50% and so on.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography
+         */
+        fun xTranslateBetween(value: Float, percentages: FloatArray, interpolator: TimeInterpolator? = null): Choreography {
             val output: ArrayList<Float> = ArrayList()
             for (percentage in percentages) {
                 output.add(value * percentage)
             }
+            translateXValues.interpolator = interpolator
             translateXValues.values = output.toTypedArray()
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] between the specified X translation values.
+         * Uses the default interpolator if any is present.
+         * @param values the values to translate between.
+         * @return this choreography.
+         */
         fun xTranslateBetween(vararg values: Float): Choreography {
             translateXValues.values = values.toTypedArray()
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] between the specified X translation values.
+         * @param values the values to translate between.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xTranslateBetween(interpolator: TimeInterpolator? = null, vararg values: Float): Choreography {
             translateXValues.values = values.toTypedArray()
             translateXValues.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] between the Y translation values created
+         * by mapping to the specified percentages. Int based percentages are used.
+         * Ex: 0%, 50%, 120%
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography
+         */
+        fun yTranslateBetween(value: Float, percentages: IntArray, interpolator: TimeInterpolator? = null): Choreography {
+            val mapped = percentages.map { it / 100f }.toTypedArray().toFloatArray()
+            return yTranslateBetween(value, mapped, interpolator)
+        }
+
+        /**
+         * Animates the views of this [Choreography] between the Y translation values created
+         * by mapping to the specified percentages. Float based percentages are used where
+         * 0.5f equals 50% and so on.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography
+         */
+        fun yTranslateBetween(value: Float, percentages: FloatArray, interpolator: TimeInterpolator? = null): Choreography {
+            val output: ArrayList<Float> = ArrayList()
+            for (percentage in percentages) {
+                output.add(value * percentage)
+            }
+            translateYValues.interpolator = interpolator
+            translateYValues.values = output.toTypedArray()
+            return this
+        }
+
+        /**
+         * Animates the views of this [Choreography] between the specified Y translation values.
+         * Uses the default interpolator if any is present.
+         * @param values the values to translate between.
+         * @return this choreography.
+         */
         fun yTranslateBetween(vararg values: Float): Choreography {
             translateYValues.values = values.toTypedArray()
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] between the specified Y translation values.
+         * @param values the values to translate between.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yTranslateBetween(interpolator: TimeInterpolator? = null, vararg values: Float): Choreography {
             translateYValues.values = values.toTypedArray()
             translateYValues.interpolator = interpolator
             return this
         }
 
-        fun alphaTo(opacity: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.alpha.toValue = opacity
+        /**
+         * Animates the alpha value of the views of this [Choreography] to the specified alpha value.
+         * @param alpha The alpha value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun alphaTo(alpha: Float, interpolator: TimeInterpolator? = null): Choreography {
+            this.alpha.toValue = alpha
             this.alpha.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the alpha value of the views of this [Choreography] from the specified alpha value
+         * to the specified alpha value.
+         * @param fromValue The alpha value to animate from.
+         * @param toValue The alpha value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun alphaFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.alpha.fromValue = fromValue
             this.alpha.toValue = toValue
@@ -1205,25 +1868,59 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the alpha value of the views of this [Choreography] to the specified alpha value.
+         * The alpha value is specified as a percentage where 50 is 50 percent opacity
+         * @param alpha The alpha value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun alphaTo(alpha: Int, interpolator: TimeInterpolator? = null): Choreography {
+            return this.alphaTo(alpha.clamp(0, 100) / 100f, interpolator)
+        }
+
+        /**
+         * Animates the alpha value of the views of this [Choreography] from the specified alpha value
+         * to the specified alpha value. The alpha value is specified as a percentage where 50 is 50 percent opacity.
+         * @param fromValue The alpha value to animate from.
+         * @param toValue The alpha value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun alphaFrom(fromValue: Int, toValue: Int, interpolator: TimeInterpolator? = null): Choreography {
+            return this.alphaFrom(fromValue.clamp(0, 100) / 100f, toValue.clamp(0, 100) / 100f, interpolator)
+        }
+
+        /**
+         * Animates the alpha value of the views of this [Choreography] using the specified animated
+         * alpha value property. See [AnimatedFloatValue]
+         * @param values The property to use for this animation.
+         * @return this choreography.
+         */
         fun alpha(values: AnimatedFloatValue): Choreography {
             this.alpha.copy(values)
             return this
         }
 
-        fun alphaTo(opacity: Int, interpolator: TimeInterpolator? = null): Choreography {
-            return this.alphaTo(opacity.clamp(0, 100) / 100f, interpolator)
-        }
-
-        fun alphaFrom(fromValue: Int, toValue: Int, interpolator: TimeInterpolator? = null): Choreography {
-            return this.alphaFrom(fromValue.clamp(0, 100) / 100f, toValue.clamp(0, 100) / 100f, interpolator)
-        }
-
+        /**
+         * Animates the corner radius of the views of this [Choreography] to the specified [CornerRadii].
+         * @param corners The corner radius value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun cornerRadiusTo(corners: CornerRadii, interpolator: TimeInterpolator? = null): Choreography {
             cornerRadii.interpolator = interpolator
             cornerRadii.toValue = corners
             return this
         }
 
+        /**
+         * Animates the corner radius of the specified corners of the views of this [Choreography] to the specified value.
+         * @param corner The corner which value is to be animated.
+         * @param radius The radius to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun cornerRadiusTo(corner: Corner = Corner.ALL, radius: Float, interpolator: TimeInterpolator? = null): Choreography {
             cornerRadii.interpolator = interpolator
             when (corner) {
@@ -1257,6 +1954,15 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the corner radius of the specified corners of the views of this [Choreography] from the specified value.
+         * to the specified value
+         * @param corner The corner which value is to be animated.
+         * @param fromValue The radius to animate from.
+         * @param toValue The radius to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun cornerRadiusFrom(corner: Corner = Corner.ALL, fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             cornerRadii.interpolator = interpolator
             when (corner) {
@@ -1311,29 +2017,65 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
-        fun cornerRadius(valueMap: AnimatedValue<CornerRadii>): Choreography {
-            cornerRadii.copy(valueMap)
+        /**
+         * Animates the corner radius of the specified corners of the views of this [Choreography] from the specified value.
+         * to the specified value
+         * @param cornerValue The corner property to use fo this animation.
+         * @return this choreography.
+         */
+        fun cornerRadius(cornerValue: AnimatedValue<CornerRadii>): Choreography {
+            cornerRadii.copy(cornerValue)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the computed rotation valued created
+         * by adding the specified delta to the current rotation value. This causes the rotation value
+         * to be increased/decreased with the specified amount.
+         * @param delta The amount to add to the current rotation value
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun addRotation(delta: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotation.add = delta
             this.rotation.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the computed rotation valued created
+         * by multiplying the specified multiplier with the current rotation value. This causes the rotation value
+         * to be increased/decreased with the specified amount.
+         * @param multiplier The amount to multiply the current rotation value by
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun rotateBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotation.multiply = multiplier
             this.rotation.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the rotation value of the views of this [Choreography] to the specified rotation value.
+         * @param rotation The rotation value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun rotateTo(rotation: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotation.toValue = rotation
             this.rotation.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the rotation value of the views of this [Choreography] from the specified rotation value
+         * to the specified rotation value
+         * @param fromValue The rotation value to animate from
+         * @param toValue The rotation value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun rotateFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotation.fromValue = fromValue
             this.rotation.toValue = toValue
@@ -1341,29 +2083,65 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the rotation value of the views of this [Choreography] using the specified animated
+         * rotation value property. See [AnimatedFloatValue]
+         * @param values The property to use for this animation.
+         * @return this choreography.
+         */
         fun rotate(values: AnimatedFloatValue): Choreography {
             this.rotation.copy(values)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the computed X rotation valued created
+         * by adding the specified delta to the current X rotation value. This causes the X rotation value
+         * to be increased/decreased with the specified amount.
+         * @param delta The amount to add to the current X rotation value
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xRotateAdd(delta: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationX.add = delta
             this.rotationX.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the computed X rotation valued created
+         * by multiplying the specified multiplier with the current X rotation value. This causes the X rotation value
+         * to be increased/decreased with the specified amount.
+         * @param multiplier The amount to multiply the current X rotation value by
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xRotateBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationX.multiply = multiplier
             this.rotationX.interpolator = interpolator
             return this
         }
 
-        fun xRotate(rotationX: Float, interpolator: TimeInterpolator? = null): Choreography {
+        /**
+         * Animates the X rotation value of the views of this [Choreography] to the specified X rotation value.
+         * @param rotationX The X rotation value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun xRotateTo(rotationX: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationX.toValue = rotationX
             this.rotationX.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the X rotation value of the views of this [Choreography] from the specified X rotation value
+         * to the specified X rotation value
+         * @param fromValue The X rotation value to animate from
+         * @param toValue The X rotation value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun xRotateFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationX.fromValue = fromValue
             this.rotationX.toValue = toValue
@@ -1371,29 +2149,65 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the X rotation value of the views of this [Choreography] using the specified animated
+         * X rotation value property. See [AnimatedFloatValue]
+         * @param values The property to use for this animation.
+         * @return this choreography.
+         */
         fun xRotate(values: AnimatedFloatValue): Choreography {
             this.rotationX.copy(values)
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the computed Y rotation valued created
+         * by adding the specified delta to the current Y rotation value. This causes the Y rotation value
+         * to be increased/decreased with the specified amount.
+         * @param delta The amount to add to the current Y rotation value
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yRotateAdd(delta: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationY.add = delta
             this.rotationY.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the views of this [Choreography] to the computed Y rotation valued created
+         * by multiplying the specified multiplier with the current Y rotation value. This causes the Y rotation value
+         * to be increased/decreased with the specified amount.
+         * @param multiplier The amount to multiply the current Y rotation value by
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yRotateBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationY.multiply = multiplier
             this.rotationY.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the Y rotation value of the views of this [Choreography] to the specified Y rotation value.
+         * @param rotationX The Y rotation value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yRotateTo(rotationY: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationY.toValue = rotationY
             this.rotationY.interpolator = interpolator
             return this
         }
 
+        /**
+         * Animates the Y rotation value of the views of this [Choreography] from the specified Y rotation value
+         * to the specified Y rotation value
+         * @param fromValue The Y rotation value to animate from
+         * @param toValue The Y rotation value to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun yRotateFrom(fromValue: Float, toValue: Float, interpolator: TimeInterpolator? = null): Choreography {
             this.rotationY.fromValue = fromValue
             this.rotationY.toValue = toValue
@@ -1401,15 +2215,33 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        /**
+         * Animates the Y rotation value of the views of this [Choreography] using the specified animated
+         * X rotation value property. See [AnimatedFloatValue]
+         * @param values The property to use for this animation.
+         * @return this choreography.
+         */
         fun yRotate(values: AnimatedFloatValue): Choreography {
             this.rotationY.copy(values)
             return this
         }
 
+        /**
+         * Animates the scale value of the views of this [Choreography] to the specified [Bounds] value.
+         * @param bounds The bounds dimension to scale animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun scaleTo(bounds: Bounds, interpolator: TimeInterpolator? = null): Choreography {
             return scaleTo(bounds.dimension(), interpolator)
         }
 
+        /**
+         * Animates the scale value of the views of this [Choreography] to the specified [Dimension] value.
+         * @param dimension The dimension to scale animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
         fun scaleTo(dimension: Dimension, interpolator: TimeInterpolator? = null): Choreography {
             this.scaleX.toValue = dimension.width / this.width.fromValue
             this.scaleY.toValue = dimension.height / this.height.fromValue
@@ -1867,6 +2699,38 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        fun backgroundTo(background: Background): Choreography {
+            return this
+        }
+
+        fun withPivot(pivotValues: FloatPoint, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
+            return withPivot(pivotValues.x, pivotValues.y, type)
+        }
+
+        fun withPivot(pivotX: Float, pivotY: Float, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
+            pivotValueX = pivotX
+            pivotValueY = pivotY
+            pivotValueTypeX = type
+            pivotValueTypeY = type
+            pivotPoint.x = resolveSize(pivotValueTypeX, pivotValueX, width.fromValue, viewParentSize.width)
+            pivotPoint.y = resolveSize(pivotValueTypeY, pivotValueY, height.fromValue, viewParentSize.height)
+            return this
+        }
+
+        fun withPivotX(pivotX: Float, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
+            pivotValueX = pivotX
+            pivotValueTypeX = type
+            pivotPoint.x = resolveSize(pivotValueTypeX, pivotValueX, width.fromValue, viewParentSize.width)
+            return this
+        }
+
+        fun withPivotY(pivotY: Float, type: Pivot = Pivot.RELATIVE_TO_SELF): Choreography {
+            pivotValueY = pivotY
+            pivotValueTypeY = type
+            pivotPoint.y = resolveSize(pivotValueTypeY, pivotValueY, height.fromValue, viewParentSize.height)
+            return this
+        }
+
         fun withOffsetListener(offsetListener: TransitionOffsetListener): Choreography {
             this.offsetListener = offsetListener
             return this
@@ -1892,11 +2756,13 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
-        fun withStagger(offset: Float): Choreography {
+        fun withStagger(offset: Float = MIN_OFFSET, multiplier: Float = MAX_OFFSET, type: Stagger = Stagger.LINEAR): Choreography {
+            this.stagger = AnimationStagger(staggerOffset = offset, staggerMultiplier = multiplier, type = type)
             return this
         }
 
-        fun withStagger(delay: Long): Choreography {
+        fun withStagger(stagger: AnimationStagger): Choreography {
+            this.stagger = stagger
             return this
         }
 
@@ -1910,37 +2776,53 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return this
         }
 
+        fun withControlCoordinates(x: Float, y: Float): Choreography {
+            this.controlPoint = Coordinates(x, y)
+            return this
+        }
+
         fun withControlPoint(point: Coordinates): Choreography {
+            this.controlPoint = point
             return this
         }
 
-        fun withInterval(time: Long): Choreography {
+        fun withControlPoint(point: FloatPoint): Choreography {
+            this.controlPoint = Coordinates(point.x, point.y)
             return this
         }
 
-        fun childStagger(stagger: Float): Choreography {
+        // How to use it?
+      /*  fun withInterval(time: Long): Choreography {
+            throw NotImplementedError("Please implement this function")
             return this
-        }
+        }*/
 
         fun revealWith(reveal: Reveal): Choreography {
+            this.reveal = reveal
             return this
         }
 
-        fun revealFrom(centerX: Float, centerY: Float): Choreography {
+        fun revealWith(view: MorphLayout, interpolator: TimeInterpolator? = null): Choreography {
+            this.reveal = Reveal(view.getView(), views[0].getView())
+            this.reveal?.interpolator = interpolator
             return this
         }
 
-        fun revealFrom(anchor: Anchor): Choreography {
+        fun revealFrom(centerX: Float, centerY: Float, radius: Float, interpolator: TimeInterpolator? = null): Choreography {
+            this.reveal = Reveal(centerX, centerY, radius, views[0].getView())
+            this.reveal?.interpolator = interpolator
+            return this
+        }
+
+        fun revealFrom(coordinates: Coordinates, radius: Float, interpolator: TimeInterpolator? = null): Choreography {
+            this.reveal = Reveal(coordinates.x, coordinates.y, radius, views[0].getView())
+            this.reveal?.interpolator = interpolator
             return this
         }
 
         fun thenReverse(): Choreography {
             this.reverse = true
             return this
-        }
-
-        private fun moveInRelationTo(){
-
         }
 
         fun animateAfter(offset: Float, vararg view: MorphLayout = this.views): Choreography {
@@ -1971,12 +2853,24 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return choreographer.andReverseAnimate(this, *view)
         }
 
-        fun animateChildrenOf(view: MorphLayout, staggerOffset: Float): Choreography {
-            return this
+        fun animateChildrenOfAfter(view: MorphLayout, offset: Float, stagger: AnimationStagger? = null): Choreography {
+            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            return choreographer.animateChildrenOfAfter(this, offset, stagger, *children)
         }
 
-        fun animateChildrenOf(view: MorphLayout, staggerDuration: Long): Choreography {
-            return this
+        fun thenAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
+            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            return choreographer.thenAnimateChildrenOf(this, stagger, *children)
+        }
+
+        fun alsoAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
+            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            return choreographer.alsoAnimateChildrenOf(this, stagger, *children)
+        }
+
+        fun andAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
+            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            return choreographer.andAnimateChildrenOf(this, stagger, *children)
         }
 
         fun build(): Choreographer {
@@ -2038,10 +2932,6 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             choreography.child = null
 
             return choreography
-        }
-
-        fun backgroundTo(background: Background): Choreography {
-            return this
         }
     }
 

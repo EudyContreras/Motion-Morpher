@@ -1,23 +1,10 @@
 package com.eudycontreras.motionmorpherlibrary.utilities
 
-import android.animation.*
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.TransitionDrawable
-import android.graphics.drawable.VectorDrawable
-import android.os.Build
+import android.animation.TimeInterpolator
 import android.view.View
 import android.view.ViewAnimationUtils
-import android.view.ViewGroup
-import android.view.animation.Interpolator
-import androidx.annotation.DrawableRes
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.eudycontreras.motionmorpherlibrary.Action
-import com.eudycontreras.motionmorpherlibrary.extensions.show
+import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
 import kotlin.math.hypot
 
@@ -30,7 +17,7 @@ import kotlin.math.hypot
  */
 
 
-object RevealUtilityCircular {
+object RevealUtility {
 
     private const val CORNER_RADIUS_PROPERTY = "cornerRadius"
 
@@ -40,11 +27,12 @@ object RevealUtilityCircular {
     fun circularReveal(
         sourceView: View,
         resultView: View,
-        interpolator: Interpolator,
+        interpolator: TimeInterpolator? = null,
         divider: Int = 2,
         duration: Long,
-        onStart: Action,
-        onEnd: Action
+        startDelay: Long = MIN_DURATION,
+        onStart: Action = null,
+        onEnd: Action = null
     ) {
         val startRadius = hypot(sourceView.width.toDouble(), sourceView.height.toDouble()).toFloat() / (divider * 2f)
 
@@ -55,7 +43,7 @@ object RevealUtilityCircular {
         val cx = location[0] + sourceView.width / 2
         val cy = location[1] + sourceView.height / 2
 
-        circularReveal(startRadius, cx, cy, resultView, interpolator, duration, onStart, onEnd)
+        circularReveal(startRadius, cx, cy, resultView, interpolator, duration, startDelay, onStart, onEnd)
     }
 
     fun circularReveal(
@@ -63,10 +51,11 @@ object RevealUtilityCircular {
         centerX: Int,
         centerY: Int,
         resultView: View,
-        interpolator: Interpolator,
+        interpolator: TimeInterpolator? = null,
         duration: Long,
-        onStart: Action,
-        onEnd: Action
+        startDelay: Long = MIN_DURATION,
+        onStart: Action = null,
+        onEnd: Action = null
     ) {
         val endRadius = hypot(resultView.width.toDouble(), resultView.height.toDouble()).toFloat()
 
@@ -79,26 +68,28 @@ object RevealUtilityCircular {
         )
 
         val listener = MorphAnimationListener(
-            {
-                resultView.show()
+            onStart = {
+                resultView.visibility = View.VISIBLE
                 onStart?.invoke()
             },
-            onEnd
+            onEnd = onEnd
         )
 
         revealAnimator.addListener(listener)
         revealAnimator.interpolator = interpolator
         revealAnimator.duration = duration
+        revealAnimator.startDelay = startDelay
         revealAnimator.start()
     }
 
     fun circularConceal(
         sourceView: View,
         resultView: View,
-        interpolator: Interpolator,
+        interpolator: TimeInterpolator? = null,
         duration: Long,
-        onStart: Action,
-        onEnd: Action
+        startDelay: Long = MIN_DURATION,
+        onStart: Action = null,
+        onEnd: Action = null
     ) {
 
         val endRadius: Float = hypot(resultView.width.toDouble(), resultView.height.toDouble()).toFloat() / 2f
@@ -116,11 +107,12 @@ object RevealUtilityCircular {
         revealAnimator.addListener(MorphAnimationListener(onStart, onEnd))
         revealAnimator.interpolator = interpolator
         revealAnimator.duration = duration
+        revealAnimator.startDelay = startDelay
         revealAnimator.start()
     }
 
 
-    fun getLayoutTransition(
+/*    fun getLayoutTransition(
         viewGroup: ViewGroup,
         duration: Long,
         interpolator: Interpolator? = null
@@ -201,55 +193,6 @@ object RevealUtilityCircular {
         } else {
             throw IllegalArgumentException("unsupported drawable propertyName")
         }
-    }
+    }*/
 
-    fun reveal(myView: View) {
-        // Check if the runtime version is at least Lollipop
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // get the center for the clipping circle
-            val cx = myView.width / 2
-            val cy = myView.height / 2
-
-            // get the final radius for the clipping circle
-            val finalRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
-
-            // create the animator for this startView (the start radius is zero)
-            val anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, 0f, finalRadius)
-            // make the startView visible and start the animation
-            myView.visibility = View.VISIBLE
-            anim.start()
-        } else {
-            // set the startView to invisible without a circular reveal animation below Lollipop
-            myView.visibility = View.INVISIBLE
-        }
-
-    }
-    fun conceal(myView: View) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-            // get the center for the clipping circle
-            val cx = myView.width / 2
-            val cy = myView.height / 2
-
-            // get the initial radius for the clipping circle
-            val initialRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
-
-            // create the animation (the final radius is zero)
-            val anim = ViewAnimationUtils.createCircularReveal(myView, cx, cy, initialRadius, 0f)
-
-            // make the startView invisible when the animation is done
-            anim.addListener(object : AnimatorListenerAdapter() {
-
-                override fun onAnimationEnd(animation: Animator) {
-                    super.onAnimationEnd(animation)
-                    myView.visibility = View.INVISIBLE
-                }
-            })
-
-            // start the animation
-            anim.start()
-        } else {
-            // set the startView to visible without a circular reveal animation below Lollipop
-            myView.visibility = View.VISIBLE
-        }
-    }
 }

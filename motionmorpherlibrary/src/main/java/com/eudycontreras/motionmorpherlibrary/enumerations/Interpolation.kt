@@ -7,7 +7,6 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  * @since August 05 2019
  */
  
- 
 enum class Interpolation {
     SPRING_IN,
     REVERSED_OUT,
@@ -21,5 +20,8 @@ enum class Interpolation {
     EXP_IN_OUT,
     QUINT_IN_OUT,
     CUBIC_IN_OUT,
-    FAST_OUT_SLOW_IN
+    FAST_OUT_SLOW_IN,
+    OUTGOING,
+    INCOMING,
+    STANDARD
 }

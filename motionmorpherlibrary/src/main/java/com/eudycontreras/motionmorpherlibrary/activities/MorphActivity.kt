@@ -12,7 +12,6 @@ import com.eudycontreras.motionmorpherlibrary.listeners.BackPressedListener
  * @since July 18 2019
  */
  
- 
 abstract class MorphActivity: AppCompatActivity(){
 
     private val backNavigationListeners = ArrayList<BackPressedListener>()

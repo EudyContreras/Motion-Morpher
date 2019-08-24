@@ -14,7 +14,7 @@ import com.eudycontreras.motionmorpherlibrary.enumerations.Direction
 data class Stretch(
     var stretchOffset: Float,
     var amountMultiplier: Float,
-    var squashAmount: Float = 0f
+    var squashAmount: Float = MIN_OFFSET
 ) {
 
     var startOffset: Float = MIN_OFFSET

@@ -38,7 +38,7 @@ class StretchAnimationHelper {
             fraction: Float
         ) {
 
-            if (stretchOffset == 0f)
+            if (stretchOffset == MIN_OFFSET)
                 return
 
             when (direction) {

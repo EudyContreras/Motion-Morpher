@@ -6,7 +6,7 @@ import android.graphics.drawable.Drawable
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
-import com.eudycontreras.motionmorpherlibrary.utilities.RevealUtilityCircular
+import com.eudycontreras.motionmorpherlibrary.utilities.RevealUtility
 
 
 /**
@@ -46,7 +46,7 @@ fun <T> Sequence<T>.toArrayList(): ArrayList<T> {
 }
 
 fun Drawable.toBitmap(): Bitmap {
-    return RevealUtilityCircular.getBitmapFromDrawable(this)
+    return RevealUtility.getBitmapFromDrawable(this)
 }
 
 fun MorphLayout.getBackgroundType(): MorphTransitionDrawable.DrawableType {

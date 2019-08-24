@@ -7,7 +7,10 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  * @since August 15 2019
  */
 
-
 enum class Direction {
-    UP, DOWN, LEFT, RIGHT, NONE
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    NONE
 }

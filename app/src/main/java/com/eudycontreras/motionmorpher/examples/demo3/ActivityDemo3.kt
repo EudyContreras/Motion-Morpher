@@ -4,14 +4,14 @@ import android.os.Bundle
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
+import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
-import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 import com.eudycontreras.motionmorpherlibrary.interactions.Explode
-import com.eudycontreras.motionmorpherlibrary.interpolators.MaterialInterpolator
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import kotlinx.android.synthetic.main.activity_demo3.*
 import kotlin.random.Random
@@ -42,7 +42,7 @@ class ActivityDemo3 : MorphActivity() {
         "Avatar",
         "Man of Steel",
         "SpiderMan: Homecoming",
-        "SpiderMan: Symbio"
+        "SpiderMan: Symbiosis"
     )
 
     val tags = arrayListOf("SD", "HD", "UHD", "4K", "8K")
@@ -109,37 +109,53 @@ class ActivityDemo3 : MorphActivity() {
 
     fun testMorphing() {
 
-        val interpolator = MaterialInterpolator(Interpolation.FAST_OUT_SLOW_IN)
+        val standardInterpolator = FastOutSlowInInterpolator()
+        val incomingInterpolator = LinearOutSlowInInterpolator()
+        val outgoingInterpolator = FastOutLinearInInterpolator()
 
-        choreographer = Choreographer(this)
-
-        choreographer.morpher.morphIntoDuration = 550
-        choreographer.morpher.morphFromDuration = 450
+        choreographer.morpher.morphIntoDuration = 450
+        choreographer.morpher.morphFromDuration = 350
 
         choreographer.morpher.animateChildren = true
         choreographer.morpher.useArcTranslator = false
 
-        choreographer.morpher.morphIntoInterpolator = interpolator
-        choreographer.morpher.morphFromInterpolator = interpolator
+        choreographer.morpher.morphIntoInterpolator = standardInterpolator
+        choreographer.morpher.morphFromInterpolator = standardInterpolator
 
         choreographer.morpher.dimPropertyInto.interpolateOffsetStart = 0f
         choreographer.morpher.dimPropertyInto.interpolateOffsetEnd = 0.7f
+        choreographer.morpher.dimPropertyInto.toValue = 1f
 
         choreographer.morpher.dimPropertyFrom.interpolateOffsetStart = 0f
-        choreographer.morpher.dimPropertyFrom.interpolateOffsetEnd = 0.6f
+        choreographer.morpher.dimPropertyFrom.interpolateOffsetEnd = 1f
+        choreographer.morpher.dimPropertyFrom.fromValue = 1f
 
+        choreographer.morpher.placeholderStateIn.propertyAlpha.interpolator = outgoingInterpolator
+        choreographer.morpher.placeholderStateIn.propertyAlpha.interpolateOffsetStart = 0f
+        choreographer.morpher.placeholderStateIn.propertyAlpha.interpolateOffsetEnd = 0.3f
+
+        choreographer.morpher.containerStateIn.propertyAlpha.interpolator = incomingInterpolator
+        choreographer.morpher.containerStateIn.propertyAlpha.interpolateOffsetStart = 0.25f
+        choreographer.morpher.containerStateIn.propertyAlpha.interpolateOffsetEnd = 1f
+
+        choreographer.morpher.containerStateOut.propertyAlpha.interpolator = outgoingInterpolator
+        choreographer.morpher.containerStateOut.propertyAlpha.interpolateOffsetStart = 0f
+        choreographer.morpher.containerStateOut.propertyAlpha.interpolateOffsetEnd = 0.3f
+
+        choreographer.morpher.placeholderStateOut.propertyAlpha.interpolator = incomingInterpolator
+        choreographer.morpher.placeholderStateOut.propertyAlpha.interpolateOffsetStart = 0.3f
+        choreographer.morpher.placeholderStateOut.propertyAlpha.interpolateOffsetEnd = 1f
+
+        choreographer.morpher.containerChildStateIn.animateOnOffset = 0f
         choreographer.morpher.containerChildStateIn.durationMultiplier = -0.1f
-        choreographer.morpher.containerChildStateIn.animateOnOffset = 0.5f
-        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierX = 0.0f
-        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierY = 0.02f
-        choreographer.morpher.containerChildStateIn.stagger?.staggerOffset = 0.12f
-        choreographer.morpher.containerChildStateIn.interpolator = FastOutSlowInInterpolator()
+        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierX = 0.04f
+        choreographer.morpher.containerChildStateIn.defaultTranslateMultiplierY = 0.04f
+        choreographer.morpher.containerChildStateIn.stagger?.staggerOffset = 0.09f
+        choreographer.morpher.containerChildStateIn.interpolator = incomingInterpolator
 
-        choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 0f).apply {
-            outInterpolator = interpolator
-            inInterpolator = interpolator
-            //animationStaggerOut = AnimationStagger(0f, type = Stagger.LINEAR)
-            //animationStaggerIn = AnimationStagger(0f, type = Stagger.LINEAR)
+        choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 0.1f).apply {
+            outInterpolator = standardInterpolator
+            inInterpolator = standardInterpolator
             //stretch = Stretch(1f, 0.1f)
         }
 

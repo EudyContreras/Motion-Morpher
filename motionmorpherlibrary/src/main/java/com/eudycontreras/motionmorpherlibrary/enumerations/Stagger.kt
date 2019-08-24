@@ -7,7 +7,8 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  * @since August 17 2019
  */
 
-
 enum class Stagger {
-    INCREMENTAL, DECREMENTAL, LINEAR
+    INCREMENTAL,
+    DECREMENTAL,
+    LINEAR
 }

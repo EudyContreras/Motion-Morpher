@@ -7,7 +7,6 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  * @since August 03 2019
  */
 
-
 enum class Anchor {
     TOP,
     LEFT,

@@ -16,6 +16,12 @@ import kotlin.reflect.KProperty
 const val MAX_OFFSET: Float = 1f
 const val MIN_OFFSET: Float = 0f
 
+const val MAX_ANGLE: Float = 360f
+const val MIN_ANGLE: Float = 0f
+
+const val MIN_COLOR: Int = 0
+const val MAX_COLOR: Int = 255
+
 const val MIN_DURATION: Long = 0L
 
 const val DEFAULT_COLOR: Int = 0x000000
@@ -45,12 +51,6 @@ fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double {
     val y = (y2 - y1)
     return hypot(x.toDouble(), y.toDouble())
 }
-
-/*fun calculateMaxDistance(sceneRoot: View, focalX: Int, focalY: Int): Double {
-    val maxX = max(focalX, sceneRoot.width - focalX)
-    val maxY = max(focalY, sceneRoot.height - focalY)
-    return hypot(maxX.toDouble(), maxY.toDouble())
-}*/
 
 inline fun <reified T> any(vararg args: T, predicate: (any: T) -> Boolean): Boolean {
     return args.any(predicate)

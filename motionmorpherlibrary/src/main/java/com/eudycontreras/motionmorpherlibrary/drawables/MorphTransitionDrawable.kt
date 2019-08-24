@@ -10,6 +10,8 @@ import android.graphics.drawable.TransitionDrawable
 import android.os.Build
 import androidx.core.animation.doOnEnd
 import com.eudycontreras.motionmorpherlibrary.Action
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.mapRange
 
@@ -21,29 +23,31 @@ import com.eudycontreras.motionmorpherlibrary.mapRange
 
 class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(drawables) {
 
+    //TODO("Fix so that the animation goes 30% to 70% Outgoing and Incoming")
+
     private var mFromAlpha: Int = 0
     private var mToAlpha: Int = 255
 
     private var mFromAngle: Int = 0
     private var mToAngle: Int = 180
 
-    private var mFromScaleX: Float = 1f
-    private var mToScaleX: Float = 0f
+    private var mFromScaleX: Float = MAX_OFFSET
+    private var mToScaleX: Float = MIN_OFFSET
 
-    private var mFromScaleY: Float = 1f
-    private var mToScaleY: Float = 0f
+    private var mFromScaleY: Float = MAX_OFFSET
+    private var mToScaleY: Float = MIN_OFFSET
 
     private var alphaValue: Int = 0
 
-    private var scaleValueX: Float = 0f
-    private var scaleValueY: Float = 0f
+    private var scaleValueX: Float = MIN_OFFSET
+    private var scaleValueY: Float = MIN_OFFSET
 
-    private var rotationValue: Float = 0f
+    private var rotationValue: Float = MIN_OFFSET
 
-    private var lastFraction: Float = 0f
-    private var fraction: Float = 0f
+    private var lastFraction: Float = MIN_OFFSET
+    private var fraction: Float = MIN_OFFSET
 
-    private var mCrossfadePadding: Float = 0f
+    private var mCrossfadePadding: Float = MIN_OFFSET
 
     private var mStartDrawableType: DrawableType = DrawableType.BITMAP
     private var mEndDrawableType: DrawableType = DrawableType.BITMAP
@@ -77,7 +81,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     var crossfadePadding: Float
         get() = mCrossfadePadding
         set(value) {
-            if (value in 0f..1f) {
+            if (value in MIN_OFFSET..MAX_OFFSET) {
                 mCrossfadePadding = value
             }
         }
@@ -85,7 +89,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     var fromAlpha: Float
         get() = mFromAlpha / 255f
         set(value) {
-            if (value in 0f..1f) {
+            if (value in MIN_OFFSET..MAX_OFFSET) {
                 mFromAlpha = (255 * value).toInt()
             }
         }
@@ -93,7 +97,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     var toAlpha: Float
         get() = mToAlpha / 255f
         set(value) {
-            if (value in 0f..1f) {
+            if (value in MIN_OFFSET..MAX_OFFSET) {
                 mToAlpha = (255 * value).toInt()
             }
         }
@@ -117,7 +121,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     var fromScaleX: Float
         get() = mFromScaleX
         set(value) {
-            if (value in 0f..1f) {
+            if (value in MIN_OFFSET..MAX_OFFSET) {
                 mFromScaleX = value
             }
         }
@@ -125,7 +129,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     var toScaleX: Float
         get() = mToScaleX
         set(value) {
-            if (value in 0f..1f) {
+            if (value in MIN_OFFSET..MAX_OFFSET) {
                 mToScaleX = value
             }
         }
@@ -133,7 +137,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     var fromScaleY: Float
         get() = mFromScaleY
         set(value) {
-            if (value in 0f..1f) {
+            if (value in MIN_OFFSET..MAX_OFFSET) {
                 mFromScaleY = value
             }
         }
@@ -141,7 +145,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     var toScaleY: Float
         get() = mToScaleY
         set(value) {
-            if (value in 0f..1f) {
+            if (value in MIN_OFFSET..MAX_OFFSET) {
                 mToScaleY = value
             }
         }
@@ -186,7 +190,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     fun startTransition(durationMillis: Long, interpolator: TimeInterpolator? = null, onEnd: Action = null): ValueAnimator {
         setUpTransition(false)
 
-        val animator = ValueAnimator.ofFloat(0f, 1f)
+        val animator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
         animator.interpolator = interpolator
         animator.duration = durationMillis
         animator.doOnEnd { onEnd?.invoke() }
@@ -205,7 +209,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     fun reverseTransition(durationMillis: Long, interpolator: TimeInterpolator? = null, onEnd: Action = null): ValueAnimator {
         setUpTransition(true)
 
-        val animator = ValueAnimator.ofFloat(0f, 1f)
+        val animator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
         animator.interpolator = interpolator
         animator.duration = durationMillis
         animator.doOnEnd { onEnd?.invoke() }
@@ -229,13 +233,13 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     }
 
     override fun resetTransition() {
-        lastFraction = 0f
-        fraction = 0f
+        lastFraction = MIN_OFFSET
+        fraction = MIN_OFFSET
 
         alphaValue = 0
-        scaleValueX = 1f
-        scaleValueY = 1f
-        rotationValue = 0f
+        scaleValueX = MAX_OFFSET
+        scaleValueY = MAX_OFFSET
+        rotationValue = MIN_OFFSET
 
         reverseTransition = false
 
@@ -246,8 +250,8 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     fun setUpTransition(useReverse: Boolean = false) {
         if (useReverse) {
             if (transitionType == TransitionType.CROSSFADE) {
-                lastFraction = 1f
-                fraction = 1f
+                lastFraction = MAX_OFFSET
+                fraction = MAX_OFFSET
 
                 mFromAlpha = MAX_ALPHA
                 mToAlpha = 0
@@ -255,21 +259,21 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                 mFromAngle = 180
                 mToAngle = 0
 
-                mFromScaleX = 0f
-                mFromScaleY = 0f
+                mFromScaleX = MIN_OFFSET
+                mFromScaleY = MIN_OFFSET
 
-                mToScaleX = 1f
-                mToScaleY = 1f
+                mToScaleX = MAX_OFFSET
+                mToScaleY = MAX_OFFSET
 
                 rotationValue = 180f
-                scaleValueX = 0f
-                scaleValueY = 0f
+                scaleValueX = MIN_OFFSET
+                scaleValueY = MIN_OFFSET
                 alphaValue = 255
 
                 reverseTransition = true
             } else {
-                lastFraction = 0f
-                fraction = 0f
+                lastFraction = MIN_OFFSET
+                fraction = MIN_OFFSET
 
                 mFromAlpha = 0
                 mToAlpha = 255
@@ -277,22 +281,22 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                 mFromAngle = 180
                 mToAngle = 0
 
-                mFromScaleX = 1f
-                mFromScaleY = 1f
+                mFromScaleX = MAX_OFFSET
+                mFromScaleY = MAX_OFFSET
 
-                mToScaleX = 0f
-                mToScaleY = 0f
+                mToScaleX = MIN_OFFSET
+                mToScaleY = MIN_OFFSET
 
                 rotationValue = 180f
-                scaleValueX = 1f
-                scaleValueY = 1f
+                scaleValueX = MAX_OFFSET
+                scaleValueY = MAX_OFFSET
                 alphaValue = 0
 
                 reverseTransition = true
             }
         } else {
-            lastFraction = 0f
-            fraction = 0f
+            lastFraction = MIN_OFFSET
+            fraction = MIN_OFFSET
 
             mFromAlpha = 0
             mToAlpha = 255
@@ -300,15 +304,15 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
             mFromAngle = 0
             mToAngle = 180
 
-            mFromScaleX = 1f
-            mFromScaleY = 1f
+            mFromScaleX = MAX_OFFSET
+            mFromScaleY = MAX_OFFSET
 
-            mToScaleX = 0f
-            mToScaleY = 0f
+            mToScaleX = MIN_OFFSET
+            mToScaleY = MIN_OFFSET
 
-            rotationValue = 0f
-            scaleValueX = 1f
-            scaleValueY = 1f
+            rotationValue = MIN_OFFSET
+            scaleValueX = MAX_OFFSET
+            scaleValueY = MAX_OFFSET
             alphaValue = 0
 
             reverseTransition = false
@@ -317,9 +321,9 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     }
 
     fun updateTransition(inFraction: Float) {
-        fraction = mapRange(inFraction, mCrossfadePadding, 1.0f - mCrossfadePadding, 0f, 1f, 0f, 1.0f)
+        fraction = mapRange(inFraction, mCrossfadePadding, MAX_OFFSET - mCrossfadePadding, MIN_OFFSET, MAX_OFFSET, MIN_OFFSET, MAX_OFFSET)
 
-        if (lastFraction > 0f && lastFraction < 1f) {
+        if (lastFraction > MIN_OFFSET && lastFraction < MAX_OFFSET) {
             invalidateSelf()
         }
 
@@ -428,19 +432,19 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
 
             if (value >= 1f) {
                 inFirstHalf = false
-                lastFraction = 1f
+                lastFraction = MAX_OFFSET
 
                 mFromAlpha = 0
                 mToAlpha = 255
 
-                mFromScaleX = 0f
-                mFromScaleY = 0f
+                mFromScaleX = MIN_OFFSET
+                mFromScaleY = MIN_OFFSET
 
-                mToScaleX = 1f
-                mToScaleY = 1f
+                mToScaleX = MAX_OFFSET
+                mToScaleY = MAX_OFFSET
 
-                scaleValueX = 0f
-                scaleValueY = 0f
+                scaleValueX = MIN_OFFSET
+                scaleValueY = MIN_OFFSET
 
                 alphaValue = 0
             }
@@ -476,14 +480,14 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
         val drawableStart = getDrawable(0)
         val drawableEnd = getDrawable(1)
 
-        canvas.scale(1f, 1f,drawableEnd.intrinsicWidth / 2f, drawableEnd.intrinsicHeight / 2f)
-        canvas.rotate(0f, drawableEnd.intrinsicWidth / 2f, drawableEnd.intrinsicHeight / 2f)
+        canvas.scale(MAX_OFFSET, MAX_OFFSET,drawableEnd.intrinsicWidth / 2f, drawableEnd.intrinsicHeight / 2f)
+        canvas.rotate(MIN_OFFSET, drawableEnd.intrinsicWidth / 2f, drawableEnd.intrinsicHeight / 2f)
 
         drawableEnd.alpha = 0
         drawableEnd.draw(canvas)
 
-        canvas.scale(1f, 1f,drawableStart.intrinsicWidth / 2f, drawableStart.intrinsicHeight / 2f)
-        canvas.rotate(0f, drawableStart.intrinsicWidth / 2f, drawableStart.intrinsicHeight / 2f)
+        canvas.scale(MAX_OFFSET, MAX_OFFSET,drawableStart.intrinsicWidth / 2f, drawableStart.intrinsicHeight / 2f)
+        canvas.rotate(MIN_OFFSET, drawableStart.intrinsicWidth / 2f, drawableStart.intrinsicHeight / 2f)
 
         drawableStart.alpha = MAX_ALPHA
         drawableStart.draw(canvas)
@@ -543,17 +547,17 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
             this.style = Paint.Style.FILL
         }
 
-        private var mFractionStart: Float = 0f
-        private var mFractionEnd: Float = 0f
+        private var mFractionStart: Float = MIN_OFFSET
+        private var mFractionEnd: Float = MIN_OFFSET
 
         init {
-            ripple.alpha = 1f
+            ripple.alpha = MAX_OFFSET
             ripple.color = Color.WHITE
 
             ripple.startRadius = 4.dp
 
-            ripple.startAlpha = 1f
-            ripple.endAlpha = 0f
+            ripple.startAlpha = MAX_OFFSET
+            ripple.endAlpha = MIN_OFFSET
         }
 
         override var fractionStart: Float
@@ -595,15 +599,15 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     }
 
     private class Ripple {
-        var alpha: Float = 1f
+        var alpha: Float = MAX_OFFSET
 
-        var radius: Float = 0f
+        var radius: Float = MIN_OFFSET
 
-        var startAlpha: Float = 1f
-        var endAlpha: Float = 0f
+        var startAlpha: Float = MAX_OFFSET
+        var endAlpha: Float = MIN_OFFSET
 
-        var startRadius: Float = 0f
-        var endRadius: Float = 0f
+        var startRadius: Float = MIN_OFFSET
+        var endRadius: Float = MIN_OFFSET
 
         var color: Int = 0xFFFFFF
     }

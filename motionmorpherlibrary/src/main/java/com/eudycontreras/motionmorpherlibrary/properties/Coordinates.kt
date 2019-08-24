@@ -1,5 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
@@ -7,8 +9,8 @@ package com.eudycontreras.motionmorpherlibrary.properties
  */
 
 data class Coordinates(
-    var x: Float = 0f,
-    var y: Float = 0f
+    var x: Float = MIN_OFFSET,
+    var y: Float = MIN_OFFSET
 ) {
     fun copy(): Coordinates {
         return Coordinates(x, y)

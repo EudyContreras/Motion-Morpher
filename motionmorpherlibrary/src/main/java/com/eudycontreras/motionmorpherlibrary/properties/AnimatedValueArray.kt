@@ -2,20 +2,20 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
 
-class AnimatedValueArray<T>(
+open class AnimatedValueArray<T>(
         val propertyName: String,
         values: Array<T>
     ) {
         var interpolator: TimeInterpolator? = null
 
-        var values: Array<T> = values
+        open var values: Array<T> = values
             set(value) {
                 field = value
                 canInterpolate = field.isNotEmpty() && field.distinct().size > 1
             }
 
         var canInterpolate: Boolean = false
-            private set
+            protected set
 
         var increase: Float = Float.MIN_VALUE
 
@@ -31,7 +31,7 @@ class AnimatedValueArray<T>(
             this.values.reverse()
         }
 
-        fun copy(other: ValueHolder<T>) {
+        fun copy(other: AnimatedValueArray<T>) {
             this.canInterpolate = other.canInterpolate
             this.multiplier = other.multiplier
             this.increase = other.increase
