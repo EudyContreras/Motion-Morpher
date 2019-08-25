@@ -22,8 +22,7 @@ import java.util.*
  * @author Eudy Contreras.
  * @since July 19 2019
  */
- 
- 
+
 sealed class MorphDialog : DialogFragment() {
 
     lateinit var morphView: ConstraintLayout

@@ -87,7 +87,7 @@ class Morpher(private val context: Context) {
 
     var backgroundDimListener: BackgroundDimListener = null
     var computedStatesListener: ComputedStatesListener = null
-    var transitionOffsetListener: TransitionOffsetListener = null
+    var transitionProgressListener: TransitionProgressListener = null
     var containerBoundsListener: ContainerBoundsListener = null
     var morphValuesListener: MorphValuesListener = null
     var siblingInteraction: Interaction? = null
@@ -738,7 +738,7 @@ class Morpher(private val context: Context) {
                 trigger.hasTriggered = true
             }
 
-            transitionOffsetListener?.invoke(interpolatedFraction)
+            transitionProgressListener?.invoke(interpolatedFraction)
         }
 
         if (siblingInteraction != null) {
@@ -1154,13 +1154,6 @@ class Morpher(private val context: Context) {
         val startProps: Properties,
         val endProps: Properties
     )
-
-    data class OffsetTrigger(
-        val percentage: Float,
-        val triggerAction: ()-> Unit
-    ) {
-        var hasTriggered: Boolean = false
-    }
 
     data class Properties(
         val x: Float,

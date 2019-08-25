@@ -1,8 +1,11 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 /**
- * Created multiply eudycontreras.
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
  */
+
 data class Gradient(
     var colors: Array<Color> = emptyArray(),
     val type: Type = Type.LINEAR

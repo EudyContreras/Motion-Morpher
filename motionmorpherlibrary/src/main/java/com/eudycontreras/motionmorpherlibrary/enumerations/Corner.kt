@@ -1,5 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.enumerations
 
+import com.eudycontreras.motionmorpherlibrary.CornersSet
+
 
 /**
  * @Project MotionMorpher
@@ -12,5 +14,7 @@ enum class Corner {
     TOP_RIGHT,
     BOTTOM_LEFT,
     BOTTOM_RIGHT,
-    ALL
+    ALL;
+
+    infix fun and(other: Corner): CornersSet = CornersSet.of(this, other)
 }

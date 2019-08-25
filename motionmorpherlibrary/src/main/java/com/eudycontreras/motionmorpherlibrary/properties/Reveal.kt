@@ -13,8 +13,7 @@ import kotlin.math.hypot
  * @author Eudy Contreras.
  * @since August 07 2019
  */
- 
- 
+
 class Reveal(
     val view: View,
     var duration: Long? = MIN_DURATION,

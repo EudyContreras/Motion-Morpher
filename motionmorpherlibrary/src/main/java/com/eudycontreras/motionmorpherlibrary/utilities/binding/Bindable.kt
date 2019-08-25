@@ -14,7 +14,7 @@ abstract class Bindable<T> {
 
     val bindings: ArrayList<Binding<T>> = ArrayList()
 
-    val changeListener: ArrayList<BindingChangeListener<T>> = ArrayList()
+    var changeListener: BindingChangeListener<T> = null
 
     fun bindTo(bind: Bind, other: Bindable<T>) {
         when (bind) {
@@ -31,7 +31,7 @@ abstract class Bindable<T> {
     fun notifyChange(newValue: T) {
         bindings.forEach { it.other.onBindingChanged(newValue) }
 
-        changeListener.forEach { it?.invoke(newValue) }
+        changeListener?.invoke(newValue)
     }
 
     abstract fun onBindingChanged(newValue: T)

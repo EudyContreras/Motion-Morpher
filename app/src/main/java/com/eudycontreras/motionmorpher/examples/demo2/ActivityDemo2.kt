@@ -41,7 +41,7 @@ class ActivityDemo2 : MorphActivity() {
         choreographer = Choreographer(this)
 
         /*cardLayout.setOnClickListener {
-            testChoreographer()
+            createChoreographyOne()
         }*/
 
         testMorphing()

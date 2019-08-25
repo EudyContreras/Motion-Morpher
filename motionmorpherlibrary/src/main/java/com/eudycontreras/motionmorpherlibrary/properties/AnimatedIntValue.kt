@@ -3,6 +3,12 @@ package com.eudycontreras.motionmorpherlibrary.properties
 import android.animation.TimeInterpolator
 import kotlin.math.abs
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
+ */
+
 class AnimatedIntValue(
     override val propertyName: String,
     fromValue: Int,
@@ -20,8 +26,9 @@ class AnimatedIntValue(
         this.interpolateOffsetEnd = endOffset
     }
 
-    override var add: Int? = null
-    override var multiply: Int? = null
+    var add: Int = 0
+    var multiply: Int = 1
+
     override var interpolator: TimeInterpolator? = null
 
     override var fromValue: Int = fromValue
@@ -38,6 +45,10 @@ class AnimatedIntValue(
 
     var difference: Int = abs(fromValue - toValue)
         private set
+
+    fun set(value: AnimatedIntValue) {
+        super.set(value)
+    }
 
     fun copy(other: AnimatedIntValue) {
         this.multiply = other.multiply

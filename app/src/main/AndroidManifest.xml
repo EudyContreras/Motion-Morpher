@@ -13,6 +13,11 @@
             android:theme="@style/AppTheme"
             tools:ignore="GoogleAppIndexingWarning">
         <!--
+        <activity
+                android:name=".examples.demo0.ActivityDemo0"
+                android:label="@string/title_activity_demo0"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
          <activity
                 android:name=".examples.demo1.ActivityDemo1"
                 android:label="@string/title_activity_demo1"
@@ -29,7 +34,7 @@
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         -->
-        <activity android:name=".examples.demo3.ActivityDemo3">
+        <activity android:name=".examples.choreographer.ActivityDemo0">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

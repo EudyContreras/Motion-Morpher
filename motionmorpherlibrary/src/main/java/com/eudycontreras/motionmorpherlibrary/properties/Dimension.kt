@@ -31,5 +31,4 @@ data class Dimension(
         result = 31 * result + height.hashCode()
         return result
     }
-
 }

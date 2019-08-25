@@ -4,6 +4,12 @@ import android.animation.TimeInterpolator
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import kotlin.math.abs
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
+ */
+
 class AnimatedFloatValue(
     override val propertyName: String,
     fromValue: Float = MIN_OFFSET,
@@ -21,8 +27,9 @@ class AnimatedFloatValue(
         this.interpolateOffsetEnd = endOffset
     }
 
-    override var add: Float? = null
-    override var multiply: Float? = null
+    var add: Float = 0f
+    var multiply: Float = 1f
+
     override var interpolator: TimeInterpolator? = null
 
     override var fromValue: Float = fromValue
@@ -39,6 +46,10 @@ class AnimatedFloatValue(
 
     var difference: Float = abs(fromValue - toValue)
         private set
+
+    fun set(value: AnimatedFloatValue) {
+        super.set(value)
+    }
 
     fun copy(other: AnimatedFloatValue) {
         this.multiply = other.multiply

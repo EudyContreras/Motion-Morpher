@@ -7,7 +7,6 @@ package com.eudycontreras.motionmorpherlibrary.properties
  * @since July 18 2019
  */
  
- 
 data class ViewProperties(
     val x: Float,
     val y: Float,

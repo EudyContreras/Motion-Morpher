@@ -9,8 +9,7 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
  * @author Eudy Contreras.
  * @since August 01 2019
  */
- 
- 
+
 class Background(
     view: MorphLayout
 ) {

@@ -4,13 +4,16 @@ import android.animation.TimeInterpolator
 import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
+ */
+
 abstract class AnimatedValue<T> {
 
     abstract var fromValue: T
     abstract var toValue: T
-
-    abstract var add: T?
-    abstract var multiply: T?
 
     abstract var interpolator: TimeInterpolator?
 
@@ -30,6 +33,12 @@ abstract class AnimatedValue<T> {
         this.toValue = value
     }
 
+    @Suppress("UNCHECKED_CAST")
+    open fun set(value: AnimatedValue<*>) {
+        this.fromValue = value.toValue as T
+        this.toValue = value.toValue as T
+    }
+
     open fun flip() {
         val temp: T = fromValue
         fromValue = toValue
@@ -37,8 +46,6 @@ abstract class AnimatedValue<T> {
     }
 
     open fun copy(other: AnimatedValue<T>) {
-        this.multiply = other.multiply
-        this.add = other.add
         this.fromValue = other.fromValue
         this.toValue = other.toValue
         this.interpolator = other.interpolator
@@ -50,8 +57,6 @@ abstract class AnimatedValue<T> {
         override var toValue: T
     ) : AnimatedValue<T>() {
 
-        override var add: T? = null
-        override var multiply: T? = null
         override var interpolator: TimeInterpolator? = null
     }
 

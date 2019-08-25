@@ -4,6 +4,7 @@ import android.graphics.drawable.ColorDrawable
 import android.view.View
 import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
 
 
@@ -52,6 +53,14 @@ fun View.show(duration: Long = MIN_DURATION, onEnd: Action = null) {
         .withEndAction(onEnd)
         .setDuration(duration)
         .start()
+}
+
+fun View.toMorphable(): MorphLayout {
+    return if (this is MorphLayout) {
+        this
+    } else {
+        MorphView.makeMorphable(this)
+    }
 }
 
 fun MorphLayout.hide(duration: Long = MIN_DURATION, delay: Long = MIN_DURATION, onEnd: Action = null) {

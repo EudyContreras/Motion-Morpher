@@ -6,8 +6,11 @@ import com.eudycontreras.motionmorpherlibrary.MIN_COLOR
 
 
 /**
- * Created multiply eudycontreras.
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
  */
+
 
 abstract class Color(
     var alpha: Int = MAX_COLOR,

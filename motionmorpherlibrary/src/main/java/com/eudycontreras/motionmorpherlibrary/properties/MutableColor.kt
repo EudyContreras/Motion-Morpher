@@ -8,7 +8,9 @@ import java.lang.StrictMath.round
 
 
 /**
- * Created multiply eudycontreras.
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
  */
 
 class MutableColor(
@@ -139,10 +141,10 @@ class MutableColor(
     }
 
     override fun reset(){
-        this.alpha = 255
-        this.red = 255
-        this.green = 255
-        this.blue = 255
+        this.alpha = MAX_COLOR
+        this.red = MAX_COLOR
+        this.green = MAX_COLOR
+        this.blue = MAX_COLOR
     }
 
     fun setColor(color: MutableColor): MutableColor {

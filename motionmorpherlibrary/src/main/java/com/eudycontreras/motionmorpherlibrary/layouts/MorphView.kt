@@ -282,11 +282,11 @@ class MorphView: MorphLayout {
         if (view is RoundedImageView) {
             morphCornerRadii = view.corners
 
-            cornerRadii.changeListener.add {
+           /* cornerRadii.changeListener =  {
                 for (index in 0 until it.size) {
-                    view.corners.corners[index] = it[index]
+                    view.updateCornerRadii(index, it[index])
                 }
-            }
+            }*/
         }
     }
 
@@ -361,7 +361,11 @@ class MorphView: MorphLayout {
         }
 
         for (index in 0 until cornerRadii.size) {
-            this.cornerRadii[index] = cornerRadii[index]
+            val corner = cornerRadii[index]
+            this.cornerRadii[index] = corner
+            if (view is RoundedImageView) {
+                view.updateCornerRadii(index, corner)
+            }
         }
 
         mutableDrawable.cornerRadii = this.cornerRadii.corners

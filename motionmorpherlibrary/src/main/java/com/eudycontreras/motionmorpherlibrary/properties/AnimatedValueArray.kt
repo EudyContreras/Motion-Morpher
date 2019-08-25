@@ -2,6 +2,12 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
+ */
+
 open class AnimatedValueArray<T>(
         val propertyName: String,
         values: Array<T>

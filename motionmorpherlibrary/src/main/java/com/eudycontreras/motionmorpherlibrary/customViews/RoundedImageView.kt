@@ -57,6 +57,8 @@ open class RoundedImageView : ImageView {
     fun updateCornerRadii(index: Int, corner: Float) {
         corners[index] = corner
         cornersChanged = true
+        //recomputeCorners()
+        invalidate()
     }
 
     @SuppressLint("DrawAllocation")
@@ -67,33 +69,38 @@ open class RoundedImageView : ImageView {
             return
 
         if (changed || cornersChanged) {
-            if (width == 0 || height == 0) {
-                return
-            }
-            val fullSizeBitmap = (drawable as BitmapDrawable).bitmap
 
-            val scaledWidth = measuredWidth
-            val scaledHeight = measuredHeight
-
-            val scaledBitmap: Bitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
-                fullSizeBitmap
-            } else {
-                Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
-            }
-
-            val shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-
-            paint.shader = shader
-
-            path.rewind()
-            path.addRoundRect(MIN_OFFSET, MIN_OFFSET, scaledWidth.toFloat(), scaledHeight.toFloat(), corners.corners, Path.Direction.CCW)
-            path.close()
+            recomputeCorners()
 
             cornersChanged = false
         }
     }
 
+    private fun recomputeCorners() {
+        if (width == 0 || height == 0) {
+            return
+        }
+        val fullSizeBitmap = (drawable as BitmapDrawable).bitmap
+
+        val scaledWidth = measuredWidth
+        val scaledHeight = measuredHeight
+
+        val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
+            fullSizeBitmap
+        } else {
+            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
+        }
+
+        val shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+
+        paint.shader = shader
+    }
+
     override fun onDraw(canvas: Canvas) {
+        path.rewind()
+        path.addRoundRect(MIN_OFFSET, MIN_OFFSET, measuredWidth.toFloat(), measuredHeight.toFloat(), corners.corners, Path.Direction.CCW)
+        path.close()
+
         canvas.drawPath(path, paint)
     }
 }

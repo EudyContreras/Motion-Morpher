@@ -9,11 +9,8 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
 import android.os.Build
 import androidx.core.animation.doOnEnd
-import com.eudycontreras.motionmorpherlibrary.Action
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
-import com.eudycontreras.motionmorpherlibrary.mapRange
 
 /**
  * @Project MotionMorpher
@@ -26,7 +23,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     //TODO("Fix so that the animation goes 30% to 70% Outgoing and Incoming")
 
     private var mFromAlpha: Int = 0
-    private var mToAlpha: Int = 255
+    private var mToAlpha: Int = MAX_COLOR
 
     private var mFromAngle: Int = 0
     private var mToAngle: Int = 180
@@ -90,7 +87,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
         get() = mFromAlpha / 255f
         set(value) {
             if (value in MIN_OFFSET..MAX_OFFSET) {
-                mFromAlpha = (255 * value).toInt()
+                mFromAlpha = (MAX_COLOR * value).toInt()
             }
         }
 
@@ -98,7 +95,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
         get() = mToAlpha / 255f
         set(value) {
             if (value in MIN_OFFSET..MAX_OFFSET) {
-                mToAlpha = (255 * value).toInt()
+                mToAlpha = (MAX_COLOR * value).toInt()
             }
         }
 
@@ -268,7 +265,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                 rotationValue = 180f
                 scaleValueX = MIN_OFFSET
                 scaleValueY = MIN_OFFSET
-                alphaValue = 255
+                alphaValue = MAX_COLOR
 
                 reverseTransition = true
             } else {
@@ -276,7 +273,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                 fraction = MIN_OFFSET
 
                 mFromAlpha = 0
-                mToAlpha = 255
+                mToAlpha = MAX_COLOR
 
                 mFromAngle = 180
                 mToAngle = 0
@@ -299,7 +296,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
             fraction = MIN_OFFSET
 
             mFromAlpha = 0
-            mToAlpha = 255
+            mToAlpha = MAX_COLOR
 
             mFromAngle = 0
             mToAngle = 180
@@ -435,7 +432,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                 lastFraction = MAX_OFFSET
 
                 mFromAlpha = 0
-                mToAlpha = 255
+                mToAlpha = MAX_COLOR
 
                 mFromScaleX = MIN_OFFSET
                 mFromScaleY = MIN_OFFSET
@@ -522,7 +519,7 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     }
 
     companion object {
-        private const val MAX_ALPHA = 255
+        private const val MAX_ALPHA = MAX_COLOR
         private const val MIN_ALPHA = 0
     }
 

@@ -2,6 +2,12 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import kotlin.math.abs
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 12 2019
+ */
+
 class AnimatedFloatValueArray (
     type: String,
     vararg values: Float
