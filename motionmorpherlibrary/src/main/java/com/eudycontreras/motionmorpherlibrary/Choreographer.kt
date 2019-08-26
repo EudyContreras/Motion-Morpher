@@ -75,6 +75,7 @@ class Choreographer(context: Context): PropertyChangeObservable() {
      * Default value: `TRUE`
      */
     var allowInheritance: Boolean = true
+        private  set
 
     private val handler: Handler by lazy {
         Handler()
@@ -110,6 +111,24 @@ class Choreographer(context: Context): PropertyChangeObservable() {
 
     private var translationYListener: ViewPropertyValueListener = { view, value ->
         view.morphTranslationY = value
+    }
+
+    /**
+     * Determines whether the descendants of a [Choreography] should inherit
+     * its parents non animation value properties such as:
+     *
+     * - [Choreography.duration][Choreography] The choreography animation duration.
+     * - [Choreography.pivotPoint][Choreography] The choreography pivot point for scale and rotate animations.
+     * - [Choreography.interpolator][Choreography] The choreography ease interpolator.
+     * - [Choreography.controlPoint][Choreography] The choreography control point for arc animations
+     *
+     * Default value: `TRUE`
+     *
+     * @return this choreographer.
+     */
+    fun allowChildInheritance(allow: Boolean = true): Choreographer {
+        this.allowInheritance = allow
+        return this
     }
 
     /**
@@ -330,7 +349,6 @@ class Choreographer(context: Context): PropertyChangeObservable() {
 
         tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
             this.flipValues()
-            this.views = views
             this.offset = MAX_OFFSET
             this.reverseToStartState = true
             this.parent = choreography
@@ -367,7 +385,6 @@ class Choreographer(context: Context): PropertyChangeObservable() {
 
         tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
             this.flipValues()
-            this.views = views
             this.reverseToStartState = true
             this.parent = choreography
             this.child = null
@@ -700,26 +717,6 @@ class Choreographer(context: Context): PropertyChangeObservable() {
     }
 
     /**
-     * Appends the specified [Choreography] to the tail choreography
-     * of this [Choreographer]. The appended choreography will become part
-     * of this choreographer and will play based on the properties which
-     * were given upon creation and its creation method.
-     *
-     * - **Note:** When a choreography chain is appended the choreographer must be rebuilt, meaning you must call the
-     * [Choreographer.build] function even when it has already been called.
-     *
-     * @param choreography the choreography to be appended.
-     * @return this choreographer.
-     */
-    fun append(choreography: Choreography): Choreographer {
-        this.tailChoreography.child = choreography
-        choreography.parent = this.tailChoreography
-        val tail = getTail(choreography)
-        this.tailChoreography = tail
-        return this
-    }
-
-    /**
      * Appends the head [Choreography] of the specified [Choreographer] to the
      * tail choreography of this Choreographer. The appended choreography will become part
      * of this choreographer and will play based on the properties which
@@ -729,33 +726,19 @@ class Choreographer(context: Context): PropertyChangeObservable() {
      * [Choreographer.build] function even when it has already been called.
      *
      * @param choreographer the choreographer whose head choreography is to be appended.
+     * @param offset the new appended head will be added with a default offset of 1f, meaning
+     * that the appended sequence will play after the end of the previous. This parameter specifies
+     * at what offset to play the animation.
      * @return this choreographer.
      */
-    fun append(choreographer: Choreographer): Choreographer {
+    fun append(choreographer: Choreographer, offset: Float = MAX_OFFSET): Choreographer {
         this.tailChoreography.child = choreographer.headChoreography
         choreographer.headChoreography.parent = this.tailChoreography
+        choreographer.headChoreography.offset = offset
         this.tailChoreography = choreographer.tailChoreography
         return this
     }
 
-    /**
-     * Prepends the specified [Choreography] to the head choreography
-     * of this [Choreographer]. The prepended choreography will become part
-     * of this choreographer and will play based on the properties which
-     * were given upon creation and its creation method.
-     *
-     * - **Note:** When a choreography chain is prepended the choreographer must be rebuilt, meaning you must call the
-     * [Choreographer.build] function even when it has already been called.
-     *
-     * @param choreography the choreography to be prepended.
-     * @return this choreographer.
-     */
-    fun prepend(choreography: Choreography): Choreographer {
-        val head = this.headChoreography
-        choreography.child = head
-        this.headChoreography = choreography
-        return this
-    }
 
     /**
      * Prepends the tail [Choreography] of the specified [Choreographer] to the
@@ -767,11 +750,20 @@ class Choreographer(context: Context): PropertyChangeObservable() {
      * [Choreographer.build] function even when it has already been called.
      *
      * @param choreographer the choreographer whose tail choreography is to be prepended.
+     * @param offset the offset at which the old head should start animating. Usually
+     * the offset for the head is 0f. The default value for this parameter is 1f which means
+     * that the old head will start animating after the animation from the tail of the prepended
+     * choreography chain is done animating.
      * @return this choreographer.
      */
-    fun prepend(choreographer: Choreographer): Choreographer {
+    fun prepend(choreographer: Choreographer, offset: Float = MAX_OFFSET): Choreographer {
         val head = this.headChoreography
-        choreographer.tailChoreography.child = head
+        val tail = choreographer.tailChoreography
+
+        head.offset = offset
+        tail.child = head
+        head.parent = tail
+
         this.headChoreography = choreographer.headChoreography
         return this
     }
@@ -839,6 +831,13 @@ class Choreographer(context: Context): PropertyChangeObservable() {
         built = true
 
         return this
+    }
+
+    /**
+     *
+     */
+    fun transitionTo(percentage: Float) {
+        //TODO("Implement this somehow")
     }
 
     /**
@@ -1067,7 +1066,6 @@ class Choreographer(context: Context): PropertyChangeObservable() {
 
                 choreography.stretch?.let {
                     StretchAnimationHelper.applyStretch(view, choreography.positionY, it, view.morphTranslationY)
-                    StretchAnimationHelper.applyStretch(view, choreography.positionX, it, view.morphTranslationX)
                 }
             }
 
@@ -2506,7 +2504,7 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             rotationXValues.interpolator = interpolator
             return this
         }
-        
+
         /**
          * Animates the views of this [Choreography] to the computed X rotation value created
          * by adding the specified delta to the current X rotation value. This causes the X rotation value
@@ -3971,7 +3969,7 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return choreographer.andAnimateChildrenOf(this, stagger, *children)
         }
 
-        /**
+       /* *//**
          * Appends the specified [Choreography] to the tail choreography
          * of this [Choreographer]. The appended choreography will become part
          * of this choreographer and will play based on the properties which
@@ -3988,7 +3986,7 @@ class Choreographer(context: Context): PropertyChangeObservable() {
          * is returned and all of its predecessors will be dereferenced.
          *
          * @return this tail or the currently appended choreography.
-         */
+         *//*
         fun append(choreography: Choreography, returnCurrent: Boolean = false): Choreography {
             this.child = choreography
             choreography.parent = this
@@ -3999,7 +3997,7 @@ class Choreographer(context: Context): PropertyChangeObservable() {
             return choreography
         }
 
-        /**
+        *//**
          * Prepends the specified [Choreography] to this choreography.
          * The prepended choreography will become part of this choreographer
          * and it will play based on the properties which were given upon
@@ -4011,19 +4009,18 @@ class Choreographer(context: Context): PropertyChangeObservable() {
          *
          * @param choreography the choreography to be prepended.
          * @return this choreography.
-         */
+         *//*
         fun prepend(choreography: Choreography): Choreography {
             this.parent?.let {
                 it.child = choreography
             }
             val tail = choreographer.getTail(choreography)
 
-
             tail.child = this
             this.parent = choreography
 
             return this
-        }
+        }*/
 
         /**
          * A call to this function will build the current and all the previously appended choreographies.

@@ -38,7 +38,7 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:textAlignment="center"
-            android:text="The Dark Knight"
+            android:text="Deadpool"
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:background="@color/overlay_dark"

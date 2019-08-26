@@ -57,8 +57,6 @@ open class RoundedImageView : ImageView {
     fun updateCornerRadii(index: Int, corner: Float) {
         corners[index] = corner
         cornersChanged = true
-        //recomputeCorners()
-        invalidate()
     }
 
     @SuppressLint("DrawAllocation")

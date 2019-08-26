@@ -84,7 +84,7 @@ class StretchAnimationHelper {
                 }
             } else {
 
-                if (stretchOffset == 1f)
+                if (stretchOffset == MAX_OFFSET)
                     return
 
                 val unStretchFraction: Float = mapRange(stretchMap, stretchOffset, MAX_OFFSET, MIN_OFFSET, MAX_OFFSET)

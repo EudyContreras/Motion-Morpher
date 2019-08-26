@@ -65,7 +65,7 @@ class ActivityDemo0 : MorphActivity() {
         return this.findViewById(R.id.root)
     }
 
-    fun createChoreographyZero(card: MorphLayout, root: MorphLayout, interpolator: TimeInterpolator): Choreographer.Choreography {
+    fun createChoreographyZero(card: MorphLayout, root: MorphLayout, interpolator: TimeInterpolator): Choreographer {
         val choreographer = Choreographer(this)
 
         val choreography = choreographer
@@ -79,14 +79,18 @@ class ActivityDemo0 : MorphActivity() {
 
             .thenAnimate(image)
             .withDuration(1000)
-            .scaleAdd(100.dp)
+            .scaleAdd(0.5f)
 
             .then()
             .withDuration(1000)
-            .scaleAdd((-100).dp)
+            .scaleAdd(-0.5f)
 
+            .build()
 
-        return choreography
+       /* choreography.build()
+        choreography.start()*/
+
+        return choreographer
     }
 
     fun createChoreographyOne(card: MorphLayout, root: MorphLayout, interpolator: TimeInterpolator): Choreographer {
@@ -96,6 +100,7 @@ class ActivityDemo0 : MorphActivity() {
         val choreographer = Choreographer(this)
 
         choreographer
+            .allowChildInheritance(false)
             .withDefaultInterpolator(interpolator)
             .withDefaultDuration(300)
 
@@ -104,11 +109,11 @@ class ActivityDemo0 : MorphActivity() {
             .rotateTo(360f)
             .withDuration(1000)
 
-            .thenAnimate()
+            .then()
             .xTranslateBetween(0f, -(30.dp), (30.dp), -(70.dp), (70.dp), -(100.dp), (100.dp), -(70.dp), (70.dp), -(30.dp), (30.dp), 0f)
             .withDuration(500)
 
-            .thenAnimate()
+            .then()
             .withStartDelay(100)
             .yTranslateBetween(0f, -(30.dp), (30.dp), -(70.dp), (70.dp), -(100.dp), (100.dp), -(70.dp), (70.dp), -(30.dp), (30.dp), 0f)
             .withDuration(500)
@@ -137,69 +142,70 @@ class ActivityDemo0 : MorphActivity() {
             .withDuration(1000)
 
             .thenAnimate(card)
-            .withDuration(2000)
+            .withDuration(2000      )
             .withInterpolator(FastOutSlowInInterpolator())
             .withStretch(Stretch(0.5f, 0.5f,0.2f))
             .anchorTo(Anchor.BOTTOM, root)
 
-            .thenAnimate()
+            .then()
             .withDuration(2600)
             .withInterpolator(FastOutSlowInInterpolator())
             .withStretch(Stretch(0.5f, 0.15f, 0.2f, 0f, 1f))
             .anchorTo(Anchor.TOP, root, 20.dp)
 
-            .thenAnimate()
+            .then()
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
-            .thenAnimate(card)
+            .then()
             .withDuration(500)
             .anchorTo(Anchor.TOP_LEFT, root, 20.dp)
 
-            .thenAnimate()
+            .then()
             .withDuration(500)
             .anchorTo(Anchor.RIGHT, root, 20.dp)
 
-            .thenAnimate()
+            .then()
             .withDuration(500)
             .anchorTo(Anchor.BOTTOM, root, 20.dp)
 
-            .thenAnimate()
+            .then()
             .withDuration(500)
             .anchorTo(Anchor.LEFT, root, 20.dp)
 
-            .thenAnimate()
+            .then()
             .withDuration(500)
             .anchorArcTo(Anchor.TOP_RIGHT, root, 20.dp)
 
-            .thenAnimate()
+            .then()
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
-            .thenAnimate()
+            .then()
             .rotateTo(0f)
             .withDuration(1000)
 
-            .thenAnimate()
+            .then()
             .withPivot(0.5f, 0f)
             .yScaleTo(0.1f)
             .withDuration(2000)
 
-            .thenAnimate()
+            .then()
             .withPivot(0.5f, 0f)
             .withInterpolator(AnticipateOvershootInterpolator())
             .zTranslateTo(30.dp)
             .scaleTo(1.2f)
             .withDuration(2000)
 
-            .thenAnimate()
+            .then()
+            .withInterpolator(AnticipateOvershootInterpolator())
             .withPivot(0.5f, 0f)
             .zTranslateTo(0f)
             .alphaTo(0f)
             .scaleTo(1f)
             .withDuration(1000)
 
-            .thenAnimate()
+            .then()
             .zTranslateTo(10.dp)
             .alphaTo(1f)
             .withDuration(1000)
@@ -212,7 +218,6 @@ class ActivityDemo0 : MorphActivity() {
 
     fun createChoreographyTwo(card: MorphLayout, root: MorphLayout, interpolator: TimeInterpolator): Choreographer {
         val choreographer = Choreographer(this)
-
 
         choreographer
             .withDefaultInterpolator(interpolator)
@@ -267,9 +272,11 @@ class ActivityDemo0 : MorphActivity() {
             .anchorTo(Anchor.CENTER, root)
 
 
-        val other = createChoreographyOne(card, root, interpolator)
+        val before = createChoreographyZero(card, root, interpolator)
+        val after = createChoreographyOne(card, root, interpolator)
 
-        choreographer.append(other)
+        choreographer.prepend(before, 0f)
+        choreographer.append(after)
         choreographer.start()
 
         return choreographer
