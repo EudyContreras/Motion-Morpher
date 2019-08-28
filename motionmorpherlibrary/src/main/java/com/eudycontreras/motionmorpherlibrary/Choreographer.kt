@@ -821,6 +821,7 @@ class Choreographer(context: Context) {
             applyInterpolators(current)
             applyReveal(current)
             applyConceal(current)
+            applyArcType(current)
 
             totalDuration += (current.duration.toFloat() * (current.child?.offset?: MAX_OFFSET)).toLong()
             totalDelay += ((current.parent?.duration?: MIN_DURATION).toFloat() * current.offset).toLong()
@@ -880,6 +881,16 @@ class Choreographer(context: Context) {
      */
     fun transitionTo(percentage: Float) {
         //TODO("Implement this somehow")
+    }
+
+    private fun applyArcType(choreography: Choreography) {
+        choreography.arcType?.let {
+            choreography.createControlPoint(
+                choreography.positionX,
+                choreography.positionY,
+                it
+            )
+        }
     }
 
     /**
@@ -1503,12 +1514,43 @@ class Choreographer(context: Context) {
         internal var reveal: Reveal? = null
         internal var conceal: Conceal? = null
 
+        internal var arcType: ArcType? = null
+
         lateinit var control: ChoreographyControl
         internal var parent: Choreography? = null
         internal var child: Choreography? = null
 
         init {
             applyDefaultValues()
+        }
+
+        internal fun createControlPoint(animatedX: AnimatedFloatValue, animatedY: AnimatedFloatValue, arcType: ArcType) {
+            val coordinateFrom = Coordinates(animatedX.fromValue, animatedY.fromValue)
+            val coordinateTo = Coordinates(animatedX.toValue, animatedY.toValue)
+
+            val dimensionFrom = Dimension(width.fromValue, height.fromValue)
+            val dimensionTo = Dimension(width.toValue, height.toValue)
+
+            controlPoint = createControlPoint(coordinateFrom, coordinateTo, dimensionFrom, dimensionTo, arcType)
+        }
+
+        internal fun createControlPoint(coordinatesFrom: Coordinates, coordinatesTo: Coordinates, dimensionFrom: Dimension, dimensionTo: Dimension, arcType: ArcType): Coordinates{
+            var controlPoint = Coordinates()
+
+            val controlX: Float
+            val controlY: Float
+
+            when (arcType) {
+                ArcType.INNER -> {
+                    controlX = coordinatesFrom.x
+                    controlY = coordinatesTo.y
+                }
+                ArcType.OUTER -> {
+                    controlX = coordinatesTo.x
+                    controlY = coordinatesFrom.y
+                }
+            }
+            return Coordinates(controlX, controlY)
         }
 
         /***
@@ -3636,7 +3678,7 @@ class Choreographer(context: Context) {
                 }
                 Anchor.BOTTOM_LEFT -> {
                     anchorTo(Anchor.BOTTOM, view, margin, interpolator)
-                    anchorTo(Anchor.RIGHT, view, margin, interpolator)
+                    anchorTo(Anchor.LEFT, view, margin, interpolator)
                 }
             }
             return this
@@ -3825,37 +3867,28 @@ class Choreographer(context: Context) {
         }
 
         /**
-         * Specifies the control X and Y value to use for arc translation. If arc
-         * translation is used. The translation will use the specified control point created
-         * with the specified X and Y values.
-         * @param x The x coordinate of the control point.
-         * @param y The y coordinate of the control point.
+         * Specifies the way the arc translation control point should be computer. If arc
+         * translation is used the control point will be calculated based on the specified
+         * type. The available types are:
+         * * [ArcType.INNER] : Arc translates across the inner path of its destination.
+         * * [ArcType.OUTER] : Arc translates across the outer path of its destination.
+         * @param arcType the arc path to use for the arc translation.
          * @return this choreography.
          */
-        fun withControlPoint(x: Float, y: Float): Choreography {
-            this.controlPoint = Coordinates(x, y)
+        fun withArcType(arcType: ArcType): Choreography {
+            this.arcType = arcType
             return this
         }
 
         /**
-         * Specifies the control point value to use for arc translation. If arc
-         * translation is used the translation will use the specified control point
-         * @param point The control point to use for arc translations.
+         * Specifies whether or not arc translation should be used for translating
+         * the views. When arc translation is used the views will arc translate using
+         * the default or a specified control point.
+         * @param useArcTranslation specifies if arc translation should be used. Default: `True`
          * @return this choreography.
          */
-        fun withControlPoint(point: Coordinates): Choreography {
-            this.controlPoint = point
-            return this
-        }
-
-        /**
-         * Specifies the control point value to use for arc translation. If arc
-         * translation is used the translation will use the specified control point
-         * @param point The control point to use for arc translations.
-         * @return this choreography.
-         */
-        fun withControlPoint(point: FloatPoint): Choreography {
-            this.controlPoint = Coordinates(point.x, point.y)
+        fun witArchTranslation(useArcTranslation: Boolean = true): Choreography{
+            this.useArcTranslator = useArcTranslation
             return this
         }
 

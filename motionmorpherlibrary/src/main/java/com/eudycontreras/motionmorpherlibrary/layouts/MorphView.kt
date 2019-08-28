@@ -281,12 +281,6 @@ class MorphView: MorphLayout {
 
         if (view is RoundedImageView) {
             morphCornerRadii = view.corners
-
-           /* cornerRadii.changeListener =  {
-                for (index in 0 until it.size) {
-                    view.updateCornerRadii(index, it[index])
-                }
-            }*/
         }
     }
 

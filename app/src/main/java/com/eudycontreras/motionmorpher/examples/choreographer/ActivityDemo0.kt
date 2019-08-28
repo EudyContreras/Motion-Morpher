@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
-import android.view.animation.LinearInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
+import com.eudycontreras.motionmorpherlibrary.enumerations.ArcType
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
@@ -65,7 +65,7 @@ class ActivityDemo0 : MorphActivity() {
         image2 = card.demo_0_image_2
 
         cardLayout.setOnClickListener {
-            createChoreographyTwo(card, root, interpolator)
+            createChoreographyOne(card, root, interpolator)
         }
     }
 
@@ -77,15 +77,17 @@ class ActivityDemo0 : MorphActivity() {
         val choreographer = Choreographer(this)
 
         choreographer
+            .withDefaultInterpolator(interpolator)
+            .allowChildInheritance(false)
+
             .animate(card)
             .withDuration(200)
-            .anchorTo(Anchor.RIGHT, root)
+            .anchorTo(Anchor.TOP_RIGHT, root)
 
             .then()
-            .anchorTo(Anchor.LEFT, root,0f, LinearInterpolator())
-            .yTranslateBetween(AccelerateDecelerateInterpolator(),0f, -(40.dp),30.dp, -(10.dp), 20.dp, 0f)
-            .zTranslateBetween(AccelerateDecelerateInterpolator(), card.translationZ, 18.dp, 2.dp, 12.dp, 4.dp, 8.dp)
-            .withDuration(20000)
+            .withArcType(ArcType.INNER)
+            .withDuration(8000)
+            .anchorArcTo(Anchor.CENTER, root)
 
             .start()
 
@@ -93,8 +95,6 @@ class ActivityDemo0 : MorphActivity() {
     }
 
     fun createChoreographyOne(card: View, root: MorphLayout, interpolator: TimeInterpolator): Choreographer {
-
-       // Binder.createBinding(Bind.UNIDIRECTIONAL, card.morphCornerRadii, image.morphCornerRadii)
 
         val choreographer = Choreographer(this)
 
@@ -275,15 +275,7 @@ class ActivityDemo0 : MorphActivity() {
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
-
-
-/*
-        val before = createChoreographyOne(card, root, interpolator)
-        val after = createChoreographyOne(card, root, interpolator)
-
-        choreographer.prepend(before, 1f)
-        choreographer.append(after)*/
-        choreographer.start()
+            .start()
 
         return choreographer
     }

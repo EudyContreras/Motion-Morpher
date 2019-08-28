@@ -3,7 +3,6 @@ package com.eudycontreras.motionmorpherlibrary.properties
 import android.animation.TimeInterpolator
 import android.graphics.Canvas
 import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
-import com.google.android.material.circularreveal.CircularRevealHelper
 
 
 /**
@@ -28,7 +27,7 @@ class Ripple {
     var interpolator: TimeInterpolator? = null
 
     fun animate(fraction: Float) {
-         CircularRevealHelper
+
     }
 
     fun draw(canvas: Canvas) {
