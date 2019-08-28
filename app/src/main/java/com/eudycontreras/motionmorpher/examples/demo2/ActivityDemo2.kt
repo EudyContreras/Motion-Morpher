@@ -111,25 +111,25 @@ class ActivityDemo2 : MorphActivity() {
     }
 
     fun testChoreographer() {
-        val card = cardLayout as ConstraintLayout
+        val card: MorphLayout = cardLayout as ConstraintLayout
 
         if (!::actions.isInitialized) {
-            actions = MorphView.makeMorphable(card.demo_2_actions)
+            actions = MorphView.makeMorphable(cardLayout.demo_2_actions)
         }
         if (!::image.isInitialized) {
-            image = MorphView.makeMorphable(card.demo_2_image)
+            image = MorphView.makeMorphable(cardLayout.demo_2_image)
         }
         if (!::text.isInitialized) {
-            text = MorphView.makeMorphable(card.demo_2_header)
+            text = MorphView.makeMorphable(cardLayout.demo_2_header)
         }
         if (!::icon1.isInitialized) {
-            icon1 = MorphView.makeMorphable(card.demo_2_favorite)
+            icon1 = MorphView.makeMorphable(cardLayout.demo_2_favorite)
         }
         if (!::icon2.isInitialized) {
-            icon2 = MorphView.makeMorphable(card.demo_2_book)
+            icon2 = MorphView.makeMorphable(cardLayout.demo_2_book)
         }
         if (!::icon3.isInitialized) {
-            icon3 = MorphView.makeMorphable(card.demo_2_share)
+            icon3 = MorphView.makeMorphable(cardLayout.demo_2_share)
         }
 
         val interpolator = FastOutSlowInInterpolator()

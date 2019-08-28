@@ -8,7 +8,6 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
 
 
-
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
@@ -55,12 +54,19 @@ fun View.show(duration: Long = MIN_DURATION, onEnd: Action = null) {
         .start()
 }
 
-fun View.toMorphable(): MorphLayout {
+fun View.asMorphable(): MorphLayout {
     return if (this is MorphLayout) {
         this
     } else {
         MorphView.makeMorphable(this)
     }
+}
+
+fun View.identity(): Int {
+    if (id == View.NO_ID) {
+        id = getUniqueId()
+    }
+    return id
 }
 
 fun MorphLayout.hide(duration: Long = MIN_DURATION, delay: Long = MIN_DURATION, onEnd: Action = null) {

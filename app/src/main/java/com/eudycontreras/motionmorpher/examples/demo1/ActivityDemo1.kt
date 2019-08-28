@@ -218,7 +218,7 @@ class ActivityDemo1 : MorphActivity() {
          * of overlapping between two different layouts or for shared animations where and element
          * from the starting layout will become part of the end layout.
          * MorphDialogs are useful when morphing between two completely
-         * different views that share no elements. Shared elements may
+         * different morphViews that share no elements. Shared elements may
          * still be present.
          *
          * In order to construct a MorphDialog an instance a MorphActivity and an

@@ -4,6 +4,7 @@ import androidx.core.math.MathUtils.clamp
 import com.eudycontreras.motionmorpherlibrary.observable.ObservableProperty
 import com.eudycontreras.motionmorpherlibrary.observable.ObservableValue
 import com.eudycontreras.motionmorpherlibrary.observable.PropertyChangeObservable
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.hypot
 import kotlin.reflect.KProperty
 
@@ -12,6 +13,8 @@ import kotlin.reflect.KProperty
  * @author Eudy Contreras.
  * @since July 12 2019
  */
+
+private var id = AtomicInteger(Int.MIN_VALUE)
 
 const val MAX_OFFSET: Float = 1f
 const val MIN_OFFSET: Float = 0f
@@ -25,6 +28,10 @@ const val MAX_COLOR: Int = 255
 const val MIN_DURATION: Long = 0L
 
 const val DEFAULT_COLOR: Int = 0x000000
+
+fun getUniqueId(): Int {
+    return id.incrementAndGet()
+}
 
 fun interpolate(from: Int, to: Int, fraction: Float): Float {
     return from + (to - from) * fraction

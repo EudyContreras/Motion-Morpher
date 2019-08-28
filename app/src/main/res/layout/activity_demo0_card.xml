@@ -29,6 +29,21 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
+    <com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
+            android:tag="demo0Image2"
+            android:id="@+id/demo_0_image_2"
+            android:src="@drawable/background0"
+            android:scaleType="centerCrop"
+            android:visibility="invisible"
+            android:adjustViewBounds="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:riv_topLeftCornerRadius="6dp"
+            app:riv_topRightCornerRadius="6dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
     <TextView
             android:id="@+id/demo_0_header"
             android:ellipsize="marquee"

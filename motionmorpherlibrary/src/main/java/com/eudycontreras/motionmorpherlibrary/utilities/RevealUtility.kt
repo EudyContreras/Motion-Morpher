@@ -6,8 +6,9 @@ import android.view.ViewAnimationUtils
 import com.eudycontreras.motionmorpherlibrary.Action
 import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
-import kotlin.math.hypot
-
+import com.eudycontreras.motionmorpherlibrary.properties.Conceal
+import com.eudycontreras.motionmorpherlibrary.properties.Reveal
+import kotlin.math.max
 
 
 /**
@@ -25,6 +26,21 @@ object RevealUtility {
     private const val SCALE_Y_PROPERTY = "scaleY"
 
     fun circularReveal(
+        reveal: Reveal
+    ) {
+        circularReveal(
+            reveal.radiusStart,
+            reveal.centerX.toInt(),
+            reveal.centerY.toInt(),
+            reveal.view,
+            reveal.interpolator,
+            reveal.duration ?: MIN_DURATION,
+            MIN_DURATION,
+            reveal.onStart,
+            reveal.onEnd)
+    }
+
+    fun circularReveal(
         sourceView: View,
         resultView: View,
         interpolator: TimeInterpolator? = null,
@@ -34,7 +50,7 @@ object RevealUtility {
         onStart: Action = null,
         onEnd: Action = null
     ) {
-        val startRadius = hypot(sourceView.width.toDouble(), sourceView.height.toDouble()).toFloat() / (divider * 2f)
+        val startRadius = max(sourceView.width.toDouble(), sourceView.height.toDouble()).toFloat()
 
         val location = IntArray(2)
 
@@ -57,7 +73,7 @@ object RevealUtility {
         onStart: Action = null,
         onEnd: Action = null
     ) {
-        val endRadius = hypot(resultView.width.toDouble(), resultView.height.toDouble()).toFloat()
+        val endRadius = max(resultView.width.toDouble(), resultView.height.toDouble()).toFloat()
 
         val revealAnimator = ViewAnimationUtils.createCircularReveal(
             resultView,
@@ -83,6 +99,22 @@ object RevealUtility {
     }
 
     fun circularConceal(
+        conceal: Conceal
+    ) {
+        circularConceal(
+            conceal.radiusEnd,
+            conceal.centerX.toInt(),
+            conceal.centerY.toInt(),
+            conceal.view,
+            conceal.interpolator,
+            conceal.duration ?: MIN_DURATION,
+            MIN_DURATION,
+            conceal.onStart,
+            conceal.onEnd
+        )
+    }
+
+    fun circularConceal(
         sourceView: View,
         resultView: View,
         interpolator: TimeInterpolator? = null,
@@ -92,25 +124,54 @@ object RevealUtility {
         onEnd: Action = null
     ) {
 
-        val endRadius: Float = hypot(resultView.width.toDouble(), resultView.height.toDouble()).toFloat() / 2f
-        val startRadius: Float = hypot(sourceView.width.toDouble(), sourceView.height.toDouble()).toFloat()
+        val endRadius: Float = max(sourceView.width.toDouble(), sourceView.height.toDouble()).toFloat() / 2f
 
         val location = IntArray(2)
 
-        resultView.getLocationInWindow(location)
+        sourceView.getLocationInWindow(location)
 
         val cx = location[0] + resultView.width / 2
         val cy = location[1] + resultView.height / 2
 
-        val revealAnimator = ViewAnimationUtils.createCircularReveal(sourceView, cx, cy, startRadius, endRadius)
+        circularConceal(endRadius, cx, cy, resultView, interpolator, duration, startDelay, onStart, onEnd)
+    }
 
-        revealAnimator.addListener(MorphAnimationListener(onStart, onEnd))
+    fun circularConceal(
+        endRadius: Float,
+        centerX: Int,
+        centerY: Int,
+        resultView: View,
+        interpolator: TimeInterpolator? = null,
+        duration: Long,
+        startDelay: Long = MIN_DURATION,
+        onStart: Action = null,
+        onEnd: Action = null
+    ) {
+
+        val startRadius: Float = max(resultView.width.toDouble(), resultView.height.toDouble()).toFloat()
+
+        val revealAnimator = ViewAnimationUtils.createCircularReveal(
+            resultView,
+            centerX,
+            centerY,
+            startRadius,
+            endRadius
+        )
+
+        val listener = MorphAnimationListener(
+            onStart = onStart,
+            onEnd = {
+                resultView.visibility = View.INVISIBLE
+                onEnd?.invoke()
+            }
+        )
+
+        revealAnimator.addListener(listener)
         revealAnimator.interpolator = interpolator
         revealAnimator.duration = duration
         revealAnimator.startDelay = startDelay
         revealAnimator.start()
     }
-
 
 /*    fun getLayoutTransition(
         viewGroup: ViewGroup,

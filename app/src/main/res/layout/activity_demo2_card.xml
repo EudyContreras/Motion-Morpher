@@ -12,7 +12,7 @@
         android:layout_marginBottom="2dp"
         android:layout_gravity="center"
         app:cl_clipCorners="true"
-        app:cl_shapeType="RECTANGULAR"
+        app:cl_shapeType="CIRCULAR"
         app:cl_radius="6dp">
 
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
