@@ -1,6 +1,5 @@
 package com.eudycontreras.motionmorpherlibrary
 
-import android.animation.Animator
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.Context
@@ -10,14 +9,12 @@ import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.core.animation.addListener
 import com.eudycontreras.motionmorpherlibrary.enumerations.*
-import com.eudycontreras.motionmorpherlibrary.extensions.asMorphable
-import com.eudycontreras.motionmorpherlibrary.extensions.clamp
-import com.eudycontreras.motionmorpherlibrary.extensions.identity
-import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
+import com.eudycontreras.motionmorpherlibrary.extensions.*
 import com.eudycontreras.motionmorpherlibrary.helpers.ArcTranslationHelper
 import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
+import com.eudycontreras.motionmorpherlibrary.listeners.AnimationProgressListener
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.utilities.ColorUtility
 import com.eudycontreras.motionmorpherlibrary.utilities.RevealUtility
@@ -38,7 +35,6 @@ import kotlin.math.abs
 class Choreographer(context: Context) {
 
     //TODO("Make the morphViews held by this into weak references to avoid memory leaks")
-    //TODO("Different animation durations for properties")
 
     private lateinit var headChoreography: Choreography
     private lateinit var tailChoreography: Choreography
@@ -837,21 +833,19 @@ class Choreographer(context: Context) {
                 current.control.repeatCount = 1
             }
 
-            val updateListener: ValueAnimator.AnimatorUpdateListener = ValueAnimator.AnimatorUpdateListener {
-                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
-
-                animate(current, fraction, current.duration, it.currentPlayTime)
+            val updateListener = AnimationProgressListener { fraction ->
+                animate(current, fraction, current.duration, (current.duration * fraction).toLong())
 
                 current.progressListener?.invoke(fraction)
                 current.offsetTrigger?.listenTo(fraction)
             }
 
-            val endListener: (Animator) -> Unit = {
+            val endListener: Action = {
                 current.doneAction?.invoke(current)
                 current.isRunning = false
             }
 
-            val startListener: (Animator) -> Unit = {
+            val startListener: Action = {
                 current.startAction?.invoke(current)
                 current.isRunning = true
 
@@ -1308,10 +1302,10 @@ class Choreographer(context: Context) {
         internal var mDuration: Long = MIN_DURATION
         internal var mStartDelay: Long = MIN_DURATION
 
-        internal lateinit  var endListener: (Animator) -> Unit
-        internal lateinit var startListener: (Animator) -> Unit
+        internal var endListener: Action = null
+        internal var startListener: Action = null
 
-        internal lateinit var updateListener: ValueAnimator.AnimatorUpdateListener
+        internal lateinit var updateListener: AnimationProgressListener
 
         internal var animator = ValueAnimator.ofFloat(startOffset, endOffset)
 
@@ -1341,11 +1335,14 @@ class Choreographer(context: Context) {
          */
         internal fun build() {
             animator.addListener(
-                onStart = startListener,
-                onEnd = endListener
+                onStart = { startListener?.invoke() },
+                onEnd = { endListener?.invoke() }
             )
             animator.setFloatValues(startOffset, endOffset)
-            animator.addUpdateListener(updateListener)
+            animator.addUpdateListener {
+                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+                updateListener.onProgress(fraction)
+            }
             animator.duration = mDuration
             animator.startDelay = mStartDelay
             animator.repeatCount = repeatCount
@@ -1360,10 +1357,13 @@ class Choreographer(context: Context) {
         fun reverse(duration: Long?) {
             animator  = ValueAnimator.ofFloat(MAX_OFFSET, MIN_OFFSET)
 
-            animator.addListener( onEnd = endListener)
+            animator.addListener( onEnd = {endListener?.invoke()})
 
             animator.duration = duration ?: this.mDuration
-            animator.addUpdateListener(this.updateListener)
+            animator.addUpdateListener{
+                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+                updateListener.onProgress(fraction)
+            }
             animator.start()
         }
 
@@ -1528,15 +1528,10 @@ class Choreographer(context: Context) {
             val coordinateFrom = Coordinates(animatedX.fromValue, animatedY.fromValue)
             val coordinateTo = Coordinates(animatedX.toValue, animatedY.toValue)
 
-            val dimensionFrom = Dimension(width.fromValue, height.fromValue)
-            val dimensionTo = Dimension(width.toValue, height.toValue)
-
-            controlPoint = createControlPoint(coordinateFrom, coordinateTo, dimensionFrom, dimensionTo, arcType)
+            controlPoint = createControlPoint(coordinateFrom, coordinateTo, arcType)
         }
 
-        internal fun createControlPoint(coordinatesFrom: Coordinates, coordinatesTo: Coordinates, dimensionFrom: Dimension, dimensionTo: Dimension, arcType: ArcType): Coordinates{
-            var controlPoint = Coordinates()
-
+        internal fun createControlPoint(coordinatesFrom: Coordinates, coordinatesTo: Coordinates, arcType: ArcType): Coordinates{
             val controlX: Float
             val controlY: Float
 
@@ -4309,8 +4304,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun animateChildrenOfAfter(view: MorphLayout, offset: Float, stagger: AnimationStagger? = null): Choreography {
-            //TODO("Deal with the costly conversion")
-            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
             return choreographer.animateChildrenOfAfter(this, offset, stagger, *children)
         }
 
@@ -4323,8 +4317,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun thenAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
-            //TODO("Deal with the costly conversion")
-            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
             return choreographer.thenAnimateChildrenOf(this, stagger, *children)
         }
 
@@ -4337,8 +4330,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun alsoAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
-            //TODO("Deal with the costly conversion")
-            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
             return choreographer.alsoAnimateChildrenOf(this, stagger, *children)
         }
 
@@ -4351,8 +4343,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun andAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
-            //TODO("Deal with the costly conversion")
-            val children = view.getChildren().map { if (it is MorphLayout) it else MorphView.makeMorphable(it) }.toList().toTypedArray()
+            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
             return choreographer.andAnimateChildrenOf(this, stagger, *children)
         }
 
@@ -4429,9 +4420,7 @@ class Choreographer(context: Context) {
          * If the choreographies are not yet build they will also be built.
          * choreography helps to get rid of overhead.
          */
-        fun start() {
-            choreographer.start()
-        }
+        fun start() = choreographer.start()
 
         /**
          * Copies the properties of the give [Choreography] into the current
