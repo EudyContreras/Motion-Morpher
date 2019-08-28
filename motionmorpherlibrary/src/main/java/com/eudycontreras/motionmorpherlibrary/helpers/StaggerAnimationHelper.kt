@@ -24,24 +24,24 @@ class StaggerAnimationHelper {
 
         if (animationType == AnimationType.CONCEAL) {
             for (nodeEntry in nodesGroups.entries.reversed()) {
-                val startOffset = delay / duration
-                val endOffset = (delay + durationDelta) / duration
+                val fromValue = delay / duration
+                val toValue = (delay + durationDelta) / duration
 
                 for(node in nodeEntry.value.reversed()) {
-                    node.startOffset = startOffset
-                    node.endOffset = endOffset
+                    node.fromValue = fromValue
+                    node.toValue = toValue
                 }
 
                 delay += delayAddition
             }
         } else {
             for (nodeEntry in nodesGroups.entries) {
-                val startOffset = delay / duration
-                val endOffset = (delay + durationDelta) / duration
+                val fromValue = delay / duration
+                val toValue = (delay + durationDelta) / duration
 
                 for(node in nodeEntry.value) {
-                    node.startOffset = startOffset
-                    node.endOffset = endOffset
+                    node.fromValue = fromValue
+                    node.toValue = toValue
                 }
 
                 delay += delayAddition
@@ -67,11 +67,11 @@ class StaggerAnimationHelper {
                         val stagger: Float = getStagger(bounds, epicenter, node.centerLocation, stagger.speed, duration).toFloat()
                         val durationDelta: Float = (duration - stagger)
 
-                        val startOffset: Float = stagger / duration
-                        val endOffset: Float = (stagger + durationDelta) / duration
+                        val fromValue: Float = stagger / duration
+                        val toValue: Float = (stagger + durationDelta) / duration
 
-                        node.startOffset = startOffset
-                        node.endOffset = endOffset
+                        node.fromValue = fromValue
+                        node.toValue = toValue
                     }
                 }
                 AnimationType.CONCEAL -> {
@@ -81,11 +81,11 @@ class StaggerAnimationHelper {
                         val stagger = getStagger(bounds, epicenter, node.centerLocation, stagger.speed, duration)
                         val durationDelta = (duration - stagger)
 
-                        val startOffset = stagger / duration
-                        val endOffset = (stagger + durationDelta) / duration
+                        val fromValue = stagger / duration
+                        val toValue = (stagger + durationDelta) / duration
 
-                        node.startOffset = startOffset.toFloat()
-                        node.endOffset = endOffset.toFloat()
+                        node.fromValue = fromValue.toFloat()
+                        node.toValue = toValue.toFloat()
                     }
                 }
             }

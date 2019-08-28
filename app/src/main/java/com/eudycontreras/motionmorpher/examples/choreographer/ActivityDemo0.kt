@@ -1,18 +1,23 @@
 package com.eudycontreras.motionmorpher.examples.choreographer
 
 import android.animation.TimeInterpolator
+import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.LinearInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
 import com.eudycontreras.motionmorpherlibrary.enumerations.ArcType
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
+import com.eudycontreras.motionmorpherlibrary.extensions.clamp
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
@@ -65,7 +70,15 @@ class ActivityDemo0 : MorphActivity() {
         image2 = card.demo_0_image_2
 
         cardLayout.setOnClickListener {
-            createChoreographyOne(card, root, interpolator)
+            val chor = createChoreographyTwo(card, root, interpolator)
+            val animator = ValueAnimator.ofFloat(0f, 1f)
+            animator.setDuration(8000)
+            animator.setInterpolator(LinearInterpolator())
+            animator.addUpdateListener {
+                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+                chor.transitionTo(fraction)
+            }
+            animator.start()
         }
     }
 
@@ -81,7 +94,7 @@ class ActivityDemo0 : MorphActivity() {
             .allowChildInheritance(false)
 
             .animate(card)
-            .withDuration(200)
+            .withDuration(2000)
             .anchorTo(Anchor.TOP_RIGHT, root)
 
             .then()
@@ -89,7 +102,11 @@ class ActivityDemo0 : MorphActivity() {
             .withDuration(8000)
             .anchorArcTo(Anchor.CENTER, root)
 
-            .start()
+            .animateAfter(0.5f, image)
+            .withDuration(4000)
+            .rotateTo(360f)
+
+            .build()
 
         return choreographer
     }
@@ -275,7 +292,7 @@ class ActivityDemo0 : MorphActivity() {
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
-            .start()
+            .build()
 
         return choreographer
     }

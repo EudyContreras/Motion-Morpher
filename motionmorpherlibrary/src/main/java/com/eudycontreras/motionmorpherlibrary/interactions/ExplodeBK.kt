@@ -156,24 +156,24 @@ class ExplodeBK(
 
         if (animationType == AnimationType.CONCEAL) {
             for (nodeEntry in nodesGroups.entries.reversed()) {
-                val startOffset = delay / inDuration
-                val endOffset = (delay + durationDelta) / inDuration
+                val fromValue = delay / inDuration
+                val toValue = (delay + durationDelta) / inDuration
 
                 for(node in nodeEntry.value.reversed()) {
-                    node.startOffset = startOffset
-                    node.endOffset = endOffset
+                    node.fromValue = fromValue
+                    node.toValue = toValue
                 }
 
                 delay += delayAddition
             }
         } else {
             for (nodeEntry in nodesGroups.entries) {
-                val startOffset = delay / inDuration
-                val endOffset = (delay + durationDelta) / inDuration
+                val fromValue = delay / inDuration
+                val toValue = (delay + durationDelta) / inDuration
 
                 for(node in nodeEntry.value) {
-                    node.startOffset = startOffset
-                    node.endOffset = endOffset
+                    node.fromValue = fromValue
+                    node.toValue = toValue
                 }
 
                 delay += delayAddition
@@ -186,9 +186,9 @@ class ExplodeBK(
         for (entry in nodesGroups.entries) {
             for (node in entry.value) {
 
-                if (fraction >= node.startOffset) {
+                if (fraction >= node.fromValue) {
 
-                    val mappedRation = mapRange(fraction, node.startOffset, node.endOffset, MIN_OFFSET, MAX_OFFSET)
+                    val mappedRation = mapRange(fraction, node.fromValue, node.toValue, MIN_OFFSET, MAX_OFFSET)
 
                     val translationX = node.translationX
                     val translationY = node.translationY
@@ -240,8 +240,8 @@ class ExplodeBK(
         val centerLocation: Coordinates,
         val epicenter: Boolean
     ) {
-        var startOffset: Float = MIN_OFFSET
-        var endOffset: Float = MAX_OFFSET
+        var fromValue: Float = MIN_OFFSET
+        var toValue: Float = MAX_OFFSET
 
         override fun toString(): String {
             return "Distance: $distance, ValueX: ${translationX.toValue} ValueY: ${translationY.toValue}"

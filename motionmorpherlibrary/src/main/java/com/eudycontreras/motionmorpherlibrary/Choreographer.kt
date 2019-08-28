@@ -698,7 +698,33 @@ class Choreographer(context: Context) {
             if (traverseControl.breakTraverse) {
                 break
             }
+            if (traverseControl.skipCurrent) {
+                traverseControl.skipCurrent = false
+                continue
+            }
             temp = temp.parent
+        }
+    }
+
+    /**
+     * Helper method used for traversing the successors of the given [Choreography].
+     * @param choreography The [Choreography] to traverse.
+     * @param iterator The iterator which gives access to the traversal control
+     * and the current choreography being traversed.
+     */
+    private fun successors(choreography: Choreography, iterator: (control: TraverseControl, choreography: Choreography) -> Unit) {
+        val traverseControl = TraverseControl()
+        var temp: Choreography? = choreography
+        while (temp != null) {
+            iterator.invoke(traverseControl, temp)
+            if (traverseControl.breakTraverse) {
+                break
+            }
+            if (traverseControl.skipCurrent) {
+                traverseControl.skipCurrent = false
+                continue
+            }
+            temp = temp.child
         }
     }
 
@@ -726,24 +752,6 @@ class Choreographer(context: Context) {
             return getHead(choreography.parent!!)
         }
         return choreography
-    }
-
-    /**
-     * Helper method used for traversing the successors of the given [Choreography].
-     * @param choreography The [Choreography] to traverse.
-     * @param iterator The iterator which gives access to the traversal control
-     * and the current choreography being traversed.
-     */
-    private fun successors(choreography: Choreography, iterator: (control: TraverseControl, choreography: Choreography) -> Unit) {
-        val traverseControl = TraverseControl()
-        var temp: Choreography? = choreography
-        while (temp != null) {
-            iterator.invoke(traverseControl, temp)
-            if (traverseControl.breakTraverse) {
-                break
-            }
-            temp = temp.child
-        }
     }
 
     /**
@@ -819,8 +827,8 @@ class Choreographer(context: Context) {
             applyConceal(current)
             applyArcType(current)
 
-            totalDuration += (current.duration.toFloat() * (current.child?.offset?: MAX_OFFSET)).toLong()
-            totalDelay += ((current.parent?.duration?: MIN_DURATION).toFloat() * current.offset).toLong()
+            totalDuration += (current.duration.toFloat() * (current.child?.offset ?: MAX_OFFSET)).toLong() + current.delay
+            totalDelay += ((current.parent?.duration ?: MIN_DURATION).toFloat() * current.offset).toLong()
             totalDelay += current.delay
 
             val start: Float = if (current.reverseToStartState) MAX_OFFSET else MIN_OFFSET
@@ -835,6 +843,7 @@ class Choreographer(context: Context) {
 
             val updateListener = AnimationProgressListener { fraction ->
                 animate(current, fraction, current.duration, (current.duration * fraction).toLong())
+
 
                 current.progressListener?.invoke(fraction)
                 current.offsetTrigger?.listenTo(fraction)
@@ -865,16 +874,17 @@ class Choreographer(context: Context) {
             current.control.build()
         }
 
+        successors(headChoreography) { _, choreography ->
+            val startOffset: Float = (choreography.control.mStartDelay.toFloat() / totalDuration.toFloat())
+            val endOffset: Float = (choreography.control.mDuration.toFloat() / totalDuration.toFloat()) + startOffset
+
+            choreography.control.offsetStart = startOffset
+            choreography.control.offsetEnd = endOffset
+        }
+
         built = true
 
         return this
-    }
-
-    /**
-     *
-     */
-    fun transitionTo(percentage: Float) {
-        //TODO("Implement this somehow")
     }
 
     private fun applyArcType(choreography: Choreography) {
@@ -1026,6 +1036,51 @@ class Choreographer(context: Context) {
         }
     }
 
+    /**
+     *
+     */
+    fun transitionTo(percentage: Float) {
+        transitionTo(headChoreography, percentage)
+    }
+
+    private fun transitionTo(choreography: Choreography, percentage: Float) {
+
+        val startOffset = choreography.control.offsetStart
+        val endOffset = choreography.control.offsetEnd
+
+        if (percentage < startOffset) {
+           return
+        }
+
+        val fraction = mapRange(percentage, startOffset, endOffset, MIN_OFFSET, MAX_OFFSET)
+
+        choreography.control.updateListener.onProgress(fraction)
+
+        choreography.child?.let {
+            transitionTo(it, percentage)
+        }
+    }
+
+
+    /*private fun transitionTo(choreography: Choreography, percentage: Float) {
+
+        val startOffset = choreography.control.offsetStart
+        val endOffset = choreography.control.offsetEnd
+
+        if (percentage in startOffset..endOffset) {
+            val fraction = mapRange(percentage, startOffset, endOffset, MIN_OFFSET, MAX_OFFSET)
+
+            choreography.control.updateListener.onProgress(fraction)
+        } else {
+            if (percentage > endOffset) {
+                choreography.control.updateListener.onProgress(MAX_OFFSET)
+            }
+            choreography.child?.let {
+                transitionTo(it, percentage)
+            }
+        }
+    }
+*/
     /**
      * Animates the specified [Choreography] to specified animation fraction. The total duration
      * and the current playtime must be known.
@@ -1288,13 +1343,13 @@ class Choreographer(context: Context) {
      * Class containing information about the properties used for animating a [Choreography]
      * Each choreography uses an animation control for its core animation.
      * @param choreography The choreography to which the control belongs to.
-     * @param startOffset The offset to which control will start the animation of the choreography
-     * @param endOffset The offset to which control will end the animation of the choreography
+     * @param fromValue The offset to which control will start the animation of the choreography
+     * @param toValue The offset to which control will end the animation of the choreography
      */
     class ChoreographyControl(
         internal var choreography: Choreography,
-        internal var startOffset: Float,
-        internal var endOffset: Float
+        internal var fromValue: Float,
+        internal var toValue: Float
     ) {
 
         internal var repeatCount: Int = 0
@@ -1302,12 +1357,15 @@ class Choreographer(context: Context) {
         internal var mDuration: Long = MIN_DURATION
         internal var mStartDelay: Long = MIN_DURATION
 
+        internal var offsetStart: Float = MIN_OFFSET
+        internal var offsetEnd: Float = MAX_OFFSET
+
         internal var endListener: Action = null
         internal var startListener: Action = null
 
         internal lateinit var updateListener: AnimationProgressListener
 
-        internal var animator = ValueAnimator.ofFloat(startOffset, endOffset)
+        internal var animator = ValueAnimator.ofFloat(fromValue, toValue)
 
         /**
          * Pauses the animation used by this control.
@@ -1338,7 +1396,7 @@ class Choreographer(context: Context) {
                 onStart = { startListener?.invoke() },
                 onEnd = { endListener?.invoke() }
             )
-            animator.setFloatValues(startOffset, endOffset)
+            animator.setFloatValues(fromValue, toValue)
             animator.addUpdateListener {
                 val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
                 updateListener.onProgress(fraction)
@@ -4526,12 +4584,17 @@ class Choreographer(context: Context) {
      */
     class TraverseControl {
         internal var breakTraverse: Boolean = false
+        internal var skipCurrent: Boolean = false
 
         /**
          * Breaks the traversal this control is bound to
          */
         fun breakTraversal() {
             breakTraverse = true
+        }
+
+        fun skipCurrent() {
+            skipCurrent = true
         }
     }
 
