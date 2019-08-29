@@ -1,6 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.listeners;
 
+import android.animation.ValueAnimator;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 /**
  * @author Eudy Contreras.
@@ -10,5 +12,5 @@ import androidx.annotation.NonNull;
 
 @FunctionalInterface
 public interface AnimationProgressListener {
-    void onProgress(@NonNull Float fraction);
+    void onProgress(@NonNull Float fraction, @Nullable ValueAnimator animator);
 }

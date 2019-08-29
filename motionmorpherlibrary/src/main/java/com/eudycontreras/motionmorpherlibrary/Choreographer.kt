@@ -827,7 +827,7 @@ class Choreographer(context: Context) {
             applyConceal(current)
             applyArcType(current)
 
-            totalDuration += (current.duration.toFloat() * (current.child?.offset ?: MAX_OFFSET)).toLong() + current.delay
+            totalDuration += (current.duration.toFloat() * (current.child?.offset ?: MAX_OFFSET)).toLong()
             totalDelay += ((current.parent?.duration ?: MIN_DURATION).toFloat() * current.offset).toLong()
             totalDelay += current.delay
 
@@ -841,9 +841,9 @@ class Choreographer(context: Context) {
                 current.control.repeatCount = 1
             }
 
-            val updateListener = AnimationProgressListener { fraction ->
-                animate(current, fraction, current.duration, (current.duration * fraction).toLong())
-
+            val updateListener = AnimationProgressListener { fraction, animator ->
+                val playTime =  animator?.currentPlayTime ?: (current.duration * fraction).toLong()
+                animate(current, fraction, current.duration, playTime)
 
                 current.progressListener?.invoke(fraction)
                 current.offsetTrigger?.listenTo(fraction)
@@ -1037,12 +1037,23 @@ class Choreographer(context: Context) {
     }
 
     /**
-     *
+     * Animates this choreography to the specified animation percentage/fraction.
+     * A value of 1.0f signifies the end of the animation while a value of 0.0f signifies
+     * the start of the animation.
+     * @param percentage The amount to animation to.
      */
     fun transitionTo(percentage: Float) {
         transitionTo(headChoreography, percentage)
     }
 
+    /**
+     * Animates this [Choreography] to the specified animation percentage/fraction recursively
+     * by navigating through the successors of the head choreography using offset based prunning.
+     * A value of 1.0f signifies the end of the animation while a value of 0.0f signifies
+     * the start of the animation.
+     * @param choreography the choreography currently being animated
+     * @param percentage The amount to animation to.
+     */
     private fun transitionTo(choreography: Choreography, percentage: Float) {
 
         val startOffset = choreography.control.offsetStart
@@ -1054,33 +1065,13 @@ class Choreographer(context: Context) {
 
         val fraction = mapRange(percentage, startOffset, endOffset, MIN_OFFSET, MAX_OFFSET)
 
-        choreography.control.updateListener.onProgress(fraction)
+        choreography.control.updateListener.onProgress(fraction, null)
 
         choreography.child?.let {
             transitionTo(it, percentage)
         }
     }
 
-
-    /*private fun transitionTo(choreography: Choreography, percentage: Float) {
-
-        val startOffset = choreography.control.offsetStart
-        val endOffset = choreography.control.offsetEnd
-
-        if (percentage in startOffset..endOffset) {
-            val fraction = mapRange(percentage, startOffset, endOffset, MIN_OFFSET, MAX_OFFSET)
-
-            choreography.control.updateListener.onProgress(fraction)
-        } else {
-            if (percentage > endOffset) {
-                choreography.control.updateListener.onProgress(MAX_OFFSET)
-            }
-            choreography.child?.let {
-                transitionTo(it, percentage)
-            }
-        }
-    }
-*/
     /**
      * Animates the specified [Choreography] to specified animation fraction. The total duration
      * and the current playtime must be known.
@@ -1399,7 +1390,7 @@ class Choreographer(context: Context) {
             animator.setFloatValues(fromValue, toValue)
             animator.addUpdateListener {
                 val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
-                updateListener.onProgress(fraction)
+                updateListener.onProgress(fraction, it)
             }
             animator.duration = mDuration
             animator.startDelay = mStartDelay
@@ -1420,7 +1411,7 @@ class Choreographer(context: Context) {
             animator.duration = duration ?: this.mDuration
             animator.addUpdateListener{
                 val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
-                updateListener.onProgress(fraction)
+                updateListener.onProgress(fraction, it)
             }
             animator.start()
         }

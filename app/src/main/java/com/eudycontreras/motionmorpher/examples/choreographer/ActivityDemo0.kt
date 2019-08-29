@@ -1,29 +1,22 @@
 package com.eudycontreras.motionmorpher.examples.choreographer
 
 import android.animation.TimeInterpolator
-import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
-import android.view.animation.LinearInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
 import com.eudycontreras.motionmorpherlibrary.enumerations.ArcType
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
-import com.eudycontreras.motionmorpherlibrary.extensions.clamp
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
-import com.eudycontreras.motionmorpherlibrary.properties.Conceal
-import com.eudycontreras.motionmorpherlibrary.properties.Reveal
 import com.eudycontreras.motionmorpherlibrary.properties.Stretch
 import kotlinx.android.synthetic.main.activity_demo0.*
 import kotlinx.android.synthetic.main.activity_demo0_card.view.*
@@ -71,14 +64,14 @@ class ActivityDemo0 : MorphActivity() {
 
         cardLayout.setOnClickListener {
             val chor = createChoreographyTwo(card, root, interpolator)
-            val animator = ValueAnimator.ofFloat(0f, 1f)
-            animator.setDuration(8000)
-            animator.setInterpolator(LinearInterpolator())
+            /*val animator = ValueAnimator.ofFloat(0f, 1f)
+            animator.setDuration(10000)
+            animator.setInterpolator(MaterialInterpolator(Interpolation.REVERSED_OUT))
             animator.addUpdateListener {
-                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+                val fraction = (it.animatedValue as Float)
                 chor.transitionTo(fraction)
             }
-            animator.start()
+            animator.start()*/
         }
     }
 
@@ -267,7 +260,7 @@ class ActivityDemo0 : MorphActivity() {
             .then()
             .withDuration(800)
             .withInterpolator(AnticipateOvershootInterpolator())
-            .withReveal(Reveal(1f, 0.5f, 0f, image2))
+            //.withReveal(Reveal(1f, 0.5f, 0f, image2))
             .anchorTo(Anchor.RIGHT, root)
             .rotateTo(35f)
 
@@ -279,7 +272,7 @@ class ActivityDemo0 : MorphActivity() {
             .then()
             .withDuration(500)
             .withInterpolator(AnticipateOvershootInterpolator())
-            .withConceal(Conceal(1f, 0.5f, 0f, image2))
+          //  .withConceal(Conceal(1f, 0.5f, 0f, image2))
             .anchorTo(Anchor.LEFT, root)
             .rotateFrom(0f, -35f)
 
@@ -292,7 +285,7 @@ class ActivityDemo0 : MorphActivity() {
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
-            .build()
+            .start()
 
         return choreographer
     }
