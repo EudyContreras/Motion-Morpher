@@ -8,13 +8,27 @@
         android:id="@+id/root"
         tools:context=".examples.choreographer.ActivityDemo0">
 
+    <View
+            android:id="@+id/divider"
+            android:layout_width="0dp" android:layout_height="80dp"
+          app:layout_constraintTop_toTopOf="parent"
+          app:layout_constraintBottom_toBottomOf="parent"
+          />
     <include
             android:id="@+id/cardLayout"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/divider"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            layout="@layout/activity_demo0_card"/>
+
+    <include
+            android:id="@+id/cardLayout2"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider"
             layout="@layout/activity_demo0_card"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

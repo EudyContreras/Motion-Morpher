@@ -6,12 +6,15 @@ import android.content.Context
 import android.os.Handler
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import androidx.annotation.ColorInt
 import androidx.core.animation.addListener
 import com.eudycontreras.motionmorpherlibrary.enumerations.*
 import com.eudycontreras.motionmorpherlibrary.extensions.*
 import com.eudycontreras.motionmorpherlibrary.helpers.ArcTranslationHelper
 import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
+import com.eudycontreras.motionmorpherlibrary.interpolators.MaterialInterpolator
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.listeners.AnimationProgressListener
@@ -72,7 +75,6 @@ class Choreographer(context: Context) {
      * - [Choreography.pivotPoint][Choreography] The choreography pivot point for scale and rotate animations.
      * - [Choreography.interpolator][Choreography] The choreography ease interpolator.
      * - [Choreography.controlPoint][Choreography] The choreography control point for arc animations
-     *
      *
      * Default value: `TRUE`
      */
@@ -585,6 +587,7 @@ class Choreographer(context: Context) {
 
     /**
      * Starts the choreographies of this [Choreographer].
+     * Each [Choreography] plays in its own animator.
      */
     fun start() {
         if (!built) {
@@ -595,6 +598,29 @@ class Choreographer(context: Context) {
             choreography.control.cancel()
             choreography.control.start()
         }
+    }
+
+    /**
+     * Plays the choreographies held by this [Choreographer].
+     * @param interpoltor the easing interpolator to use to animate the
+     * [Choreography] chain.
+     */
+    fun play(interpolator: TimeInterpolator? = LinearInterpolator()): ValueAnimator{
+        if (!built) {
+            tailChoreography.build()
+            built = false
+        }
+
+        val animator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+        animator.duration = totalDuration
+        animator.interpolator = interpolator
+        animator.addUpdateListener {
+            val fraction = (it.animatedValue as Float)
+            transitionTo(fraction)
+        }
+        animator.start()
+
+        return animator
     }
 
     /**
@@ -818,7 +844,6 @@ class Choreographer(context: Context) {
      */
     internal fun build(): Choreographer {
 
-        var totalDuration: Long = MIN_DURATION
         var totalDelay: Long = MIN_DURATION
 
         successors(headChoreography) { _, current ->
@@ -827,7 +852,7 @@ class Choreographer(context: Context) {
             applyConceal(current)
             applyArcType(current)
 
-            totalDuration += (current.duration.toFloat() * (current.child?.offset ?: MAX_OFFSET)).toLong()
+            totalDuration += (current.duration.toFloat() * (current.child?.offset ?: MAX_OFFSET)).toLong() + current.delay
             totalDelay += ((current.parent?.duration ?: MIN_DURATION).toFloat() * current.offset).toLong()
             totalDelay += current.delay
 
@@ -849,11 +874,6 @@ class Choreographer(context: Context) {
                 current.offsetTrigger?.listenTo(fraction)
             }
 
-            val endListener: Action = {
-                current.doneAction?.invoke(current)
-                current.isRunning = false
-            }
-
             val startListener: Action = {
                 current.startAction?.invoke(current)
                 current.isRunning = true
@@ -864,6 +884,11 @@ class Choreographer(context: Context) {
                 current.conceal?.let {
                     RevealUtility.circularConceal(it)
                 }
+            }
+
+            val endListener: Action = {
+                current.doneAction?.invoke(current)
+                current.isRunning = false
             }
 
             current.control.mDuration = current.duration
@@ -1061,11 +1086,25 @@ class Choreographer(context: Context) {
 
         if (percentage < startOffset) {
            return
+        } else {
+            if (!choreography.control.started) {
+                choreography.control.startListener?.invoke()
+                choreography.control.started = true
+            }
         }
 
-        val fraction = mapRange(percentage, startOffset, endOffset, MIN_OFFSET, MAX_OFFSET)
+        if (percentage >= endOffset) {
+            if (!choreography.control.ended) {
+                choreography.control.endListener?.invoke()
+                choreography.control.ended = true
+            }
+        }
 
-        choreography.control.updateListener.onProgress(fraction, null)
+        if (percentage <= endOffset) {
+            val fraction = mapRange(percentage, startOffset, endOffset, MIN_OFFSET, MAX_OFFSET)
+
+            choreography.control.updateListener.onProgress(fraction, null)
+        }
 
         choreography.child?.let {
             transitionTo(it, percentage)
@@ -1354,6 +1393,9 @@ class Choreographer(context: Context) {
         internal var endListener: Action = null
         internal var startListener: Action = null
 
+        internal var started: Boolean = false
+        internal var ended: Boolean = false
+
         internal lateinit var updateListener: AnimationProgressListener
 
         internal var animator = ValueAnimator.ofFloat(fromValue, toValue)
@@ -1392,6 +1434,7 @@ class Choreographer(context: Context) {
                 val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
                 updateListener.onProgress(fraction, it)
             }
+            animator.interpolator = LinearInterpolator()
             animator.duration = mDuration
             animator.startDelay = mStartDelay
             animator.repeatCount = repeatCount
@@ -1808,7 +1851,17 @@ class Choreographer(context: Context) {
             }
         }
 
-        // NEEDS TESTING
+        /**
+         * Animates the morphViews of this [Choreography] to the center of the specified [MorphLayout]
+         * Optionally uses the specified [TimeInterpolator] if any is present.
+         * @param otherView The layout to which the choreography will animate its morphViews to the center of
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun centerIn(otherView: MorphLayout, interpolator: TimeInterpolator? = null): Choreography {
+            TODO("IMPLEMENT THIS")
+        }
+
         /**
          * Animates the morphViews of this [Choreography] to the left of the specified [MorphLayout] with
          * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.
@@ -1837,7 +1890,6 @@ class Choreographer(context: Context) {
             return this
         }
 
-        // NEEDS TESTING
         /**
          * Animates the morphViews of this [Choreography] to the right of the specified [MorphLayout] with
          * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.
@@ -1866,7 +1918,6 @@ class Choreographer(context: Context) {
             return this
         }
 
-        // NEEDS TESTING
         /**
          * Animates the morphViews of this [Choreography] to the top of the specified [MorphLayout] with
          * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.
@@ -1895,7 +1946,6 @@ class Choreographer(context: Context) {
             return this
         }
 
-        // NEEDS TESTING
         /**
          * Animates the morphViews of this [Choreography] to the bottm of the specified [MorphLayout] with
          * the specified margin. Optionally uses the specified [TimeInterpolator] if any is present.

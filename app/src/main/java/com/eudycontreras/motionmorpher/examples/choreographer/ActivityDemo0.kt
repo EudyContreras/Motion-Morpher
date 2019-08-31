@@ -17,6 +17,8 @@ import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
+import com.eudycontreras.motionmorpherlibrary.properties.Conceal
+import com.eudycontreras.motionmorpherlibrary.properties.Reveal
 import com.eudycontreras.motionmorpherlibrary.properties.Stretch
 import kotlinx.android.synthetic.main.activity_demo0.*
 import kotlinx.android.synthetic.main.activity_demo0_card.view.*
@@ -63,7 +65,10 @@ class ActivityDemo0 : MorphActivity() {
         image2 = card.demo_0_image_2
 
         cardLayout.setOnClickListener {
-            val chor = createChoreographyTwo(card, root, interpolator)
+            val chor1 = createChoreographyTwo(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
+            val chor2 = createChoreographyTwo(cardLayout2 as ConstraintLayout, root, FastOutSlowInInterpolator())
+            chor1.play()
+            chor2.start()
             /*val animator = ValueAnimator.ofFloat(0f, 1f)
             animator.setDuration(10000)
             animator.setInterpolator(MaterialInterpolator(Interpolation.REVERSED_OUT))
@@ -250,6 +255,7 @@ class ActivityDemo0 : MorphActivity() {
             .rotateBetween(0f, -20f, 20f, -30f, 30f, -40f, 40f, -30f, 30f, -20f, 20f, 0f)
 
             .then()
+            .withPivot(0.5f, 0.5f)
             .withDuration(1000)
             .xScaleBetween(1f,  0.6f, 0.7f, 0.8f, 0.9f, 1f)
             .yRotateAdd(360f * 2)
@@ -258,9 +264,9 @@ class ActivityDemo0 : MorphActivity() {
             .anchorTo(Anchor.LEFT, root)
 
             .then()
-            .withDuration(800)
+            .withDuration(5800)
             .withInterpolator(AnticipateOvershootInterpolator())
-            //.withReveal(Reveal(1f, 0.5f, 0f, image2))
+            .withReveal(Reveal(1f, 0.5f, 0f, card.demo_0_image_2))
             .anchorTo(Anchor.RIGHT, root)
             .rotateTo(35f)
 
@@ -270,9 +276,9 @@ class ActivityDemo0 : MorphActivity() {
             .rotateBetween(35f * 0.6f, -30f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
 
             .then()
-            .withDuration(500)
+            .withDuration(5500)
             .withInterpolator(AnticipateOvershootInterpolator())
-          //  .withConceal(Conceal(1f, 0.5f, 0f, image2))
+            .withConceal(Conceal(1f, 0.5f, 0f, card.demo_0_image_2))
             .anchorTo(Anchor.LEFT, root)
             .rotateFrom(0f, -35f)
 
@@ -285,7 +291,8 @@ class ActivityDemo0 : MorphActivity() {
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
-            .start()
+            .build()
+          //  .start()
 
         return choreographer
     }
