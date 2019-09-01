@@ -6,11 +6,12 @@ import com.eudycontreras.motionmorpherlibrary.MIN_COLOR
 
 
 /**
+ * Class which represent a color built alpha, red, green and blue
+ * chanels.
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019
  */
-
 
 abstract class Color(
     var alpha: Int = MAX_COLOR,

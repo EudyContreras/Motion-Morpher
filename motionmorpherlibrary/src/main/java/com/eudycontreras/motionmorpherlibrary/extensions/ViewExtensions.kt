@@ -14,7 +14,7 @@ import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
  * @since July 18 2019
  */
 
-fun View.getColor(default: Int = 0x000000): Int {
+fun View.getColor(default: Int = DEFAULT_COLOR): Int {
     val background = this.backgroundTintList
     if (background != null) {
         return background.defaultColor

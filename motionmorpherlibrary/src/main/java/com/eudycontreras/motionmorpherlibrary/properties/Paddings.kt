@@ -5,6 +5,10 @@ import androidx.core.view.updatePadding
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 /**
+ * Class that holds information about the paddings
+ * on all four sides of a view. These are defined as
+ * start, end, top and bottom.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019

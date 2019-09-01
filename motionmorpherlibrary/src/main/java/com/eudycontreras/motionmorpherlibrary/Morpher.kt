@@ -105,7 +105,7 @@ class Morpher(private val context: Context) {
     var morphIntoDuration: Long = DEFAULT_DURATION
     var morphFromDuration: Long = DEFAULT_DURATION
 
-    var overlayCrossfadeDurationIn: Long = 0L
+    var overlayCrossfadeDurationIn: Long = MIN_DURATION
     var overlayCrossfadeDurationOut: Long = 150L
 
     var childrenEndRevealed: Boolean = false

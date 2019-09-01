@@ -9,6 +9,12 @@ import kotlin.math.hypot
 
 
 /**
+ * Class that holds information about a circular reveal animation.
+ * This class specifies the [View] which is to be revealed along with
+ * the reveal [duration], the [interpolator], the [radiusStart], the [radiusEnd],
+ * the [centerX] and [centerY] of the reveal and the actions to perform upon
+ * starting and ending the reveal animation.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since August 07 2019

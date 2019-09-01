@@ -8,7 +8,14 @@ import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import kotlin.math.hypot
 
 
+
 /**
+ * Class that holds information about a circular conceal animation.
+ * This class specifies the [View] which is to be concealed along with
+ * the conceal [duration], the [interpolator], the [radiusStart], the [radiusEnd],
+ * the [centerX] and [centerY] of the conceal and the actions to perform upon
+ * starting and ending the conceal animation.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since August 07 2019

@@ -18,14 +18,27 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
  * @since August 24 2019
  */
 
-
+/**
+ * Utility class used for extracting bitmaps out of drawable
+ * resources.
+ */
 object BitmapUtility {
 
+    /**
+     * Returns the bitmap of the specified drawable resource
+     * if any exists.
+     */
     fun getBitmapFromDrawable(context: Context, @DrawableRes drawableId: Int): Bitmap {
         val drawable = AppCompatResources.getDrawable(context, drawableId)
         return getBitmapFromDrawable(drawable)
     }
 
+    /**
+     * Returns the bitmap of the specified drawable element
+     * if any exists.
+     * @throws [IllegalArgumentException] when the specified drawable
+     * is not a [TransitionDrawable] or a [BitmapDrawable]
+     */
     fun getBitmapFromDrawable(drawable: Drawable?): Bitmap {
         return if (drawable is BitmapDrawable) {
             drawable.bitmap

@@ -5,6 +5,9 @@ import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
 
 /**
+ * Class which holds information about the stagger effect
+ * to be applied upon animating a collection of view elements.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019

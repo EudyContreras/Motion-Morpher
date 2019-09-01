@@ -3,6 +3,10 @@ package com.eudycontreras.motionmorpherlibrary.properties
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 /**
+ * Class which holds information about the bounds
+ * of a rectangle. It holds the dimensions and coordinates
+ * of said rectangle.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019
@@ -14,46 +18,107 @@ open class Bounds(
     width: Float = MIN_OFFSET,
     height: Float = MIN_OFFSET
 ) {
+    /**
+     * The `x` axis coordinates of this
+     * bounds
+     */
     var x: Int = x
         set(value) {
             field = value
             mCoordinates.x = value.toFloat()
         }
 
+    /**
+     * The `y` axis coordinates of this
+     * bounds
+     */
     var y: Int = y
         set(value) {
             field = value
             mCoordinates.y = value.toFloat()
         }
 
+    /**
+     * The `width` dimension of this
+     * bounds
+     */
     var width: Float = width
         set(value) {
             field = value
             mDimension.width = value
         }
 
+    /**
+     * The `height` dimension of this
+     * bounds
+     */
     var height: Float = height
         set(value) {
             field = value
             mDimension.height = value
         }
 
-    var mCoordinates: Coordinates = Coordinates(x.toFloat(), y.toFloat())
 
-    var mDimension: Dimension = Dimension(width, height)
+    private var mCoordinates: Coordinates = Coordinates(x.toFloat(), y.toFloat())
 
+    private var mDimension: Dimension = Dimension(width, height)
+
+    /**
+     * The dimension of this Bounds. See: [Dimension]
+     */
     fun dimension(): Dimension = mDimension
 
+    /**
+     * The coordinates of this Bounds. See: [Coordinates]
+     */
     fun coordinates(): Coordinates = mCoordinates
 
-    fun inRange(sourceX: Float, sourceY: Float): Boolean {
-        return sourceX >= x && sourceX < width && sourceY >= y && sourceY < height
+    /**
+     * Returns true if the given point is inside this bounds.
+     */
+    fun inRange(x: Float, y: Float): Boolean {
+        return x >= this.x && x < width && y >= this.y && y < height
     }
 
+    /**
+     * Returns true if the given point and its radius are inside this bounds.
+     */
     fun inRange(sourceX: Float, sourceY: Float, radius: Float): Boolean {
         return sourceX >= x - radius && sourceX < width + radius && sourceY >= y - radius && sourceY < height + radius
     }
 
+    /**
+     * Returns true if the given coordinates are inside this bounds.
+     */
+    fun inside(coordinates: Coordinates): Boolean {
+        return (coordinates.x >= this.x && coordinates.x <= (this.x + this.width))  && (coordinates.y >= this.y && coordinates.y <= (this.y + this.height))
+    }
+
+    /**
+     * Returns true if the given [Bounds] are inside this bounds.
+     */
+    fun inside(other: Bounds): Boolean {
+        val minX = x >= other.x
+        val maxX = (x + width) <= (other.x + other.width)
+        val minY = y >= other.y
+        val maxY = (y + height) <= (other.y + other.height)
+        return minX && maxX && minY && maxY
+    }
+
+    /**
+     * Returns true if the given [Bounds] overlap with this bounds.
+     */
+    fun overlaps(other: Bounds): Boolean {
+        val minX = (x + width) >= other.x
+        val maxX = x <= (other.x + other.width)
+        val minY = (y + height) >= other.y
+        val maxY = y <= (other.y + other.height)
+        return minX && maxX && minY && maxY
+    }
+
+    /**
+     * Returns a copy of this bounds.
+     */
     fun getCopy(): Bounds {
        return Bounds(x, y, width, height)
     }
@@ -108,25 +173,5 @@ open class Bounds(
         bounds.width = bounds.width / value
         bounds.height = bounds.height / value
         return bounds
-    }
-
-    fun inside(coordinates: Coordinates): Boolean {
-        return (coordinates.x >= this.x && coordinates.x <= (this.x + this.width))  && (coordinates.y >= this.y && coordinates.y <= (this.y + this.height))
-    }
-
-    fun inside(other: Bounds): Boolean {
-        val minX = x >= other.x
-        val maxX = (x + width) <= (other.x + other.width)
-        val minY = y >= other.y
-        val maxY = (y + height) <= (other.y + other.height)
-        return minX && maxX && minY && maxY
-    }
-
-    fun overlaps(other: Bounds): Boolean {
-        val minX = (x + width) >= other.x
-        val maxX = x <= (other.x + other.width)
-        val minY = (y + height) >= other.y
-        val maxY = y <= (other.y + other.height)
-        return minX && maxX && minY && maxY
     }
 }

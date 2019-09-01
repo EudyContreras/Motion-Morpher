@@ -27,6 +27,7 @@ class ParticleReveal : Particle {
 
     private var maxRadii: FloatArray = FloatArray(4)
     private var minRadii: FloatArray = FloatArray(4)
+
     private val radii: FloatArray = FloatArray(8)
 
     private lateinit var clipPath: Path

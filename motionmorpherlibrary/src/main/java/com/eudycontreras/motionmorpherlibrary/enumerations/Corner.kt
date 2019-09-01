@@ -2,7 +2,6 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
 
 import com.eudycontreras.motionmorpherlibrary.CornersSet
 
-
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.

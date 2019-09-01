@@ -5,11 +5,13 @@ import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import kotlin.math.abs
 
 /**
+ * Class which represent animateable float values.
+ * This class holds information about the start and end
+ * value of a float property.
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019
  */
-
 class AnimatedFloatValue(
     override val propertyName: String,
     fromValue: Float = MIN_OFFSET,

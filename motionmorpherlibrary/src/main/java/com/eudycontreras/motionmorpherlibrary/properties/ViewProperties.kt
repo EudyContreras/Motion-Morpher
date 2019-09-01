@@ -2,6 +2,9 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 
 /**
+ * Class which holds information about the animateable properties
+ * of a view.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 18 2019

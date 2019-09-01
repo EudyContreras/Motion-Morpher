@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.OvershootInterpolator
+import android.widget.TextView
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
@@ -28,7 +30,7 @@ class ActivityDemo0 : MorphActivity() {
     lateinit var actions: MorphLayout
     lateinit var image: View
     lateinit var image2: View
-    lateinit var text: MorphLayout
+    lateinit var text: View
     lateinit var icon1: MorphLayout
     lateinit var icon2: MorphLayout
     lateinit var icon3: MorphLayout
@@ -50,7 +52,7 @@ class ActivityDemo0 : MorphActivity() {
             image = card.demo_0_image
         }
         if (!::text.isInitialized) {
-            text = MorphView.makeMorphable(card.demo_0_header)
+            text = card.demo_0_header
         }
         if (!::icon1.isInitialized) {
             icon1 = MorphView.makeMorphable(card.demo_0_favorite)
@@ -64,11 +66,15 @@ class ActivityDemo0 : MorphActivity() {
 
         image2 = card.demo_0_image_2
 
+        var chor1: Choreographer? = null
+
+        cardLayout.post {
+            chor1 = createChoreographyTwo(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
+        }
         cardLayout.setOnClickListener {
-            val chor1 = createChoreographyTwo(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
-            val chor2 = createChoreographyTwo(cardLayout2 as ConstraintLayout, root, FastOutSlowInInterpolator())
-            chor1.play()
-            chor2.start()
+
+           // val chor2 = createChoreographyTwo(cardLayout2 as ConstraintLayout, root, FastOutSlowInInterpolator())
+            chor1?.play()
             /*val animator = ValueAnimator.ofFloat(0f, 1f)
             animator.setDuration(10000)
             animator.setInterpolator(MaterialInterpolator(Interpolation.REVERSED_OUT))
@@ -120,6 +126,7 @@ class ActivityDemo0 : MorphActivity() {
             .withDefaultDuration(300)
 
             .animate(card)
+
             .withPivot(0.5f, 0.5f)
             .rotateTo(360f)
             .withDuration(1000)
@@ -226,7 +233,6 @@ class ActivityDemo0 : MorphActivity() {
             .withDuration(1000)
 
             .build()
-            .start()
 
         return choreographer
     }
@@ -235,8 +241,8 @@ class ActivityDemo0 : MorphActivity() {
         val choreographer = Choreographer(this)
 
         choreographer
-            .withDefaultPivot(0.5f, 0f)
             .allowChildInheritance(false)
+            .withDefaultPivot(0.5f, 0f)
             .withDefaultInterpolator(interpolator)
             .withDefaultDuration(800)
 
@@ -250,44 +256,54 @@ class ActivityDemo0 : MorphActivity() {
             .xRotateAdd(30f)
 
             .then()
-            .withDuration(2400)
+            .withDuration(2000)
+            .withInterpolator(AccelerateDecelerateInterpolator())
             .xRotateBetween(0f, -40f, 40f, -40f, 40f, 0f)
             .rotateBetween(0f, -20f, 20f, -30f, 30f, -40f, 40f, -30f, 30f, -20f, 20f, 0f)
 
-            .then()
+            .after(0.9f)
             .withPivot(0.5f, 0.5f)
             .withDuration(1000)
-            .xScaleBetween(1f,  0.6f, 0.7f, 0.8f, 0.9f, 1f)
-            .yRotateAdd(360f * 2)
+            .xScaleBetween(1f,  0.4f, 1f)
+            .yScaleBetween(1f, 1.2f, 1f)
+            .yRotateAdd(360f * 3)
 
-            .then()
+            .after(0.9f)
             .anchorTo(Anchor.LEFT, root)
 
             .then()
-            .withDuration(5800)
-            .withInterpolator(AnticipateOvershootInterpolator())
-            .withReveal(Reveal(1f, 0.5f, 0f, card.demo_0_image_2))
+            .yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
+            .withDuration(500)
+
+            .after(0.3f)
+            .withDuration(600)
+            .withReveal(Reveal(0.5f, 0.5f, 0f, card.demo_0_image_2))
             .anchorTo(Anchor.RIGHT, root)
             .rotateTo(35f)
 
-            .after(0.60f)
+            .after(0.6f)
             .withDuration(2000)
             .withInterpolator(AccelerateDecelerateInterpolator())
             .rotateBetween(35f * 0.6f, -30f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
 
             .then()
-            .withDuration(5500)
+            .yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
+            .withDuration(500)
+
+            .after(0.3f)
+            .withDuration(400)
             .withInterpolator(AnticipateOvershootInterpolator())
-            .withConceal(Conceal(1f, 0.5f, 0f, card.demo_0_image_2))
+            .withConceal(Conceal(0.5f, 0.5f, 0f, card.demo_0_image_2))
             .anchorTo(Anchor.LEFT, root)
             .rotateFrom(0f, -35f)
 
-            .after(0.60f)
+            .animateAfter(0.6f, card)
             .withDuration(3000)
             .withInterpolator(AccelerateDecelerateInterpolator())
             .rotateBetween( -35f * 0.6f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
 
-            .then()
+            .after(0.4f)
+            .withInterpolator(OvershootInterpolator())
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 

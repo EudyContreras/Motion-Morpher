@@ -8,6 +8,9 @@ import java.lang.StrictMath.round
 
 
 /**
+ * A mutable version of a [Color] which
+ * allows for dynamic color transformations.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019

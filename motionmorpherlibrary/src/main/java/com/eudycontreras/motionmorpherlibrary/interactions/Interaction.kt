@@ -18,7 +18,7 @@ import com.eudycontreras.motionmorpherlibrary.properties.AnimationStagger
 
 abstract class Interaction {
 
-    open var duration: Long = 0L
+    open var duration: Long = MIN_DURATION
 
     open var amountMultiplier: Float = MAX_OFFSET
 

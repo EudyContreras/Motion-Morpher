@@ -3,11 +3,13 @@ package com.eudycontreras.motionmorpherlibrary.properties
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 /**
+ * Class which epresents a location point with
+ * an `x` and `y` axis.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019
  */
-
 data class Coordinates(
     var x: Float = MIN_OFFSET,
     var y: Float = MIN_OFFSET

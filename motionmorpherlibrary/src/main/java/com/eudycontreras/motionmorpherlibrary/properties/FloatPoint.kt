@@ -2,6 +2,8 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 
 /**
+ * Class which holds information about a point
+ * of floats.
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 20 2019

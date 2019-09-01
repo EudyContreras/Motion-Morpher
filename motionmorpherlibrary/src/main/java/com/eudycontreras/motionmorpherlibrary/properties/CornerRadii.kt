@@ -4,6 +4,9 @@ import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bindable
 
 /**
+ * Class which holds information about the corner radii of
+ * a rectangular shape. This internally holds a float array
+ * containing the x and y value of all 4 corners.
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019

@@ -3,6 +3,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
 /**
+ * Class which holds information about a dimension.
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019

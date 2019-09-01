@@ -9,6 +9,11 @@ import android.widget.ImageView
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since July 20 2019
+ */
 
 open class RoundedImageView : ImageView {
 
@@ -59,7 +64,6 @@ open class RoundedImageView : ImageView {
         cornersChanged = true
     }
 
-    @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 

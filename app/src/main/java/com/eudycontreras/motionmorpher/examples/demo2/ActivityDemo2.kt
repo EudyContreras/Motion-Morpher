@@ -252,7 +252,7 @@ class ActivityDemo2 : MorphActivity() {
             .withDuration(1000)*/
 
             .build()
-            .start()
+            .play()
 
         //TODO("Attempt to implement counter transform scaling")
         //TODO("Reuse already assigned animators. IDEA!! Use an animator pool where they can be recycled")

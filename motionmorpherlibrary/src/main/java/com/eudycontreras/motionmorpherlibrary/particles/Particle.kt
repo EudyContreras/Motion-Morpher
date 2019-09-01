@@ -23,23 +23,23 @@ abstract class Particle {
     protected var varianceX: Float = 0f
     protected var varianceY: Float = 0f
 
-    protected var radiusRatio = 0.0f
+    protected var radiusRatio: Float = 0f
     protected var actualRadius: Float = 0f
     protected var radius: Float = 0f
     protected var spacing: Float = 0f
-    protected var opacity = 1.0f
+    protected var opacity: Float= 1.0f
 
-    protected var lifeSpan = 1.0f
+    protected var lifeSpan: Float = 1.0f
     protected var decay: Float = 0f
 
-    protected var checkBounds = false
+    protected var checkBounds: Boolean = false
     protected var visible: Boolean = false
     protected var killed: Boolean = false
-    protected var shrink = true
-    protected var fade = true
+    protected var shrink: Boolean = true
+    protected var fade: Boolean = true
 
-    var targetX = Float.MIN_VALUE
-    var targetY = Float.MIN_VALUE
+    var targetX: Float = Float.MIN_VALUE
+    var targetY: Float = Float.MIN_VALUE
 
     var color: Color? = null
     var bounds: Bounds = Bounds()

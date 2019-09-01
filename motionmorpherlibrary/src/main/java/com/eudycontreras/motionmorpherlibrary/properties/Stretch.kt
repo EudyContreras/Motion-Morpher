@@ -6,6 +6,10 @@ import com.eudycontreras.motionmorpherlibrary.enumerations.Direction
 
 
 /**
+ * Class which holds information about a stretch effect to apply to
+ * a translation animation. The stretch helps create a the effect of
+ * stretching and squashing a view.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since August 15 2019

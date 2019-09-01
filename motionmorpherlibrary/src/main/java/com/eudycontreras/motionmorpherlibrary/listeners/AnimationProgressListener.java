@@ -12,5 +12,5 @@ import androidx.annotation.Nullable;
 
 @FunctionalInterface
 public interface AnimationProgressListener {
-    void onProgress(@NonNull Float fraction, @Nullable ValueAnimator animator);
+    void onProgress(@NonNull Float fraction, @NonNull Long playTime);
 }

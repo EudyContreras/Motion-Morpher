@@ -6,6 +6,12 @@ import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
 
 
 /**
+ * Class which holds information about a ripple effect.
+ * The information held by this class is the starting color. See: [colorStart]
+ * the ending color. See: [colorEnd], the center point X of the ripple. See: [centerX],
+ * the center point Y of the ripple. See: [centerY], the starting opacity. See: [alphaStart]
+ * the end opacity. See: [alphaEnd], the total duration the ripple should last.
+ * See: [duration] and the time interpolator to use. See[interpolator]
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since August 28 2019

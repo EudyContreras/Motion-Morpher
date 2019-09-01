@@ -15,8 +15,7 @@ import kotlin.math.sin
  * @author Eudy Contreras.
  * @since August 18 2019
  */
- 
- 
+
 class MaterialInterpolator(type: Interpolation? = null): TimeInterpolator {
 
     private var pathInterpolator: TimeInterpolator =

@@ -7,7 +7,7 @@ package com.eudycontreras.motionmorpherlibrary.enumerations
  * @since August 30 2019
  */
 
-
 enum class AnimatorType {
-    SHARED, INDIVIDUAL
+    SHARED,
+    INDIVIDUAL
 }

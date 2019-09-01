@@ -12,6 +12,9 @@ import kotlin.math.round
  *
  */
 
+/**
+ * Facilitates arc translation between two points.
+ */
 class ArcTranslationHelper(
     fromX: Float = MIN_OFFSET,
     toX: Float = MIN_OFFSET,

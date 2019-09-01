@@ -19,12 +19,15 @@ import com.eudycontreras.motionmorpherlibrary.R
  * @author Eudy Contreras.
  * @since July 19 2019
  */
- 
- 
+
 class ScaleUtility {
 
     private var currentAnimator: Animator? = null
 
+
+    /**
+     * Copied directly from the android documentation
+     */
     private fun zoomImageFromThumb(activity: Activity, thumbView: View, imageResId: Int, imageResultId: Int, animationDuration: Long) {
         // If there's an animation in progress, cancel it
         // immediately and proceed with this one.

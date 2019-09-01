@@ -1,13 +1,16 @@
-TO
+TODO
 
-1. Persistent element
-A persistent element’s transformation, such as a navigation icon, starts and ends on screen.
+- Animates the stagger for rows. If various elements are stack horisontally
+and a vertical stagger is used, stagger the elements at the same row with a
+specified elipson at the same time.
 
-2. Outgoing element
-An outgoing element, such as a title, exits the screen by fading out.
+- Adjust the system so that all stored views are weak references in order to
+avoid memory leaks. Make the program more aware of the view lifecycle.
 
-3. Incoming element
-An incoming element, such as each of these action items, enters the screen by fading in.
+- When animating stagger with dynamically computated direction allow the
+stagger to consider the growth direction as well for more accurate stagger directions
+for elements that are insider containers that are both changing dimensions and
+coordinates.
 
-4. Static element
-A static element, such as the overflow menu, doesn’t transform.
+- Add animate text to the choreographer and check that stagger works for
+list of views.
