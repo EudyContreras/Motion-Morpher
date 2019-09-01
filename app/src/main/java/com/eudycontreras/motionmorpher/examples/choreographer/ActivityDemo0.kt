@@ -92,6 +92,7 @@ class ActivityDemo0 : MorphActivity() {
 
     fun createChoreographyZero(card: View, root: MorphLayout, interpolator: TimeInterpolator): Choreographer {
         val choreographer = Choreographer(this)
+/*
 
         choreographer
             .withDefaultInterpolator(interpolator)
@@ -111,6 +112,7 @@ class ActivityDemo0 : MorphActivity() {
             .rotateTo(360f)
 
             .build()
+*/
 
         return choreographer
     }
@@ -118,7 +120,7 @@ class ActivityDemo0 : MorphActivity() {
     fun createChoreographyOne(card: View, root: MorphLayout, interpolator: TimeInterpolator): Choreographer {
 
         val choreographer = Choreographer(this)
-
+/*
         choreographer
 
             .allowChildInheritance(false)
@@ -232,7 +234,7 @@ class ActivityDemo0 : MorphActivity() {
             .alphaTo(1f)
             .withDuration(1000)
 
-            .build()
+            .build()*/
 
         return choreographer
     }
@@ -246,69 +248,68 @@ class ActivityDemo0 : MorphActivity() {
             .withDefaultInterpolator(interpolator)
             .withDefaultDuration(800)
 
-            .animate(card)
-            .xRotateAdd(30f)
-
-            .then()
-            .xRotateAdd(-60f)
-
-            .then()
-            .xRotateAdd(30f)
-
-            .then()
-            .withDuration(2000)
-            .withInterpolator(AccelerateDecelerateInterpolator())
-            .xRotateBetween(0f, -40f, 40f, -40f, 40f, 0f)
-            .rotateBetween(0f, -20f, 20f, -30f, 30f, -40f, 40f, -30f, 30f, -20f, 20f, 0f)
-
-            .after(0.9f)
-            .withPivot(0.5f, 0.5f)
-            .withDuration(1000)
-            .xScaleBetween(1f,  0.4f, 1f)
-            .yScaleBetween(1f, 1.2f, 1f)
-            .yRotateAdd(360f * 3)
-
-            .after(0.9f)
-            .anchorTo(Anchor.LEFT, root)
-
-            .then()
-            .yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
-            .withDuration(500)
-
-            .after(0.3f)
-            .withDuration(600)
-            .withReveal(Reveal(0.5f, 0.5f, 0f, card.demo_0_image_2))
-            .anchorTo(Anchor.RIGHT, root)
-            .rotateTo(35f)
-
-            .after(0.6f)
-            .withDuration(2000)
-            .withInterpolator(AccelerateDecelerateInterpolator())
-            .rotateBetween(35f * 0.6f, -30f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
-
-            .then()
-            .yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
-            .withDuration(500)
-
-            .after(0.3f)
-            .withDuration(400)
-            .withInterpolator(AnticipateOvershootInterpolator())
-            .withConceal(Conceal(0.5f, 0.5f, 0f, card.demo_0_image_2))
-            .anchorTo(Anchor.LEFT, root)
-            .rotateFrom(0f, -35f)
-
-            .animateAfter(0.6f, card)
-            .withDuration(3000)
-            .withInterpolator(AccelerateDecelerateInterpolator())
-            .rotateBetween( -35f * 0.6f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
-
-            .after(0.4f)
-            .withInterpolator(OvershootInterpolator())
-            .withDuration(500)
-            .anchorTo(Anchor.CENTER, root)
-
+            .animate(card){
+                xRotateAdd(30f)
+            }
+            .then() {
+                xRotateAdd(-60f)
+            }
+            .then() {
+                xRotateAdd(30f)
+            }
+            .then() {
+                withDuration(2000)
+                withInterpolator(AccelerateDecelerateInterpolator())
+                xRotateBetween(0f, -40f, 40f, -40f, 40f, 0f)
+                rotateBetween(0f, -20f, 20f, -30f, 30f, -40f, 40f, -30f, 30f, -20f, 20f, 0f)
+            }
+            .after(0.9f) {
+                withPivot(0.5f, 0.5f)
+                withDuration(1000)
+                xScaleBetween(1f,  0.4f, 1f)
+                yScaleBetween(1f, 1.2f, 1f)
+                yRotateAdd(360f * 3)
+            }
+            .after(0.9f) {
+                anchorTo(Anchor.LEFT, root)
+            }
+            .then() {
+                yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
+                withDuration(500)
+            }
+            .after(0.3f) {
+                withDuration(600)
+                withReveal(Reveal(0.5f, 0.5f, 0f, card.demo_0_image_2))
+                anchorTo(Anchor.RIGHT, root, 30.dp)
+                rotateTo(35f)
+            }
+            .after(0.6f) {
+                withDuration(2000)
+                withInterpolator(AccelerateDecelerateInterpolator())
+                rotateBetween(35f * 0.6f, -30f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
+            }
+            .then() {
+                yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
+                withDuration(500)
+            }
+            .after(0.3f) {
+                withDuration(400)
+                withInterpolator(AnticipateOvershootInterpolator())
+                withConceal(Conceal(0.5f, 0.5f, 0f, card.demo_0_image_2))
+                anchorTo(Anchor.LEFT, root, 30.dp)
+                rotateFrom(0f, -35f)
+            }
+            .after(0.6f) {
+                withDuration(3000)
+                withInterpolator(AccelerateDecelerateInterpolator())
+                rotateBetween( -35f * 0.6f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
+            }
+            .after(0.6f) {
+                withInterpolator(OvershootInterpolator())
+                withDuration(500)
+                anchorTo(Anchor.CENTER, root)
+            }
             .build()
-          //  .start()
 
         return choreographer
     }

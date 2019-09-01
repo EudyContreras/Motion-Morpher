@@ -179,7 +179,7 @@ class ActivityDemo2 : MorphActivity() {
             .andReverseAnimate(icon1, icon2, icon3)
             .withDuration(1000)
 */
-            .animate(card)
+            /*.animate(card)
             .withDuration(500)
             .withInterpolator(FastOutSlowInInterpolator())
             .withStretch(Stretch(0.5f, 0.5f,0.2f))
@@ -196,7 +196,7 @@ class ActivityDemo2 : MorphActivity() {
             .withDuration(500)
             .anchorTo(Anchor.CENTER, root)
 
-            .thenAnimate()
+            .thenAnimate()*/
 
            /* .thenAnimate(card)
             .withStartDelay(500)
