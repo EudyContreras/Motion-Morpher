@@ -4,7 +4,6 @@ import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Handler
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -14,6 +13,7 @@ import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.enumerations.*
 import com.eudycontreras.motionmorpherlibrary.extensions.*
 import com.eudycontreras.motionmorpherlibrary.helpers.ArcTranslationHelper
+import com.eudycontreras.motionmorpherlibrary.helpers.StaggerAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
@@ -25,7 +25,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.math.abs
-import kotlin.math.roundToLong
 
 /**
  * Class which manages and creates complex choreographies. The choreographer
@@ -233,6 +232,8 @@ class Choreographer(context: Context) {
         this.headChoreography = Choreography(this, *morphViews)
         this.headChoreography.offset = MAX_OFFSET
         this.tailChoreography = headChoreography
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
         block(headChoreography)
         return this
     }
@@ -523,17 +524,18 @@ class Choreographer(context: Context) {
      *
      * @param stagger the stagger to use when animating through the children.
      * @param view the [MorphLayout] to which the children belong to.
-     * @return the created choreography.
+     * @return this choreographer.
      */
-    fun animateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
+    fun animateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         if (!view.hasChildren())
-            return headChoreography
+            return this
 
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
         this.headChoreography = Choreography(this, *children)
         this.headChoreography.offset = MAX_OFFSET
-        this.headChoreography.stagger = stagger
-        return headChoreography
+        this.tailChoreography = headChoreography
+        block(headChoreography)
+        return this
     }
 
     /**
@@ -544,126 +546,140 @@ class Choreographer(context: Context) {
      *
      * @param stagger the stagger to use when animating through the children.
      * @param view the [ViewGroup] to which the children belong to.
-     * @return the created choreography.
+     * @return this choreographer.
      */
-    fun animateChildrenOf(view: ViewGroup?, stagger: AnimationStagger? = null): Choreography {
+    fun animateChildrenOf(view: ViewGroup?, block: Choreography.() -> Unit): Choreographer {
         if(view?.childCount ?: 0 <= 0)
-            return headChoreography
+            return this
 
         view?.let {
             val morphViews = getViews(it.children.toArrayList().toTypedArray())
-            this.headChoreography = Choreography(this, *morphViews)
-            this.headChoreography.offset = MAX_OFFSET
-            this.headChoreography.stagger = stagger
+            animate(*morphViews, block = block)
         }
-        return headChoreography
+        return this
     }
 
     /**
-     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The
-     * the animation can optionally play with a specified animation stagger. The animation
-     * will play after the specified offset.
-     * @param stagger the stagger to for animating the children
-     * @param views the morphViews to which the choreography belongs to.
-     * @param offset the time offset to use. The current choreography will play after the
-     * parent choreography has animated to the specified offset.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given children of the specified view which will start at the duration
+     * offset of its parent. A value of 0.5f indicates that this choreography will play when
+     * the animation of its parent is half way through. If a stagger is specified the morphViews will be animated
+     * with the specified stagger.
+     * @param offset The offset at which this choreography will start animating.
+     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
+     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
+     * @return this choreography.
      */
-    internal fun animateChildrenOfAfter(choreography: Choreography, offset: Float, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
-        val properties = getProperties(choreography, *views)
-
-        tailChoreography =  Choreography(this, *views).apply {
-            this.setStartProperties(properties)
-            this.parent = choreography
-            this.offset = offset
-            this.stagger = stagger
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-            choreography.child = this
-        }
-        return tailChoreography
+    fun animateChildrenOfAfter(view: MorphLayout, offset: Float, block: Choreography.() -> Unit): Choreographer {
+        val children = getViews(view.getChildren().toArrayList().toTypedArray())
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        animateAfterFor(tailChoreography, offset, *children)
+        block(tailChoreography)
+        return this
     }
 
     /**
-     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The
-     * the animation can optionally play with a specified animation stagger. The animation
-     * will play after its parent.
-     * @param stagger the stagger to for animating the children
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given children of the specified view which will start at the duration
+     * offset of its parent. A value of 0.5f indicates that this choreography will play when
+     * the animation of its parent is half way through. If a stagger is specified the morphViews will be animated
+     * with the specified stagger.
+     * @param offset The offset at which this choreography will start animating.
+     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
+     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
+     * @return this choreography.
      */
-    internal fun thenAnimateChildrenOf(choreography: Choreography, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
-        val properties = getProperties(choreography, *views)
-
-        tailChoreography = Choreography(this, *views).apply {
-            this.setStartProperties(properties)
-            this.parent = choreography
-            this.offset = MAX_OFFSET
-            this.stagger = stagger
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-            choreography.child = this
-        }
-        return tailChoreography
+    fun animateChildrenOfAfter(view: ViewGroup, offset: Float, block: Choreography.() -> Unit): Choreographer {
+        val children = getViews(view.children.toArrayList().toTypedArray())
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        animateAfterFor(tailChoreography, offset, *children)
+        block(tailChoreography)
+        return this
     }
 
     /**
-     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The
-     * the animation can optionally play with a specified animation stagger. The animation
-     * will play together with its parent.
-     * @param stagger the stagger to for animating the children
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given children of the specified view which will start when the animation
+     * of the parent choreography is over. If a stagger is specified the morphViews will be animated
+     * with the specified stagger.
+     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
+     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
+     * @return this choreography.
      */
-    internal fun alsoAnimateChildrenOf(choreography: Choreography, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
-        val properties = getProperties(choreography, *views)
-
-        tailChoreography = Choreography(this, *views).apply {
-            this.setStartProperties(properties)
-            this.parent = choreography
-            this.stagger = stagger
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-            choreography.child = this
-        }
-        return tailChoreography
+    fun thenAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
+        val children = getViews(view.getChildren().toArrayList().toTypedArray())
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        thenAnimateFor(tailChoreography, *children)
+        block(tailChoreography)
+        return this
     }
 
     /**
-     * Creates and animation [Choreography] for the children of the specified [MorphLayout]. The choreography is
-     * a direct clone of its parent. The animation can optionally play with a specified animation stagger.
-     * The animation will play together with its parent.
-     * @param stagger the stagger to for animating the children
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given children of the specified view which will start when the animation
+     * of the parent choreography is over. If a stagger is specified the morphViews will be animated
+     * with the specified stagger.
+     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
+     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
+     * @return this choreography.
      */
-    internal fun andAnimateChildrenOf(choreography: Choreography, stagger: AnimationStagger? = null, vararg views: MorphLayout): Choreography {
-        tailChoreography = choreography.clone(*views).apply {
-            this.morphViews = views
-            this.parent = choreography
-            this.child = null
-            this.stagger = stagger
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-            choreography.child = this
-        }
-        return tailChoreography
+    fun thenAnimateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
+        val children = getViews(view.children.toArrayList().toTypedArray())
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        thenAnimateFor(tailChoreography, *children)
+        block(tailChoreography)
+        return this
+    }
+
+    /**
+     * Creates a [Choreography] for the given children of the specified view which will start when the animation
+     * of the parent choreography starts. If a stagger is specified the morphViews will be animated
+     * with the specified stagger.
+     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
+     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
+     * @return this choreography.
+     */
+    fun alsoAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
+        val children = getViews(view.getChildren().toArrayList().toTypedArray())
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        alsoAnimate(tailChoreography, *children)
+        block(tailChoreography)
+        return this
+    }
+
+    /**
+     * Creates a [Choreography] for the given children of the specified view which will start when the animation
+     * of the parent choreography starts. If a stagger is specified the morphViews will be animated
+     * with the specified stagger.
+     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
+     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
+     * @return this choreography.
+     */
+    fun alsoAnimateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
+        val children = getViews(view.children.toArrayList().toTypedArray())
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        alsoAnimate(tailChoreography, *children)
+        block(tailChoreography)
+        return this
+    }
+
+    /**
+     * Creates a [Choreography] for the given children of the specified view which will start when the animation
+     * of the parent choreography starts. The properties of the parent choreography will be used by this choreography.
+     * If a stagger is specified the morphViews will be animated with the specified stagger.
+     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
+     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
+     * @return this choreography.
+     */
+    fun andAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
+        val children = getViews(view.getChildren().toArrayList().toTypedArray())
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        andAnimate(tailChoreography, *children)
+        block(tailChoreography)
+        return this
     }
 
     /**
@@ -1057,6 +1073,7 @@ class Choreographer(context: Context) {
             applyReveal(current)
             applyConceal(current)
             applyArcType(current)
+            createStagger(current)
             applyInterpolators(current)
 
             val trim: Long = current.offsetDelayDelta
@@ -1136,6 +1153,21 @@ class Choreographer(context: Context) {
             choreography.createControlPoint(
                 choreography.positionX,
                 choreography.positionY,
+                it
+            )
+        }
+    }
+
+    /**
+     * Creates the stagger info objects used for creating the stagger
+     * effect used for animating the views within a [Choreography].
+     * See: [StaggerInfo]
+     * [Choreography]
+     * @param choreography The choreography to which its control point is applied to.
+     */
+    private fun createStagger(choreography: Choreography) {
+        choreography.stagger?.let {
+            choreography.createStagger(
                 it
             )
         }
@@ -1335,13 +1367,43 @@ class Choreographer(context: Context) {
             return
         }
 
-        for (view in views) {
-            animate(view, choreography, fraction, duration, currentPlayTime)
+        val staggerData = choreography.stagger?.staggerData
+
+        if (staggerData == null) {
+            for (view in views) {
+                animate(view, choreography, fraction, duration, currentPlayTime)
+            }
+        } else {
+            for (info in staggerData) {
+                val view = info.view
+
+                if (fraction < info.startOffset || fraction > info.endOffset)
+                    continue
+
+                val mappedRation = mapRange(fraction, info.startOffset, info.endOffset, MIN_OFFSET, MAX_OFFSET)
+
+                animate(view, choreography, mappedRation, duration, currentPlayTime)
+            }
         }
     }
 
     /**
-     * Animates the specified [MorphLayout] with the specified [Choreography] and to specified animation fraction.
+     * Animates the specified [MorphLayout] with the specified [Choreography] to the specified animation fraction using stagger.
+     * The total duration and the current playtime must be known. Each property is animated using its respective from and to
+     * values and the specified [TimeInterpolator] if any has been specified. This is the function where the animation
+     * happens.
+     * @param view The morph layout to be animated
+     * @param choreography The choreography to be animated.
+     * @param fraction The fraction to animate to.
+     * @param duration The duration of the animation.
+     * @param currentPlayTime The current playtime of the animation.
+     */
+    private fun animateStaggered(view: MorphLayout, choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
+
+    }
+
+    /**
+     * Animates the specified [MorphLayout] with the specified [Choreography] to specified animation fraction.
      * The total duration and the current playtime must be known. Each property is animated using its respective from and to
      * values and the specified [TimeInterpolator] if any has been specified. This is the function where the animation
      * happens.
@@ -1661,6 +1723,20 @@ class Choreographer(context: Context) {
 
         init {
             applyDefaultValues()
+        }
+
+        /**
+         * Creates a the stagger data for [AnimationStagger] assigned
+         * to this [Choreography].
+         * @param stagger the nonnull version of the stagger of this
+         * choreography.
+         */
+        internal fun createStagger(stagger: AnimationStagger) {
+            val epicenter = morphViews[0]
+            val parentBounds = epicenter.getParentBounds()
+            StaggerAnimationHelper.computeStaggerData(morphViews.toList(), epicenter.centerLocation, parentBounds, duration, stagger) {
+                it.morphWidth
+            }
         }
 
         /**
@@ -3852,12 +3928,37 @@ class Choreographer(context: Context) {
             return this
         }
 
-        fun witTextChange(view: TextView, textTransformation: TextTransformation): Choreography {
+        fun withEpicenter(coordinates: Coordinates): Choreography {
             TODO("Implement the logic necessary")
             return this
         }
 
-        fun witTextChange(view: TextView, toText: String, toSize: Float = -1f): Choreography {
+        fun withEpicenter(point: FloatPoint): Choreography {
+            TODO("Implement the logic necessary")
+            return this
+        }
+
+        fun withEpicenter(view: MorphLayout): Choreography {
+            TODO("Implement the logic necessary")
+            return this
+        }
+
+        fun withEpicenter(view: View): Choreography {
+            TODO("Implement the logic necessary")
+            return this
+        }
+
+        fun withTextChange(textMorph: TextMorph): Choreography {
+            TODO("Implement the logic necessary")
+            return this
+        }
+
+        fun withTextChange(fromView: TextView, toView: TextView): Choreography {
+            TODO("Implement the logic necessary")
+            return this
+        }
+
+        fun withTextChange(view: TextView, toText: String, toSize: Float = -1f, toColor: Int = -1): Choreography {
             TODO("Implement the logic necessary")
             return this
         }
@@ -4107,7 +4208,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun revealFrom(centerX: Float, centerY: Float, radius: Float, interpolator: TimeInterpolator? = null, onEnd: Action = null): Choreography {
-            this.reveal = Reveal(centerX, centerY, radius, morphViews[0].getView())
+            this.reveal = Reveal(morphViews[0].getView(), centerX, centerY, radius)
             this.reveal?.interpolator = interpolator
             this.reveal?.onEnd = onEnd
             return this
@@ -4123,7 +4224,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun revealFrom(coordinates: Coordinates, radius: Float, interpolator: TimeInterpolator? = null, onEnd: Action = null): Choreography {
-            this.reveal = Reveal(coordinates.x, coordinates.y, radius, morphViews[0].getView())
+            this.reveal = Reveal(morphViews[0].getView(), coordinates.x, coordinates.y, radius)
             this.reveal?.interpolator = interpolator
             this.reveal?.onEnd = onEnd
             return this
@@ -4143,7 +4244,7 @@ class Choreographer(context: Context) {
             val morphView = morphViews[0]
             val centerX = (morphView.morphWidth * offsetX)
             val centerY = (morphView.morphHeight * offsetY)
-            this.reveal = Reveal(centerX, centerY, radius, morphView.getView())
+            this.reveal = Reveal(morphView.getView(), centerX, centerY, radius)
             this.reveal?.interpolator = interpolator
             this.reveal?.onEnd = onEnd
             return this
@@ -4160,7 +4261,7 @@ class Choreographer(context: Context) {
          */
         fun revealWith(radius: Float, interpolator: TimeInterpolator? = null, onEnd: Action = null): Choreography {
             val morphView = morphViews[0]
-            this.reveal = Reveal(radius, morphView.getView())
+            this.reveal = Reveal(morphView.getView(), radius)
             this.reveal?.interpolator = interpolator
             this.reveal?.onEnd = onEnd
             return this
@@ -4202,7 +4303,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun concealTo(centerX: Float, centerY: Float, radius: Float, interpolator: TimeInterpolator? = null, onEnd: Action = null): Choreography {
-            this.conceal = Conceal(centerX, centerY, radius, morphViews[0].getView())
+            this.conceal = Conceal(morphViews[0].getView(), centerX, centerY, radius)
             this.conceal?.interpolator = interpolator
             this.conceal?.onEnd = onEnd
             return this
@@ -4218,7 +4319,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun concealFrom(coordinates: Coordinates, radius: Float, interpolator: TimeInterpolator? = null, onEnd: Action = null): Choreography {
-            this.conceal = Conceal(coordinates.x, coordinates.y, radius, morphViews[0].getView())
+            this.conceal = Conceal(morphViews[0].getView(), coordinates.x, coordinates.y, radius)
             this.conceal?.interpolator = interpolator
             this.conceal?.onEnd = onEnd
             return this
@@ -4238,7 +4339,7 @@ class Choreographer(context: Context) {
             val morphView = morphViews[0]
             val centerX = (morphView.morphWidth * offsetX)
             val centerY = (morphView.morphHeight * offsetY)
-            this.conceal = Conceal(centerX, centerY, radius, morphView.getView())
+            this.conceal = Conceal(morphView.getView(), centerX, centerY, radius)
             this.conceal?.interpolator = interpolator
             this.conceal?.onEnd = onEnd
             return this
@@ -4255,7 +4356,7 @@ class Choreographer(context: Context) {
          */
         fun concealWith(radius: Float, interpolator: TimeInterpolator? = null, onEnd: Action = null): Choreography {
             val morphView = morphViews[0]
-            this.conceal = Conceal(radius, morphView.getView())
+            this.conceal = Conceal(morphView.getView(), radius)
             this.conceal?.interpolator = interpolator
             this.conceal?.onEnd = onEnd
             return this
@@ -4416,60 +4517,6 @@ class Choreographer(context: Context) {
             choreographer.applyAdders(this)
             choreographer.applyMultipliers(this)
             return choreographer.andReverseAnimate(this, *morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given children of the specified view which will start at the duration
-         * offset of its parent. A value of 0.5f indicates that this choreography will play when
-         * the animation of its parent is half way through. If a stagger is specified the morphViews will be animated
-         * with the specified stagger.
-         * @param offset The offset at which this choreography will start animating.
-         * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-         * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-         * @return this choreography.
-         */
-        fun animateChildrenOfAfter(view: MorphLayout, offset: Float, stagger: AnimationStagger? = null): Choreography {
-            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
-            return choreographer.animateChildrenOfAfter(this, offset, stagger, *children)
-        }
-
-        /**
-         * Creates a [Choreography] for the given children of the specified view which will start when the animation
-         * of the parent choreography is over. If a stagger is specified the morphViews will be animated
-         * with the specified stagger.
-         * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-         * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-         * @return this choreography.
-         */
-        fun thenAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
-            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
-            return choreographer.thenAnimateChildrenOf(this, stagger, *children)
-        }
-
-        /**
-         * Creates a [Choreography] for the given children of the specified view which will start when the animation
-         * of the parent choreography starts. If a stagger is specified the morphViews will be animated
-         * with the specified stagger.
-         * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-         * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-         * @return this choreography.
-         */
-        fun alsoAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
-            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
-            return choreographer.alsoAnimateChildrenOf(this, stagger, *children)
-        }
-
-        /**
-         * Creates a [Choreography] for the given children of the specified view which will start when the animation
-         * of the parent choreography starts. The properties of the parent choreography will be used by this choreography.
-         * If a stagger is specified the morphViews will be animated with the specified stagger.
-         * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-         * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-         * @return this choreography.
-         */
-        fun andAnimateChildrenOf(view: MorphLayout, stagger: AnimationStagger? = null): Choreography {
-            val children = choreographer.getViews(view.getChildren().toArrayList().toTypedArray())
-            return choreographer.andAnimateChildrenOf(this, stagger, *children)
         }
 
         /**
@@ -4682,7 +4729,6 @@ class Choreographer(context: Context) {
             skipCurrent = true
         }
     }
-
 
     /**
      * Class which creates a choreography progression listener.

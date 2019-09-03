@@ -14,3 +14,5 @@ coordinates.
 
 - Add animate text to the choreographer and check that stagger works for
 list of views.
+
+- Add meaningful exceptions to the choreographer

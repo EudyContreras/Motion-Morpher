@@ -3,10 +3,8 @@ package com.eudycontreras.motionmorpherlibrary
 import androidx.core.math.MathUtils.clamp
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
-import com.google.android.material.math.MathUtils
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.hypot
-import kotlin.reflect.KProperty
 
 /**
  * @Project MotionMorpher
@@ -108,6 +106,30 @@ fun lerp(from: Double, to: Double, fraction: Double): Double {
  */
 fun lerp(floatValue: AnimatedFloatValue, fraction: Double): Double {
     return floatValue.fromValue + (floatValue.toValue - floatValue.fromValue) * fraction
+}
+
+/**
+ * Fuzzy approximation function which returns true if the [value] is
+ * less or equals to the [target] plus the [margin] or greater or equal
+ * to to the [target] minus the [margin].
+ * @param value the input value to compare
+ * @param target the value to compare against.
+ * @param margin the margin of error to use in the comparison
+ */
+fun approximate(value: Float, target: Float, margin: Float): Boolean {
+    return value <= (target + margin) && value > (target - margin)
+}
+
+/**
+ * Fuzzy approximation function which returns true if the [value] is
+ * less or equals to the [target] plus the [margin] or greater or equal
+ * to to the [target] minus the [margin].
+ * @param value the input value to compare
+ * @param target the value to compare against.
+ * @param margin the margin of error to use in the comparison
+ */
+fun approximate(value: Int, target: Int, margin: Int): Boolean {
+    return value <= (target + margin) && value > (target - margin)
 }
 
 /**

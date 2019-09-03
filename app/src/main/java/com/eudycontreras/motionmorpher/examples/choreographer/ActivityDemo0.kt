@@ -6,22 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
-import android.widget.TextView
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
-import com.eudycontreras.motionmorpherlibrary.enumerations.ArcType
-import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
+import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
+import com.eudycontreras.motionmorpherlibrary.properties.AnimationStagger
 import com.eudycontreras.motionmorpherlibrary.properties.Conceal
 import com.eudycontreras.motionmorpherlibrary.properties.Reveal
-import com.eudycontreras.motionmorpherlibrary.properties.Stretch
+import com.eudycontreras.motionmorpherlibrary.properties.TextMorph
 import kotlinx.android.synthetic.main.activity_demo0.*
 import kotlinx.android.synthetic.main.activity_demo0_card.view.*
 
@@ -245,19 +245,26 @@ class ActivityDemo0 : MorphActivity() {
         choreographer
             .allowChildInheritance(false)
             .withDefaultPivot(0.5f, 0f)
-            .withDefaultInterpolator(interpolator)
             .withDefaultDuration(800)
+            .withDefaultInterpolator(interpolator)
 
             .animate(card){
                 xRotateAdd(30f)
             }
-            .then() {
+            .then {
                 xRotateAdd(-60f)
             }
-            .then() {
+            .then {
                 xRotateAdd(30f)
             }
-            .then() {
+            .thenAnimateChildrenOf(card.demo_0_actions) {
+                withDuration(1000)
+                withPivot(0.5f, 0.5f)
+                withInterpolator(DecelerateInterpolator())
+                withStagger(AnimationStagger(0.5f, type = Stagger.LINEAR))
+                rotateTo(360f)
+            }
+            .thenAnimate(card) {
                 withDuration(2000)
                 withInterpolator(AccelerateDecelerateInterpolator())
                 xRotateBetween(0f, -40f, 40f, -40f, 40f, 0f)
@@ -273,13 +280,13 @@ class ActivityDemo0 : MorphActivity() {
             .after(0.9f) {
                 anchorTo(Anchor.LEFT, root)
             }
-            .then() {
+            .then {
                 yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
                 withDuration(500)
             }
             .after(0.3f) {
                 withDuration(600)
-                withReveal(Reveal(0.5f, 0.5f, 0f, card.demo_0_image_2))
+                withReveal(Reveal(card.demo_0_image_2, 0.5f, 0.5f, 0f))
                 anchorTo(Anchor.RIGHT, root, 30.dp)
                 rotateTo(35f)
             }
@@ -288,14 +295,18 @@ class ActivityDemo0 : MorphActivity() {
                 withInterpolator(AccelerateDecelerateInterpolator())
                 rotateBetween(35f * 0.6f, -30f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
             }
-            .then() {
+            .then {
                 yTranslateBetween(0f, -(10.dp), (10.dp), -(15.dp), (15.dp), -(25.dp), (25.dp), -(20.dp), (20.dp), -(10.dp), (10.dp), 0f)
                 withDuration(500)
             }
             .after(0.3f) {
+                val textMorph = TextMorph(card.demo_0_header, "Deadpool", "Deadpool 2")
+                val concel = Conceal(card.demo_0_image_2, 0.5f, 0.5f, 0f)
+
                 withDuration(400)
                 withInterpolator(AnticipateOvershootInterpolator())
-                withConceal(Conceal(0.5f, 0.5f, 0f, card.demo_0_image_2))
+                withConceal(concel)
+               // withTextChange(textMorph)
                 anchorTo(Anchor.LEFT, root, 30.dp)
                 rotateFrom(0f, -35f)
             }

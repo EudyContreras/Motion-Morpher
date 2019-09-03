@@ -36,7 +36,7 @@ class Explode(
 
     var stretch: Stretch? = null
 
-    private var nodes: LinkedList<Node> = LinkedList()
+    private var animationNodes: LinkedList<AnimationNode> = LinkedList()
 
     private lateinit var endView: MorphLayout
     private lateinit var startView: MorphLayout
@@ -48,7 +48,7 @@ class Explode(
         this.endView = endView
         this.startView = startView
 
-        val nodes: LinkedList<Node> = LinkedList()
+        val animationNodes: LinkedList<AnimationNode> = LinkedList()
 
         val epicenter = startView.centerLocation
 
@@ -88,47 +88,48 @@ class Explode(
                 if (xDifference < 0) mappingX.toValue = minX + xDelta
                 if (yDifference < 0) mappingY.toValue = minY + yDelta
 
-                val animationNode = Node(
+                val animationNode = AnimationNode(
                     view = sibling,
                     distance = distance,
                     translationX = mappingX,
                     translationY = mappingY
                 )
-                nodes.add(animationNode)
+                animationNodes.add(animationNode)
             }
         }
 
-        this.nodes = LinkedList(nodes.sortedByDescending { it.distance })
+        this.animationNodes = LinkedList(animationNodes.sortedByDescending { it.distance })
     }
 
     override fun applyStagger(animationStagger: AnimationStagger?, animationType: AnimationType) {
         /*
          * If the stagger is null or the offset is 0 or the duration is 0 return.
                 */
-                if (animationStagger == null || animationStagger.staggerOffset == MIN_OFFSET || duration == MIN_DURATION) {
-                    val animationNode = Node(
-                        view = endView,
-                        distance = MIN_OFFSET,
-                        translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-                        translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-                        epicenter = true
-                    )
-                    nodes.addFirst(animationNode)
-                    return
-                }
+        if (animationStagger == null || animationStagger.staggerOffset == MIN_OFFSET || duration == MIN_DURATION) {
+            val animationNode = AnimationNode(
+                view = endView,
+                distance = MIN_OFFSET,
+                translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                epicenter = true
+            )
+            animationNodes.addFirst(animationNode)
+            return
+        }
 
-            /*
-             * When an epicenter is available sort and group the list of nodes by distance.
-             */
-                val nodesGroups = when (animationType) {
-                AnimationType.CONCEAL -> {
-                    nodes = LinkedList(nodes.filter { it.distance != MIN_OFFSET }.sortedBy { it.distance })
-                    nodes.groupBy { it.distance }
-                }
-                AnimationType.REVEAL -> {
-                    nodes = LinkedList(nodes.sortedByDescending { it.distance })
-                    nodes.groupBy { it.distance }
-                }
+        /*
+         * When an epicenter is available sort and group the list of animationNodes by distance.
+         */
+        val nodesGroups = when (animationType) {
+            AnimationType.CONCEAL -> {
+                animationNodes =
+                    LinkedList(animationNodes.filter { it.distance != MIN_OFFSET }.sortedBy { it.distance })
+                animationNodes.groupBy { it.distance }
+            }
+            AnimationType.REVEAL -> {
+                animationNodes = LinkedList(animationNodes.sortedByDescending { it.distance })
+                animationNodes.groupBy { it.distance }
+            }
         }
         /*
          * The total amount of stagger is created by multiplying the duration by the offset of the stagger.
@@ -237,8 +238,8 @@ class Explode(
          */
         when (animationType) {
             AnimationType.REVEAL -> {
-                val last = nodes.last()
-                val animationNode = Node(
+                val last = animationNodes.last()
+                val animationNode = AnimationNode(
                     view = endView,
                     distance = MIN_OFFSET,
                     translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
@@ -246,11 +247,11 @@ class Explode(
                     epicenter = true
                 )
                 animationNode.copyOffsets(last)
-                nodes.add(animationNode)
+                animationNodes.add(animationNode)
             }
             AnimationType.CONCEAL -> {
-                val first = nodes.first()
-                val animationNode = Node(
+                val first = animationNodes.first()
+                val animationNode = AnimationNode(
                     view = endView,
                     distance = MIN_OFFSET,
                     translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
@@ -258,13 +259,13 @@ class Explode(
                     epicenter = true
                 )
                 animationNode.copyOffsets(first)
-                nodes.addFirst(animationNode)
+                animationNodes.addFirst(animationNode)
             }
         }
     }
 
     override fun animate(fraction: Float, animationType: AnimationType) {
-        for (node in nodes) {
+        for (node in animationNodes) {
 
             if (fraction < node.startOffset || fraction > node.endOffset)
                 continue
@@ -300,27 +301,6 @@ class Explode(
                     node.view.morphTranslationY = (translationY.toValue + (translationY.fromValue - translationY.toValue) * interpolatedFraction) * amountMultiplier
                 }
             }
-        }
-    }
-
-    data class Node(
-        val view: MorphLayout,
-        val distance: Float,
-        val translationX: AnimatedFloatValue,
-        val translationY: AnimatedFloatValue,
-        val epicenter: Boolean = false
-    ) {
-        var stagger: Long = MIN_DURATION
-        var startOffset: Float = MIN_OFFSET
-        var endOffset: Float = MAX_OFFSET
-
-        fun copyOffsets(other: Node) {
-            this.startOffset = other.startOffset
-            this.endOffset = other.endOffset
-        }
-
-        override fun toString(): String {
-            return "Distance: $distance, Stagger: $stagger Start: $startOffset End: $endOffset"
         }
     }
 

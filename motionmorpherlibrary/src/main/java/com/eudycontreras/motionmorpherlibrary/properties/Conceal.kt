@@ -52,7 +52,7 @@ class Conceal(
         this.interpolator = interpolator
     }
 
-    constructor(offsetX: Float, offsetY: Float, radius: Float, fromView: View, interpolator: TimeInterpolator? = null): this(fromView){
+    constructor(fromView: View, offsetX: Float, offsetY: Float, radius: Float, interpolator: TimeInterpolator? = null): this(fromView){
         this.centerX = fromView.width * offsetX
         this.centerY = fromView.height * offsetY
         this.radiusEnd = radius
@@ -60,7 +60,7 @@ class Conceal(
         this.interpolator = interpolator
     }
 
-    constructor(coordinates: Coordinates, radius: Float, fromView: View, interpolator: TimeInterpolator? = null): this(fromView){
+    constructor(fromView: View, coordinates: Coordinates, radius: Float, interpolator: TimeInterpolator? = null): this(fromView){
         this.centerX = coordinates.x
         this.centerY = coordinates.y
         this.radiusEnd = radius
@@ -68,5 +68,5 @@ class Conceal(
         this.interpolator = interpolator
     }
 
-    constructor(radius: Float, fromView: View, interpolator: TimeInterpolator? = null): this(Float.MIN_VALUE, Float.MIN_VALUE, radius, fromView, interpolator)
+    constructor(fromView: View, radius: Float, interpolator: TimeInterpolator? = null): this(fromView, Float.MIN_VALUE, Float.MIN_VALUE, radius, interpolator)
 }

@@ -1,6 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import kotlin.math.max
 
 /**
  * Class which holds information about the bounds
@@ -58,6 +59,19 @@ open class Bounds(
             mDimension.height = value
         }
 
+    /**
+     * Returns the max x coordinates
+     * of this bounds
+     */
+    val maxX: Float
+        get() = x + width
+
+    /**
+     * Returns the max y coordinates
+     * of this bounds
+     */
+    val maxY: Float
+        get() = y + height
 
     private var mCoordinates: Coordinates = Coordinates(x.toFloat(), y.toFloat())
 
@@ -72,13 +86,6 @@ open class Bounds(
      * The coordinates of this Bounds. See: [Coordinates]
      */
     fun coordinates(): Coordinates = mCoordinates
-
-    /**
-     * Returns true if the given point is inside this bounds.
-     */
-    fun inRange(x: Float, y: Float): Boolean {
-        return x >= this.x && x < width && y >= this.y && y < height
-    }
 
     /**
      * Returns true if the given point and its radius are inside this bounds.
@@ -99,21 +106,39 @@ open class Bounds(
      */
     fun inside(other: Bounds): Boolean {
         val minX = x >= other.x
-        val maxX = (x + width) <= (other.x + other.width)
+        val maxX = maxX <= other.maxX
         val minY = y >= other.y
-        val maxY = (y + height) <= (other.y + other.height)
+        val maxY = maxY <= other.maxY
         return minX && maxX && minY && maxY
     }
 
     /**
      * Returns true if the given [Bounds] overlap with this bounds.
      */
-    fun overlaps(other: Bounds): Boolean {
-        val minX = (x + width) >= other.x
-        val maxX = x <= (other.x + other.width)
-        val minY = (y + height) >= other.y
-        val maxY = y <= (other.y + other.height)
+    fun overlaps(other: Bounds, margin: Float = 0f): Boolean {
+        val minX = x < (other.maxX + margin)
+        val maxX = maxX > (other.x - margin)
+        val minY = y < (other.maxY + margin)
+        val maxY = maxY > (other.y - margin)
         return minX && maxX && minY && maxY
+    }
+
+    /**
+     * Returns true if the given [Bounds] overlaps vertically with this bounds.
+     */
+    fun overlapsVertically(other: Bounds, margin: Float = 0f): Boolean {
+        val minY = y < (other.maxY + margin)
+        val maxY = maxY > (other.y - margin)
+        return minY && maxY
+    }
+
+    /**
+     * Returns true if the given [Bounds] overlap with this bounds.
+     */
+    fun overlapsHorizontally(other: Bounds, margin: Float = 0f): Boolean {
+        val minX = x < (other.maxX + margin)
+        val maxX = maxX > (other.x - margin)
+        return minX && maxX
     }
 
     /**
