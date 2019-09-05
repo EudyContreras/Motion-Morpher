@@ -49,6 +49,8 @@ class AnimatedFloatValue(
     var difference: Float = abs(fromValue - toValue)
         private set
 
+    fun lerp(fraction: Float) = fromValue + (toValue - fromValue) * fraction
+
     fun set(value: AnimatedFloatValue) {
         super.set(value)
     }

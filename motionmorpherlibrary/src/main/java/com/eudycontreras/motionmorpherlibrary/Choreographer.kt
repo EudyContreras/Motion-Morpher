@@ -922,7 +922,7 @@ class Choreographer(context: Context) {
     private fun play(
         choreography: Choreography,
         duration: Long = totalDuration,
-        startDelay: Long = 0L,
+        startDelay: Long = MIN_DURATION,
         repeatMode: Int = 0,
         repeatCount: Int = 0,
         playReversed: Boolean = false,
@@ -943,6 +943,7 @@ class Choreographer(context: Context) {
         }
 
         animator = ValueAnimator.ofFloat(startFraction, endFraction)
+
         animator.interpolator = null
         animator.startDelay = startDelay
         animator.duration = duration
@@ -1425,26 +1426,25 @@ class Choreographer(context: Context) {
      * @param duration The duration of the animation.
      * @param currentPlayTime The current playtime of the animation.
      */
-    private fun animate(view: MorphLayout, choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
+    private fun animate(
+        view: MorphLayout,
+        choreography: Choreography,
+        fraction: Float,
+        duration: Long,
+        currentPlayTime: Long
+    ) {
 
         val alphaFraction = choreography.alpha.interpolator?.getInterpolation(fraction) ?: fraction
-
-        val scaleXFraction = choreography.scaleX.interpolator?.getInterpolation(fraction) ?: fraction
-        val scaleYFraction = choreography.scaleY.interpolator?.getInterpolation(fraction) ?: fraction
-
-        val rotateFraction = choreography.rotation.interpolator?.getInterpolation(fraction) ?: fraction
-        val rotateXFraction = choreography.rotationX.interpolator?.getInterpolation(fraction) ?: fraction
-        val rotateYFraction = choreography.rotationY.interpolator?.getInterpolation(fraction) ?: fraction
-
-        val translateZFraction = choreography.translateZ.interpolator?.getInterpolation(fraction) ?: fraction
 
         view.morphPivotX = choreography.pivotPoint.x
         view.morphPivotY = choreography.pivotPoint.y
 
-        view.morphAlpha = choreography.alpha.fromValue + (choreography.alpha.toValue - choreography.alpha.fromValue) * alphaFraction
+        view.morphAlpha = choreography.alpha.lerp(alphaFraction)
 
         if (choreography.scaleX.canInterpolate) {
-            view.morphScaleX = choreography.scaleX.fromValue + (choreography.scaleX.toValue - choreography.scaleX.fromValue) * scaleXFraction
+            val scaleXFraction = choreography.scaleX.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphScaleX = choreography.scaleX.lerp(scaleXFraction)
         } else {
             if(choreography.scaleXValues.canInterpolate) {
                 animateThroughPoints(choreography.scaleXValues, view, currentPlayTime, duration, scaleXListener)
@@ -1452,7 +1452,9 @@ class Choreographer(context: Context) {
         }
 
         if (choreography.scaleY.canInterpolate) {
-            view.morphScaleY = choreography.scaleY.fromValue + (choreography.scaleY.toValue - choreography.scaleY.fromValue) * scaleYFraction
+            val scaleYFraction = choreography.scaleY.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphScaleY = choreography.scaleY.lerp(scaleYFraction)
         } else {
             if(choreography.scaleYValues.canInterpolate) {
                 animateThroughPoints(choreography.scaleYValues, view, currentPlayTime, duration, scaleYListener)
@@ -1460,7 +1462,9 @@ class Choreographer(context: Context) {
         }
 
         if (choreography.rotation.canInterpolate) {
-            view.morphRotation = choreography.rotation.fromValue + (choreography.rotation.toValue - choreography.rotation.fromValue) * rotateFraction
+            val rotateFraction = choreography.rotation.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphRotation = choreography.rotation.lerp(rotateFraction)
         } else {
             if(choreography.rotationValues.canInterpolate) {
                 animateThroughPoints(choreography.rotationValues, view, currentPlayTime, duration, rotationListener)
@@ -1468,7 +1472,9 @@ class Choreographer(context: Context) {
         }
 
         if (choreography.rotationX.canInterpolate) {
-            view.morphRotationX = choreography.rotationX.fromValue + (choreography.rotationX.toValue - choreography.rotationX.fromValue) * rotateXFraction
+            val rotateXFraction = choreography.rotationX.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphRotationX = choreography.rotationX.lerp(rotateXFraction)
         } else {
             if(choreography.rotationXValues.canInterpolate) {
                 animateThroughPoints(choreography.rotationXValues, view, currentPlayTime, duration, rotationXListener)
@@ -1476,7 +1482,9 @@ class Choreographer(context: Context) {
         }
 
         if (choreography.rotationY.canInterpolate) {
-            view.morphRotationY = choreography.rotationY.fromValue + (choreography.rotationY.toValue - choreography.rotationY.fromValue) * rotateYFraction
+            val rotateYFraction = choreography.rotationY.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphRotationY = choreography.rotationY.lerp(rotateYFraction)
         } else {
             if(choreography.rotationYValues.canInterpolate) {
                 animateThroughPoints(choreography.rotationYValues, view, currentPlayTime, duration, rotationYListener)
@@ -1498,8 +1506,8 @@ class Choreographer(context: Context) {
                 view.morphTranslationX = arcTranslationX.toFloat()
                 view.morphTranslationY = arcTranslationY.toFloat()
             } else {
-                view.morphTranslationX = choreography.positionX.fromValue + (choreography.positionX.toValue - choreography.positionX.fromValue) * positionXFraction
-                view.morphTranslationY = choreography.positionY.fromValue + (choreography.positionY.toValue - choreography.positionY.fromValue) * positionYFraction
+                view.morphTranslationX = choreography.positionX.lerp(positionXFraction)
+                view.morphTranslationY = choreography.positionY.lerp(positionYFraction)
 
                 //TODO(" Figure out a way to determine stretch direction ")
 
@@ -1523,8 +1531,8 @@ class Choreographer(context: Context) {
                 view.morphTranslationX = arcTranslationX.toFloat()
                 view.morphTranslationY = arcTranslationY.toFloat()
             } else {
-                view.morphTranslationX = choreography.translateX.fromValue + (choreography.translateX.toValue - choreography.translateX.fromValue) * translateXFraction
-                view.morphTranslationY = choreography.translateY.fromValue + (choreography.translateY.toValue - choreography.translateY.fromValue) * translateYFraction
+                view.morphTranslationX = choreography.translateX.lerp(translateXFraction)
+                view.morphTranslationY = choreography.translateY.lerp(translateYFraction)
             }
         } else {
             if(choreography.translateXValues.canInterpolate) {
@@ -1537,7 +1545,9 @@ class Choreographer(context: Context) {
         }
 
         if (choreography.translateZ.canInterpolate) {
-            view.morphTranslationZ = choreography.translateZ.fromValue + (choreography.translateZ.toValue - choreography.translateZ.fromValue) * translateZFraction
+            val translateZFraction = choreography.translateZ.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphTranslationZ = choreography.translateZ.lerp(translateZFraction)
         } else {
             if (choreography.translateZValues.canInterpolate) {
                 animateThroughPoints(choreography.translateZValues, view, currentPlayTime, duration, translationZListener)
@@ -1587,8 +1597,8 @@ class Choreographer(context: Context) {
             val widthFraction = choreography.width.interpolator?.getInterpolation(fraction) ?: fraction
             val heightFraction = choreography.height.interpolator?.getInterpolation(fraction) ?: fraction
 
-            view.morphWidth = choreography.width.fromValue + (choreography.width.toValue - choreography.width.fromValue) * widthFraction
-            view.morphHeight = choreography.height.fromValue + (choreography.height.toValue - choreography.height.fromValue) * heightFraction
+            view.morphWidth = choreography.width.lerp(widthFraction)
+            view.morphHeight = choreography.height.lerp(heightFraction)
 
             boundsChanged = true
         }
@@ -1811,22 +1821,28 @@ class Choreographer(context: Context) {
          */
         internal fun properties(): Map<String, AnimatedValue<*>> {
             val properties: HashMap<String, AnimatedValue<*>> = HashMap()
+            properties[width.propertyName] = width
+
+            properties[height.propertyName] = height
+            properties[alpha.propertyName] = alpha
+
             properties[scaleX.propertyName] = scaleX
             properties[scaleY.propertyName] = scaleY
+
             properties[rotation.propertyName] = rotation
             properties[rotationX.propertyName] = rotationX
             properties[rotationY.propertyName] = rotationY
+
             properties[positionX.propertyName] = positionX
             properties[positionY.propertyName] = positionY
-            properties[paddings.propertyName] = paddings
-            properties[margings.propertyName] = margings
+
             properties[translateX.propertyName] = translateX
             properties[translateY.propertyName] = translateY
             properties[translateZ.propertyName] = translateZ
-            properties[width.propertyName] = width
-            properties[height.propertyName] = height
-            properties[alpha.propertyName] = alpha
+
             properties[color.propertyName] = color
+            properties[paddings.propertyName] = paddings
+            properties[margings.propertyName] = margings
             properties[cornerRadii.propertyName] = cornerRadii
             return properties
         }
@@ -1840,9 +1856,11 @@ class Choreographer(context: Context) {
             val properties: HashMap<String, AnimatedValueArray<*>> = HashMap()
             properties[scaleXValues.propertyName] = scaleXValues
             properties[scaleYValues.propertyName] = scaleYValues
+
             properties[rotationValues.propertyName] = rotationValues
             properties[rotationXValues.propertyName] = rotationXValues
             properties[rotationYValues.propertyName] = rotationYValues
+
             properties[translateXValues.propertyName] = translateXValues
             properties[translateYValues.propertyName] = translateYValues
             properties[translateZValues.propertyName] = translateZValues
@@ -1859,22 +1877,28 @@ class Choreographer(context: Context) {
             if (properties == null)
                 return
 
+            width.set(properties[width.propertyName] as AnimatedFloatValue)
+            height.set(properties[height.propertyName] as AnimatedFloatValue)
+
+            alpha.set(properties[alpha.propertyName] as AnimatedFloatValue)
+
             scaleX.set(properties[scaleX.propertyName] as AnimatedFloatValue)
             scaleY.set(properties[scaleY.propertyName] as AnimatedFloatValue)
+
             rotation.set(properties[rotation.propertyName] as AnimatedFloatValue)
             rotationX.set(properties[rotationX.propertyName] as AnimatedFloatValue)
             rotationY.set(properties[rotationY.propertyName] as AnimatedFloatValue)
+
             positionX.set(properties[positionX.propertyName] as AnimatedFloatValue)
             positionY.set(properties[positionY.propertyName] as AnimatedFloatValue)
-            paddings.set(properties.getValue(paddings.propertyName) as AnimatedValue<Padding>)
-            margings.set(properties.getValue(margings.propertyName) as AnimatedValue<Margin>)
+
             translateX.set(properties[translateX.propertyName] as AnimatedFloatValue)
             translateY.set(properties[translateY.propertyName] as AnimatedFloatValue)
             translateZ.set(properties[translateZ.propertyName] as AnimatedFloatValue)
-            width.set(properties[width.propertyName] as AnimatedFloatValue)
-            height.set(properties[height.propertyName] as AnimatedFloatValue)
-            alpha.set(properties[alpha.propertyName] as AnimatedFloatValue)
+
             color.set(properties.getValue(color.propertyName) as AnimatedValue<Color>)
+            paddings.set(properties.getValue(paddings.propertyName) as AnimatedValue<Padding>)
+            margings.set(properties.getValue(margings.propertyName) as AnimatedValue<Margin>)
             cornerRadii.set(properties.getValue(cornerRadii.propertyName) as AnimatedValue<CornerRadii>)
         }
 
@@ -1889,9 +1913,11 @@ class Choreographer(context: Context) {
 
             scaleXValues.values = properties.getValue(scaleXValues.propertyName).values as Array<Float>
             scaleYValues.values = properties.getValue(scaleYValues.propertyName).values as Array<Float>
+
             rotationValues.values = properties.getValue(rotationValues.propertyName).values as Array<Float>
             rotationXValues.values = properties.getValue(rotationXValues.propertyName).values as Array<Float>
             rotationYValues.values = properties.getValue(rotationYValues.propertyName).values as Array<Float>
+
             translateXValues.values = properties.getValue(translateXValues.propertyName).values as Array<Float>
             translateYValues.values = properties.getValue(translateYValues.propertyName).values as Array<Float>
             translateZValues.values = properties.getValue(translateZValues.propertyName).values as Array<Float>
@@ -1902,19 +1928,26 @@ class Choreographer(context: Context) {
          */
         internal fun flipValues() {
             this.color.flip()
+
             this.alpha.flip()
+
+            this.width.flip()
+            this.height.flip()
+
             this.scaleX.flip()
             this.scaleY.flip()
+
             this.rotation.flip()
             this.rotationX.flip()
             this.rotationY.flip()
+
             this.translateX.flip()
             this.translateY.flip()
             this.translateZ.flip()
+
             this.positionX.flip()
             this.positionY.flip()
-            this.width.flip()
-            this.height.flip()
+
             this.margings.flip()
             this.paddings.flip()
             this.cornerRadii.flip()

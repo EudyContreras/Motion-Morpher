@@ -72,14 +72,7 @@ class ActivityDemo0 : MorphActivity() {
             chor1 = createChoreographyTwo(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
         }
         cardLayout.setOnClickListener {
-            val animator = ValueAnimator.ofFloat(0f, 1f)
-            animator.setDuration(8000)
-            animator.setInterpolator(LinearInterpolator())
-            animator.addUpdateListener {
-                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
-                chor1?.transitionTo(fraction)
-            }
-            animator.start()
+            chor1?.play()
         }
     }
 
