@@ -87,10 +87,6 @@ class Choreographer(context: Context) {
     var allowInheritance: Boolean = true
         private  set
 
-    private val handler: Handler by lazy {
-        Handler()
-    }
-
     private val arcTranslator: ArcTranslationHelper by lazy {
         ArcTranslationHelper()
     }
@@ -165,9 +161,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun withDefaultDuration(duration: Long): Choreographer {
-        if (duration < 0) {
-            throw IllegalArgumentException("Choreographer cannot have negative durations: $duration")
-        }
+        require(duration >= MIN_DURATION) { "Choreographer cannot have negative durations: $duration" }
         this.defaultDuration = duration
         return this
     }
@@ -255,9 +249,7 @@ class Choreographer(context: Context) {
     private fun animateFor(choreography: Choreography, offset: Float, allowInheritance: Boolean = this.allowInheritance, vararg views: MorphLayout): Choreographer {
         val properties = getProperties(choreography, *views)
 
-        if (offset < MIN_OFFSET) {
-            throw IllegalArgumentException("A duration offset may not be less than zero: $offset")
-        }
+        require(offset >= MIN_OFFSET) { "A duration offset may not be less than zero: $offset" }
 
         tailChoreography =  Choreography(this, *views).apply {
             this.setStartProperties(properties)
@@ -289,9 +281,7 @@ class Choreographer(context: Context) {
     internal fun reverseAnimateFor(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreographer {
         var oldChoreography: Choreography? = null
 
-        if (offset < MIN_OFFSET) {
-            throw IllegalArgumentException("A duration offset may not be less than zero: $offset")
-        }
+        require(offset >= MIN_OFFSET) { "A duration offset may not be less than zero: $offset" }
 
         predecessors(choreography) { control, _choreography ->
             loopA@ for(viewA in _choreography.morphViews) {
@@ -1350,9 +1340,9 @@ class Choreographer(context: Context) {
      * @param percentage The amount to animation to.
      * @throws IllegalArgumentException if the percentage is outside of the 0f to 1f range.
      */
-    private fun transitionTo(percentage: Float) {
-        if (percentage < MIN_OFFSET || percentage > MAX_OFFSET) {
-            throw IllegalArgumentException("A percentage offset must be in the range of 0f and 1f: $percentage")
+    fun transitionTo(percentage: Float) {
+        require(percentage >= MIN_OFFSET && percentage <= MAX_OFFSET) {
+            "A percentage offset must be in the range of 0f and 1f: $percentage"
         }
         transitionTo(headChoreography, percentage, true)
     }
@@ -4075,9 +4065,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun withDuration(duration: Long): Choreography {
-            if (duration < 0) {
-                throw IllegalArgumentException("Choreographies cannot have negative durations: $duration")
-            }
+            require(duration >= MIN_DURATION) { "Choreographies cannot have negative durations: $duration" }
             this.duration = duration
             return this
         }
@@ -4100,9 +4088,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun withStartDelay(delay: Long): Choreography {
-            if (delay < 0) {
-                throw IllegalArgumentException("Choreographies cannot have negative delays: $delay")
-            }
+            require(delay >= MIN_DURATION) { "Choreographies cannot have negative delays: $delay" }
             this.delay = delay
             return this
         }
@@ -4512,7 +4498,7 @@ class Choreographer(context: Context) {
         internal var startDelay: Long = MIN_DURATION
         internal var offsetDelay: Long = MIN_DURATION
 
-        internal var fraction: Float = -MAX_OFFSET
+        internal var seekFraction: Float = -MAX_OFFSET
 
         internal var offsetStart: Float = MIN_OFFSET
         internal var offsetEnd: Float = MAX_OFFSET
@@ -4542,8 +4528,8 @@ class Choreographer(context: Context) {
                 if (!started) {
                     return MIN_DURATION
                 }
-                if (fraction >= MIN_OFFSET) {
-                    return (duration * fraction).toLong()
+                if (seekFraction >= MIN_OFFSET) {
+                    return (duration * seekFraction).toLong()
                 }
                 return System.currentTimeMillis() - startTime
             }
@@ -4556,7 +4542,7 @@ class Choreographer(context: Context) {
             }
 
         fun reset() {
-            fraction = MIN_OFFSET
+            seekFraction = MIN_OFFSET
             startTime = -1L
             started = false
             ended = false
@@ -4568,16 +4554,14 @@ class Choreographer(context: Context) {
                 started = true
             }
 
-            val fractionMap = mapRange(fraction, offsetStart, offsetEnd, MIN_OFFSET, MAX_OFFSET)
+            seekFraction = mapRange(fraction, offsetStart, offsetEnd, MIN_OFFSET, MAX_OFFSET)
 
-            val playTime = System.currentTimeMillis() - startTime
-
-            if (((fraction >= offsetEnd) || (fractionMap >= MAX_OFFSET)) && !ended) {
+            if (((fraction >= offsetEnd) || (seekFraction >= MAX_OFFSET)) && !ended) {
                 endListener?.invoke()
                 ended = true
             }
 
-            updateListener.onProgress(interpolator.getInterpolation(fractionMap), playTime)
+            updateListener.onProgress(interpolator.getInterpolation(seekFraction), currentPlayTime)
         }
 
         companion object {

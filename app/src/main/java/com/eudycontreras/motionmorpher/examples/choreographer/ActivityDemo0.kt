@@ -1,20 +1,23 @@
 package com.eudycontreras.motionmorpher.examples.choreographer
 
 import android.animation.TimeInterpolator
+import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AnticipateOvershootInterpolator
-import android.view.animation.DecelerateInterpolator
-import android.view.animation.OvershootInterpolator
+import android.view.animation.*
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
+import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
+import com.eudycontreras.motionmorpherlibrary.extensions.clamp
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
+import com.eudycontreras.motionmorpherlibrary.interpolators.MaterialInterpolator
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
@@ -69,17 +72,14 @@ class ActivityDemo0 : MorphActivity() {
             chor1 = createChoreographyTwo(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
         }
         cardLayout.setOnClickListener {
-
-           // val chor2 = createChoreographyTwo(cardLayout2 as ConstraintLayout, root, FastOutSlowInInterpolator())
-            chor1?.play(startFraction = 1f, endFraction = 0f)
-            /*val animator = ValueAnimator.ofFloat(0f, 1f)
-            animator.setDuration(10000)
-            animator.setInterpolator(MaterialInterpolator(Interpolation.REVERSED_OUT))
+            val animator = ValueAnimator.ofFloat(0f, 1f)
+            animator.setDuration(8000)
+            animator.setInterpolator(LinearInterpolator())
             animator.addUpdateListener {
-                val fraction = (it.animatedValue as Float)
-                chor.transitionTo(fraction)
+                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+                chor1?.transitionTo(fraction)
             }
-            animator.start()*/
+            animator.start()
         }
     }
 
@@ -317,6 +317,76 @@ class ActivityDemo0 : MorphActivity() {
                 withDuration(500)
                 anchorTo(Anchor.CENTER, root)
             }
+            .build()
+
+        return choreographer
+    }
+
+
+    fun createChoreographyThree(card: View, root: MorphLayout, interpolator: TimeInterpolator): Choreographer {
+        val choreographer = Choreographer(this)
+
+        choreographer
+            .withDefaultPivot(0.5f, 0f)
+            .allowChildInheritance(false)
+            .withDefaultInterpolator(interpolator)
+            .withDefaultDuration(800)
+
+            .animate(card) {
+                xRotateAdd(30f)
+            }
+            .then {
+                xRotateAdd(-60f)
+            }
+            .then {
+                xRotateAdd(30f)
+            }
+            .then {
+                withDuration(2400)
+                xRotateBetween(0f, -40f, 40f, -40f, 40f, 0f)
+                rotateBetween(0f, -20f, 20f, -30f, 30f, -40f, 40f, -30f, 30f, -20f, 20f, 0f)
+            }
+            .then{
+                withDuration(1000)
+                xScaleBetween(1f,  0.6f, 0.7f, 0.8f, 0.9f, 1f)
+                yRotateAdd(360f * 2)
+            }
+            .then {
+                anchorTo(Anchor.LEFT, root)
+            }
+            .then {
+                withDuration(800)
+                withInterpolator(AnticipateOvershootInterpolator())
+                withReveal(Reveal(image2, 1f, 0.5f, 0f))
+                anchorTo(Anchor.RIGHT, root)
+                rotateTo(35f)
+            }
+
+            .after(0.60f){
+                withDuration(2000)
+                withInterpolator(AccelerateDecelerateInterpolator())
+                rotateBetween(35f * 0.6f, -30f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
+            }
+
+            .then {
+                withDuration(500)
+                withInterpolator(AnticipateOvershootInterpolator())
+                withConceal(Conceal(image2, 1f, 0.5f, 0f))
+                anchorTo(Anchor.LEFT, root)
+                rotateFrom(0f, -35f)
+            }
+
+            .after(0.60f) {
+                withDuration(3000)
+                withInterpolator(AccelerateDecelerateInterpolator())
+                rotateBetween( -35f * 0.6f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
+            }
+
+            .then{
+                withDuration(500)
+                anchorTo(Anchor.CENTER, root)
+            }
+
             .build()
 
         return choreographer

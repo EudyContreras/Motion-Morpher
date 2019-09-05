@@ -243,7 +243,7 @@ inline fun <reified T> doWith(param: T, capsule: (T) -> Unit) {
  * Runs the code inside the [capsule] for the given parameters
  * given that neither the first nor the second parameters are null.
  */
-inline fun <reified X,reified Y> doWith(first: X?, second: Y?, capsule: (X,Y) -> Unit) {
+inline fun <reified X,reified Y> doWith(first: X?, second: Y?, capsule: (X, Y) -> Unit) {
     if (first != null && second != null) {
         return capsule.invoke(first, second)
     }
@@ -253,7 +253,7 @@ inline fun <reified X,reified Y> doWith(first: X?, second: Y?, capsule: (X,Y) ->
  * Runs the code inside the [capsule] for the given parameters
  * given that neither the first, the second, nor the third parameters are null.
  */
-inline fun <reified X,reified Y,reified Z> doWith(first: X?, second: Y?, third: Z?, capsule: (X,Y,Z) -> Unit) {
+inline fun <reified X,reified Y,reified Z> doWith(first: X?, second: Y?, third: Z?, capsule: (X, Y, Z) -> Unit) {
     if (first != null && second != null && third != null) {
         return capsule.invoke(first, second, third)
     }
