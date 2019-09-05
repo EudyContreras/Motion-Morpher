@@ -162,11 +162,11 @@ class ActivityDemo2 : MorphActivity() {
             .cornerRadiusTo(root.morphCornerRadii)
             .withDuration(1000)
 
-            .alsoAnimate(image)
+            .andAnimate(image)
             .resizeTo(root.viewBounds)
             .withDuration(1000)
 
-            .alsoAnimate(icon1, icon2, icon3)
+            .andAnimate(icon1, icon2, icon3)
             .scaleTo(0f)
             .withDuration(1000)
 

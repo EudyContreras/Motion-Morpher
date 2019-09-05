@@ -18,10 +18,7 @@ import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
-import com.eudycontreras.motionmorpherlibrary.properties.AnimationStagger
-import com.eudycontreras.motionmorpherlibrary.properties.Conceal
-import com.eudycontreras.motionmorpherlibrary.properties.Reveal
-import com.eudycontreras.motionmorpherlibrary.properties.TextMorph
+import com.eudycontreras.motionmorpherlibrary.properties.*
 import kotlinx.android.synthetic.main.activity_demo0.*
 import kotlinx.android.synthetic.main.activity_demo0_card.view.*
 
@@ -74,7 +71,7 @@ class ActivityDemo0 : MorphActivity() {
         cardLayout.setOnClickListener {
 
            // val chor2 = createChoreographyTwo(cardLayout2 as ConstraintLayout, root, FastOutSlowInInterpolator())
-            chor1?.play()
+            chor1?.play(startFraction = 1f, endFraction = 0f)
             /*val animator = ValueAnimator.ofFloat(0f, 1f)
             animator.setDuration(10000)
             animator.setInterpolator(MaterialInterpolator(Interpolation.REVERSED_OUT))
@@ -147,12 +144,12 @@ class ActivityDemo0 : MorphActivity() {
             .cornerRadiusTo(root.morphCornerRadii)
             .withDuration(1000)
 
-            .alsoAnimate(image)
+            .andAnimate(image)
             .cornerRadiusTo(Corner.TOP_LEFT and Corner.TOP_RIGHT, 0.dp)
             .resizeTo(root.viewBounds)
             .withDuration(1000)
 
-            .alsoAnimate(icon1, icon2, icon3)
+            .andAnimate(icon1, icon2, icon3)
             .scaleTo(0f)
             .withDuration(1000)
 
@@ -306,7 +303,7 @@ class ActivityDemo0 : MorphActivity() {
                 withDuration(400)
                 withInterpolator(AnticipateOvershootInterpolator())
                 withConceal(concel)
-               // withTextChange(textMorph)
+               /// withTextChange(textMorph)
                 anchorTo(Anchor.LEFT, root, 30.dp)
                 rotateFrom(0f, -35f)
             }

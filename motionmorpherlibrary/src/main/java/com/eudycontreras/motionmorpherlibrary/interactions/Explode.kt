@@ -233,7 +233,7 @@ class Explode(
         }
 
         /*
-         * The epicenter node is also added to the animation stack and used as a signaling trigger
+         * The epicenter node is and added to the animation stack and used as a signaling trigger
          * for animating the view being causing the explosion.
          */
         when (animationType) {

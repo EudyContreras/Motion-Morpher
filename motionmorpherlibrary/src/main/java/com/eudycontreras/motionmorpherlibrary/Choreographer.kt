@@ -130,18 +130,8 @@ class Choreographer(context: Context) {
     /**
      * Operator functions that adds the specified [Choreographer] to this
      * choreographer by appending the choreography chain contained within the
-     * added choreographer.
-     * @param other The choreographer to be added.
-     * @return this choreographer.
-     */
-    operator fun Choreographer.plus(other: Choreographer): Choreographer {
-        return this.append(other, MAX_OFFSET)
-    }
-
-    /**
-     * Operator functions that adds the specified [Choreographer] to this
-     * choreographer by appending the choreography chain contained within the
-     * added choreographer.
+     * added choreographer to this one.
+     *
      * @param other The choreographer to be added.
      */
     operator fun Choreographer.plusAssign(other: Choreographer) {
@@ -159,7 +149,7 @@ class Choreographer(context: Context) {
      *
      * Default value: `TRUE`
      *
-     * @return this choreographer.
+     * @return This choreographer.
      */
     fun allowChildInheritance(allow: Boolean = true): Choreographer {
         this.allowInheritance = allow
@@ -167,10 +157,12 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Assigns a default duration to use when the [Choreography] to animate has
-     * no defined duration its own.
-     * @param duration the default duration to use.
-     * @return this choreographer.
+     * Assigns a default duration to use. When the [Choreography] to animate has
+     * no defined duration its own the default [duration] is used.
+     *
+     * @param duration The default duration to use.
+     * @throws IllegalArgumentException Thrown when the offset is negative.
+     * @return This choreographer.
      */
     fun withDefaultDuration(duration: Long): Choreographer {
         if (duration < 0) {
@@ -181,10 +173,11 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Assigns a default pivot point to use when the [Choreography] to animate has
-     * no defined pivot point.
-     * @param point the default pivot point to use.
-     * @return this choreographer.
+     * Assigns a default pivot point to use. When the [Choreography] to animate has
+     * no defined pivot point the default pivot coordinates will be used.
+     *
+     * @param point The default pivot point to use.
+     * @return This choreographer.
      */
     fun withDefaultPivot(point: Point<Float>): Choreographer {
         this.defaultPivot = point
@@ -192,11 +185,12 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Assigns a default pivot point location to use when the [Choreography] to animate has
-     * no defined pivot point of its own.
-     * @param x the default pivot point X to use.
-     * @param y the default pivot point Y to use.
-     * @return this choreographer.
+     * Assigns a default pivot point location to use. When the [Choreography] to animate has
+     * no defined pivot point of its own, the default pivot coordinates will be used.
+     *
+     * @param x The default pivot point X to use.
+     * @param y The default pivot point Y to use.
+     * @return This choreographer.
      */
     fun withDefaultPivot(x: Float, y: Float): Choreographer {
         this.defaultPivot = FloatPoint(x, y)
@@ -204,10 +198,11 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Assigns a default easing [TimeInterpolator] to use when the [Choreography] to animate has
-     * no defined interpolator of its own.
-     * @param interpolator the default interpolator to use
-     * @return this choreographer.
+     * Assigns a default easing [TimeInterpolator] to use. When the [Choreography] to animate has
+     * no defined interpolator of its own this interpolator will be used..
+     *
+     * @param interpolator The default interpolator to use
+     * @return This choreographer.
      */
     fun withDefaultInterpolator(interpolator: TimeInterpolator): Choreographer {
         this.interpolator = interpolator
@@ -215,40 +210,54 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Creates the initial head [Choreography] for the given [View].
-     * @param views the view which are to be animated by this choreography.
-     * @return the created choreography.
+     * Creates the initial head [Choreography] for the given [View]. The head
+     * is the first choreography to be played in a choreography sequence.
+     *
+     * @param views The view which are to be animated by this choreography.
+     * @param block The encapsulation block of the created choreography
+     * @return This choreographer.
      */
     fun animate(vararg views: View?, block: Choreography.() -> Unit): Choreographer {
         return animate(morphViews = *getViews(views), block = block)
     }
 
     /**
-     * Creates the initial head [Choreography] for the given [MorphLayout].
-     * @param morphViews the morphViews which are to be animated by this choreography.
-     * @return the created choreography.
+     * Creates the initial head [Choreography] for the given [View]. The head
+     * is the first choreography to be played in a choreography sequence.
+     *
+     * @param morphViews The view which are to be animated by this choreography.
+     * @param block The encapsulation block of the created choreography
+     * @return This choreographer.
      */
     fun animate(vararg morphViews: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         this.headChoreography = Choreography(this, *morphViews)
         this.headChoreography.offset = MAX_OFFSET
         this.tailChoreography = headChoreography
+
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
         block(headChoreography)
+
         return this
     }
 
     /**
      * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
      * The choreography will play after the specified offset.
-     * @param choreography the parent choreography of the current.
-     * @param views the morphViews to which the choreography belongs to.
-     * @param offset the time offset to use. The current choreography will play after the
+     *
+     * @param choreography The parent choreography of the current.
+     * @param views The morphViews to which the choreography belongs to.
+     * @param offset The time offset to use. The current choreography will play after the
      * parent choreography has animated to the specified offset.
-     * @return the created choreography.
+     * @throws IllegalArgumentException Thrown when the offset is negative.
+     * @return The created choreography.
      */
-    private fun animateAfterFor(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreographer {
+    private fun animateFor(choreography: Choreography, offset: Float, allowInheritance: Boolean = this.allowInheritance, vararg views: MorphLayout): Choreographer {
         val properties = getProperties(choreography, *views)
+
+        if (offset < MIN_OFFSET) {
+            throw IllegalArgumentException("A duration offset may not be less than zero: $offset")
+        }
 
         tailChoreography =  Choreography(this, *views).apply {
             this.setStartProperties(properties)
@@ -268,25 +277,70 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Creates a [Choreography] for the latest given morphViews which will start at the duration
-     * offset of its parent. An offset of 0.5f indicates that this choreography will play when
-     * the animation of its parent is half way through. If no morphViews have been specified the
-     * morphViews of the previous choreography will be used.
+     * Reverse animates the specified [Choreography] to its initial state for the specified morphViews.
+     * The reverse animation will occur after the parent animation is done animating. Only the latest
+     * choreography for the specified view will be reversed.
+     *
+     * @param choreography The parent choreography of the current.
+     * @param views The morphViews to which the choreography belongs to.
+     * @throws IllegalArgumentException Thrown when the offset is negative.
+     * @return The created choreography.
+     */
+    internal fun reverseAnimateFor(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreographer {
+        var oldChoreography: Choreography? = null
+
+        if (offset < MIN_OFFSET) {
+            throw IllegalArgumentException("A duration offset may not be less than zero: $offset")
+        }
+
+        predecessors(choreography) { control, _choreography ->
+            loopA@ for(viewA in _choreography.morphViews) {
+                loopB@ for(viewB in views) {
+                    if (viewB == viewA) {
+                        oldChoreography = _choreography
+                        control.breakTraversal()
+                        break@loopB
+                    }
+
+                    if (oldChoreography != null)
+                        break@loopA
+                }
+            }
+        }
+
+        tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
+            this.flipValues()
+            this.offset = offset
+            this.reverseToStartState = true
+            this.parent = choreography
+            this.child = null
+            choreography.child = this
+        }
+        return this
+    }
+
+    /**
+     * Creates a [Choreography] for the latest given views which will start after the specified
+     * duration offset relative to its parent. An offset of 0.5f indicates that this choreography will play when
+     * the animation of its parent is 50 percent done.
+     *
      * @param offset The offset at which this choreography will start animating.
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography
+     * @return This choreographer.
      */
     fun after(offset: Float, block: Choreography.() -> Unit): Choreographer {
         return animateAfter(offset = offset, morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
-     * Creates a [Choreography] for the given view which will start at the duration
-     * offset of its parent. A value of 0.5f indicates that this choreography will play when
-     * the animation of its parent is half way through. If no view have been specified the
-     * morphViews of the previous choreography will be used.
+     * Creates a [Choreography] for the specified views which will start after the specified
+     * duration offset relative to its parent. An offset of 0.5f indicates that this choreography will play when
+     * the animation of its parent is 50 percent done. If no views have been specified the
+     * views of the previous choreography will be used.
+     *
      * @param offset The offset at which this choreography will start animating.
-     * @param views The views which will be animated by this choreography.
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography
+     * @return This choreographer.
      */
     fun animateAfter(offset: Float, vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
         val morphViews = getViews(views, tailChoreography.morphViews)
@@ -294,64 +348,40 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Creates a [Choreography] for the given morphViews which will start at the duration
-     * offset of its parent. A value of 0.5f indicates that this choreography will play when
-     * the animation of its parent is half way through. If no morphViews have been specified the
-     * morphViews of the previous choreography will be used.
+     * Creates a [Choreography] for the specified views which will start after the specified
+     * duration offset relative to its parent. An offset of 0.5f indicates that this choreography will play when
+     * the animation of its parent is 50 percent done. If no views have been specified the
+     * views of the previous choreography will be used.
+     *
      * @param offset The offset at which this choreography will start animating.
-     * @param morphViews The morph layouts, see: [MorphLayout] which will be animated by this choreography.
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography
+     * @return This choreographer.
      */
     fun animateAfter(offset: Float, vararg morphViews: MorphLayout = tailChoreography.morphViews, block: Choreography.() -> Unit): Choreographer {
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
-        animateAfterFor(tailChoreography, offset, *morphViews)
+        animateFor(tailChoreography, offset, allowInheritance, *morphViews)
         block(tailChoreography)
         return this
     }
 
     /**
-     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
-     * The choreography will play after parent choreography is done animating.
-     * @param choreography the parent choreography of the current.
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
-     */
-    internal fun thenAnimateFor(choreography: Choreography, vararg views: MorphLayout): Choreography {
-        val properties = getProperties(choreography, *views)
-
-        tailChoreography = Choreography(this, *views).apply {
-            this.setStartProperties(properties)
-            this.parent = choreography
-            this.offset = MAX_OFFSET
-            this.offsetDelayAlpha = (this.offset * choreography.duration).toLong()
-            this.offsetDelayDelta = ((MAX_OFFSET - this.offset) * choreography.duration).toLong()
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-            choreography.child = this
-        }
-        return tailChoreography
-    }
-
-    /**
-     * Creates a [Choreography] for the views of the last choreography which will start directly after the animation of
-     * its parent choreography is over. If no views have been specified, the views of the previous
-     * choreography will be used.
-     * @return this choreographer.
+     * Creates a [Choreography] for the views of the last choreography. The choreography will start directly
+     * after the animation of its parent choreography is done.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
     fun then(block: Choreography.() -> Unit): Choreographer {
         return thenAnimate(morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
-     * Creates a [Choreography] for the given view which will start directly after the animation of
-     * its parent choreography is over. If no views have been specified the views of the previous
+     * Creates a [Choreography] for the views of the last choreography. The choreography will start directly
+     * after the animation of its parent choreography is done. If no views have been specified the views of the previous
      * choreography will be used. See: [View]
+     *
      * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography.
      * @return this choreographer.
      */
     fun thenAnimate(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
@@ -359,161 +389,154 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Creates a [Choreography] for the given morphviews which will start directly after the animation of
-     * its parent choreography is over. If no views have been specified the views of the previous
+     * Creates a [Choreography] for the views of the last choreography. The choreography will start directly
+     * after the animation of its parent choreography is done. If no views have been specified the views of the previous
      * choreography will be used. See: [MorphLayout]
-     * @param morphViews The views which will be animated by this choreography.
-     * @return this choreographer.
+     *
+     * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
     fun thenAnimate(vararg morphViews: MorphLayout = emptyArray(), block: Choreography.() -> Unit): Choreographer {
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
-        thenAnimateFor(tailChoreography, *morphViews)
+        animateFor(tailChoreography, MAX_OFFSET, allowInheritance, *morphViews)
         block(tailChoreography)
         return this
     }
 
     /**
-     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
-     * @param choreography the parent choreography of the current.
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
+     * Creates a [Choreography] for the views of the last choreography which will start its animation
+     * at the same time as its parent choreography unless a start delay is specified.
+     *
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
-    internal fun alsoAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
-        val properties = getProperties(choreography, *views)
-
-        tailChoreography = Choreography(this, *views).apply {
-            this.setStartProperties(properties)
-            this.parent = choreography
-            choreography.child = this
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-        }
-        return tailChoreography
+    fun and(block: Choreography.() -> Unit): Choreographer {
+        return andAnimate(morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
-     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
-     * The choreography is a clone of the parent choreography and will play together with its parent
-     * @param choreography the parent choreography of the current.
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given view which will start directly after the animation of
+     * its parent choreography is over. If no views have been specified the views of the previous
+     * choreography will be used. See: [View]
+     *
+     * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
-    internal fun andAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
-        tailChoreography = choreography.clone(*views).apply {
-            this.morphViews = views
-            this.parent = choreography
-            this.child = null
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-            choreography.child = this
-        }
-        return tailChoreography
+    fun andAnimate(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        return andAnimate(morphViews = *getViews(views, tailChoreography.morphViews), block = block)
     }
 
     /**
-     * Creates a [Choreography] for the given [MorphLayout]. With a specified parent choreography.
-     * The choreography is a clone of the parent choreography and will play after the specified offset.
-     * @param choreography the parent choreography of the current.
-     * @param views the morphViews to which the choreography belongs to.
-     * @param offset the time offset to use. The current choreography will play after the
-     * parent choreography has animated to the specified offset.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given view which will start directly after the animation of
+     * its parent choreography is over. If no views have been specified the views of the previous
+     * choreography will be used. See: [View]
+     *
+     * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
-    internal fun andAnimateAfter(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreography {
-        tailChoreography = choreography.clone(*views).apply {
-            this.morphViews = views
-            this.parent = choreography
-            this.offset = offset
-            this.child = null
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
-            choreography.child = this
-        }
-        return tailChoreography
+    fun andAnimate(vararg morphViews: MorphLayout = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        animateFor(tailChoreography, MIN_OFFSET, allowInheritance, *morphViews)
+        block(tailChoreography)
+        return this
     }
 
     /**
-     * Reverse animates the specified choreography to its initial state for the specified morphViews.
-     * The reverse animation will occur after the parent animation is done animating.
-     * @param choreography the parent choreography of the current.
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given views which will reverse the last choreography which was
+     * assign to the same views if any is present. If the views have not been part of a previous choreography this
+     * will do nothing. The animation will play upon the end of the animation of its parent.
+     * If no views have been specified the views of the previous choreography will be used.
+     *
+     * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
-    internal fun reverseAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
-        var oldChoreography: Choreography? = null
-
-        predecessors(choreography) { control, _choreography ->
-            loopA@ for(viewA in _choreography.morphViews) {
-                loopB@ for(viewB in views) {
-                    if (viewB == viewA) {
-                        oldChoreography = _choreography
-                        control.breakTraversal()
-                        break@loopB
-                    }
-
-                    if (oldChoreography != null)
-                        break@loopA
-                }
-            }
-        }
-
-        tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
-            this.flipValues()
-            this.offset = MAX_OFFSET
-            this.reverseToStartState = true
-            this.parent = choreography
-            this.child = null
-            choreography.child = this
-        }
-        return tailChoreography
+    fun thenReverse(block: (Choreography.() -> Unit)? = null): Choreographer {
+        return thenReverseAnimate(morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
-     * Reverse animates the specified [Choreography] to its initial state for the specified [MorphLayout].
-     * The reverse animation will occur together with its parent.
-     * @param choreography the parent choreography of the current.
-     * @param views the morphViews to which the choreography belongs to.
-     * @return the created choreography.
+     * Creates a [Choreography] for the given views which will reverse the last choreography which was
+     * assign to the same views if any is present. If the views have not been part of a previous choreography this
+     * will do nothing. The animation will play upon the end of the animation of its parent.
+     * If no views have been specified the views of the previous choreography will be used.
+     *
+     * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
-    internal fun andReverseAnimate(choreography: Choreography, vararg views: MorphLayout): Choreography {
-        var oldChoreography: Choreography? = null
+    fun thenReverseAnimate(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
+        val morphViews = getViews(views, tailChoreography.morphViews)
+        return thenReverseAnimate(morphViews = *morphViews, block = block)
+    }
 
-        predecessors(choreography) { control, _choreography ->
-            loopA@ for(viewA in _choreography.morphViews) {
-                loopB@ for(viewB in views) {
-                    if (viewB == viewA) {
-                        oldChoreography = _choreography
-                        control.breakTraversal()
-                        break@loopB
-                    }
+    /**
+     * Creates a [Choreography] for the given views which will reverse the last choreography which was
+     * assign to the same views if any is present. If the views have not been part of a previous choreography this
+     * will do nothing. The animation will play upon the end of the animation of its parent.
+     * If no views have been specified the views of the previous choreography will be used.
+     *
+     * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
+     */
+    fun thenReverseAnimate(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        reverseAnimateFor(tailChoreography, MAX_OFFSET, *morphViews)
+        block?.invoke(tailChoreography)
+        return this
+    }
 
-                    if (oldChoreography != null)
-                        break@loopA
-                }
-            }
-        }
+    /**
+     * Creates a [Choreography] for the given views which will reverse the last choreography which was
+     * assign to the same views if any is present. If the views have not been part of a previous choreography this
+     * will do nothing. The animation will play at the same time as its parent and will clone its parents properties.
+     *
+     * @param block The encapsulation block of the created choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
+     */
+    fun andReverse(block: (Choreography.() -> Unit)? = null): Choreographer {
+        return andReverseAnimate(morphViews = *tailChoreography.morphViews, block = block)
+    }
 
-        tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
-            this.flipValues()
-            this.reverseToStartState = true
-            this.parent = choreography
-            this.child = null
-            choreography.child = this
-        }
-        return tailChoreography
+    /**
+     * Creates a [Choreography] for the given views which will reverse the last choreography which was
+     * assign to the same views if any is present. If the views have not been part of a previous choreography this
+     * will do nothing. The animation will play at the same time as its parent and will clone its parents properties.
+     * If no views have been specified the morphViews of the previous choreography will be used.
+     *
+     * @param views The views which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography,
+     * @return This choreographer.
+     */
+    fun andReverseAnimate(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
+        val morphViews = getViews(views, tailChoreography.morphViews)
+        return andReverseAnimate(morphViews = *morphViews, block = block)
+    }
+
+    /**
+     * Creates a [Choreography] for the given morphViews which will reverse the last choreography which was
+     * assign to the same morphViews if any. If the morphViews have not been part of a previous choreography this
+     * will do nothing. The animation will play at the same time as its parent and will clone its parents properties.
+     * If no morphViews have been specified the morphViews of the previous choreography will be used.
+     *
+     * @param morphViews The morph layouts, see: [MorphLayout] which will be animated by this choreography.
+     * @param block The encapsulation block of the created choreography,
+     * @return This choreographer.
+     */
+    fun andReverseAnimate(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        reverseAnimateFor(tailChoreography, MIN_OFFSET, *morphViews)
+        block?.invoke(tailChoreography)
+        return this
     }
 
     /**
@@ -522,20 +545,16 @@ class Choreographer(context: Context) {
      * function will do nothing if the specified view has no children. When this is the
      * case the current head choreograpy will be returned
      *
-     * @param stagger the stagger to use when animating through the children.
      * @param view the [MorphLayout] to which the children belong to.
-     * @return this choreographer.
+     * @param block The encapsulation block of the created choreography
+     * @return This choreographer.
      */
     fun animateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         if (!view.hasChildren())
             return this
 
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        this.headChoreography = Choreography(this, *children)
-        this.headChoreography.offset = MAX_OFFSET
-        this.tailChoreography = headChoreography
-        block(headChoreography)
-        return this
+        return animate(morphViews = *children, block = block)
     }
 
     /**
@@ -544,18 +563,17 @@ class Choreographer(context: Context) {
      * function will do nothing if the specified view has no children. When this is the
      * case the current head choreograpy will be returned
      *
-     * @param stagger the stagger to use when animating through the children.
      * @param view the [ViewGroup] to which the children belong to.
-     * @return this choreographer.
+     * @param block The encapsulation block of the created choreography
+     * @return This choreographer.
      */
-    fun animateChildrenOf(view: ViewGroup?, block: Choreography.() -> Unit): Choreographer {
-        if(view?.childCount ?: 0 <= 0)
+    fun animateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
+        if(view.childCount <= 0)
             return this
 
-        view?.let {
-            val morphViews = getViews(it.children.toArrayList().toTypedArray())
-            animate(*morphViews, block = block)
-        }
+        val morphViews = getViews(view.children.toArrayList().toTypedArray())
+        animate(morphViews = *morphViews, block = block)
+
         return this
     }
 
@@ -564,18 +582,15 @@ class Choreographer(context: Context) {
      * offset of its parent. A value of 0.5f indicates that this choreography will play when
      * the animation of its parent is half way through. If a stagger is specified the morphViews will be animated
      * with the specified stagger.
+     *
      * @param offset The offset at which this choreography will start animating.
      * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
-    fun animateChildrenOfAfter(view: MorphLayout, offset: Float, block: Choreography.() -> Unit): Choreographer {
+    fun animateChildrenOfAfter(offset: Float, view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
-        animateAfterFor(tailChoreography, offset, *children)
-        block(tailChoreography)
-        return this
+        return animateAfter(offset = offset, morphViews = *children, block = block)
     }
 
     /**
@@ -583,35 +598,29 @@ class Choreographer(context: Context) {
      * offset of its parent. A value of 0.5f indicates that this choreography will play when
      * the animation of its parent is half way through. If a stagger is specified the morphViews will be animated
      * with the specified stagger.
+     *
      * @param offset The offset at which this choreography will start animating.
      * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
     fun animateChildrenOfAfter(view: ViewGroup, offset: Float, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.children.toArrayList().toTypedArray())
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
-        animateAfterFor(tailChoreography, offset, *children)
-        block(tailChoreography)
-        return this
+        return animateAfter(offset = offset, morphViews = *children, block = block)
     }
 
     /**
      * Creates a [Choreography] for the given children of the specified view which will start when the animation
      * of the parent choreography is over. If a stagger is specified the morphViews will be animated
      * with the specified stagger.
+     *
      * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
     fun thenAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
-        thenAnimateFor(tailChoreography, *children)
-        block(tailChoreography)
-        return this
+        return thenAnimate(morphViews = *children, block = block)
     }
 
     /**
@@ -620,15 +629,11 @@ class Choreographer(context: Context) {
      * with the specified stagger.
      * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
      * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return this choreography.
+     * @return This choreographer.
      */
     fun thenAnimateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.children.toArrayList().toTypedArray())
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
-        thenAnimateFor(tailChoreography, *children)
-        block(tailChoreography)
-        return this
+        return thenAnimate(morphViews = *children, block = block)
     }
 
     /**
@@ -637,58 +642,49 @@ class Choreographer(context: Context) {
      * with the specified stagger.
      * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
      * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return this choreography.
+     * @return This choreographer.
      */
     fun alsoAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
-        alsoAnimate(tailChoreography, *children)
-        block(tailChoreography)
-        return this
+        return andAnimate(morphViews = *children, block = block)
     }
 
     /**
      * Creates a [Choreography] for the given children of the specified view which will start when the animation
      * of the parent choreography starts. If a stagger is specified the morphViews will be animated
      * with the specified stagger.
+     *
      * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
     fun alsoAnimateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.children.toArrayList().toTypedArray())
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
-        alsoAnimate(tailChoreography, *children)
-        block(tailChoreography)
-        return this
+        return andAnimate(morphViews = *children, block = block)
     }
 
     /**
      * Creates a [Choreography] for the given children of the specified view which will start when the animation
      * of the parent choreography starts. The properties of the parent choreography will be used by this choreography.
      * If a stagger is specified the morphViews will be animated with the specified stagger.
+     *
      * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return this choreography.
+     * @param block The encapsulation block of the created choreography.
+     * @return This choreographer.
      */
     fun andAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
-        andAnimate(tailChoreography, *children)
-        block(tailChoreography)
-        return this
+        return andAnimate(morphViews = *children, block = block)
     }
 
     /**
      * Fetches a map of the properties for the given morphViews. The passed [Choreography] is traversed from
      * bottom to top in order to find the choreography which belongs to specified [MorphLayout]. When the choreography
      * is found a map created containing all the animation properties.
+     *
      * @param choreography The choreography to traverse from.
      * @param views The morphViews to which the choreography requested belongs to.
-     * @return a map of the animation properties with their respective property name.
+     * @return A map of the animation properties with their respective property name.
      */
     private fun getProperties(choreography: Choreography, vararg views: MorphLayout): Map<String, AnimatedValue<*>>? {
         var properties: Map<String, AnimatedValue<*>>? = null
@@ -712,6 +708,7 @@ class Choreographer(context: Context) {
 
     /**
      * Helper method used for traversing the predecessors of the given [Choreography].
+     *
      * @param choreography The [Choreography] to traverse.
      * @param iterator The iterator which gives access to the traversal control
      * and the current choreography being traversed.
@@ -734,6 +731,7 @@ class Choreographer(context: Context) {
 
     /**
      * Helper method used for traversing the successors of the given [Choreography].
+     *
      * @param choreography The [Choreography] to traverse.
      * @param iterator The iterator which gives access to the traversal control
      * and the current choreography being traversed.
@@ -758,7 +756,9 @@ class Choreographer(context: Context) {
      * Traverses the successors of the specified [Choreography] in order to
      * find the head. If the choreography has no child the specified
      * choreography is returned.
-     * @param choreography the choreography to traverse.
+     *
+     * @param choreography The choreography to traverse.
+     * @return The tail of the specified choreography
      */
     private tailrec fun getTail(choreography: Choreography): Choreography {
         if (choreography.child != null) {
@@ -771,7 +771,9 @@ class Choreographer(context: Context) {
      * Traverses the predecessors of the specified [Choreography] in order to
      * find the head. If the choreography has no parent the specified
      * choreography is returned.
-     * @param choreography the choreography to traverse.
+     *
+     * @param choreography The choreography to traverse.
+     * @return The head of the specified choreography
      */
     private tailrec fun getHead(choreography: Choreography): Choreography {
         if (choreography.parent != null) {
@@ -780,6 +782,14 @@ class Choreographer(context: Context) {
         return choreography
     }
 
+    /**
+     * If the [views] array is not empty, a collection of morphview for each view in the
+     * array will be returned. Otherwise the [morphViews] will be returned.
+     *
+     * @param views The views whose morphviews are to be returned
+     * @param morphViews the default morphviews to return otherwise.
+     * @return The morphlayout representation of the specified views or the default ones.
+     */
     private fun getViews(views: Array<out View?>, morphViews: Array<out MorphLayout>): Array<out MorphLayout> {
         return if (views.isNotEmpty()) {
             getViews(views)
@@ -789,10 +799,12 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Retrieves the corresponding [MorphLayout] for specified views from the collection pool.
+     * Retrieves the corresponding [MorphLayout] for the specified views from the morph layout pool.
      * If the the views do not exist in the pool they are converted to Morph layouts and
-     * added to the pool.
-     * @param views the views to be converted or returned as morph layouts.
+     * which are then added to the pool and returned.
+     *
+     * @param views The views to be converted or returned as morph layouts.
+     * @return The morphlayout representation of the specified views.
      */
     private fun getViews(views: Array<out View?>): Array<out MorphLayout> {
         val newMorphViews = LinkedList<MorphLayout>()
@@ -822,11 +834,11 @@ class Choreographer(context: Context) {
      * - **Note:** When a choreography chain is appended the choreographer must be rebuilt, meaning you must call the
      * [Choreographer.buildAll] function even when it has already been called before.
      *
-     * @param choreographer the choreographer whose head choreography is to be appended.
-     * @param offset the new appended head will choereography be added with a default offset of 1f, meaning
+     * @param choreographer The choreographer whose head choreography is to be appended.
+     * @param offset The new appended head will choereography be added with a default offset of 1f, meaning
      * that the appended sequence will play after the end of the previous. This parameter specifies
      * at what offset to play the animation.
-     * @return this choreographer.
+     * @return This choreographer.
      */
     fun append(choreographer: Choreographer, offset: Float = MAX_OFFSET): Choreographer {
         this.tailChoreography.child = choreographer.headChoreography
@@ -851,7 +863,7 @@ class Choreographer(context: Context) {
      * the offset for the head is 0f. The default value for this parameter is 1f which means
      * that the old head choereography will start animating after the animation from the tail of the prepended
      * choreography chain is done animating.
-     * @return this choreographer.
+     * @return This choreographer.
      */
     fun prepend(choreographer: Choreographer, offset: Float = MAX_OFFSET): Choreographer {
         val head = this.headChoreography
@@ -868,19 +880,67 @@ class Choreographer(context: Context) {
     /**
      * Plays all the choreographies within this [Choreographer].
      * A start delay may be specified. The current start value for the [startDelay]
-     * is 0L
-     * @param startDelay the time to wait before playing the choreography sequence.
+     * is 0L. The play function uses a single animator in order to animate the
+     * entire choreography sequence. This animator is started and returned.
+     *
+     * @param startDelay The time to wait before playing the choreography sequence.
      */
     fun play(startDelay: Long = MIN_DURATION): ValueAnimator{
-        return play(headChoreography, startDelay, true)
+        return play(headChoreography, totalDuration, startDelay, traverse = true)
     }
 
     /**
-     * Plays the animation for the specified [Choreography].
-     * @param choreography The choreography which is to be started/play.
-     * @param startDelay the time to wait before playing the choreography sequence
+     * Plays all the choreographies within this [Choreographer].
+     * A start delay may be specified. The current start value for the [startDelay]
+     * is 0L. The play function uses a single animator in order to animate the
+     * entire choreography sequence. This animator is started and returned.
+     *
+     * @param startDelay The time to wait before playing the choreography sequence.
      */
-    private fun play(choreography: Choreography, startDelay: Long, traverse: Boolean): ValueAnimator{
+    fun play(
+        duration: Long = totalDuration,
+        startDelay: Long = 0L,
+        repeatMode: Int = 0,
+        repeatCount: Int = 0,
+        playReversed: Boolean = false,
+        startFraction: Float = MIN_OFFSET,
+        endFraction: Float = MAX_OFFSET
+    ): ValueAnimator{
+        return play(
+            headChoreography,
+            duration,
+            startDelay,
+            repeatMode,
+            repeatCount,
+            playReversed,
+            startFraction,
+            endFraction
+        )
+    }
+
+    /**
+     * Plays the animation for the specified [Choreography]. This function
+     * creates the value animator which will be use for animating through the
+     * choreography sequence with the compute total duration.
+     *
+     * @param choreography The choreography which is to be started/play.
+     * @param startDelay The time to wait before playing the choreography sequence
+     * @param traverse Determines whether the successors of the given choreography
+     * should and be played
+     * @return The create value animator.
+     */
+    private fun play(
+        choreography: Choreography,
+        duration: Long = totalDuration,
+        startDelay: Long = 0L,
+        repeatMode: Int = 0,
+        repeatCount: Int = 0,
+        playReversed: Boolean = false,
+        startFraction: Float = MIN_OFFSET,
+        endFraction: Float = MAX_OFFSET,
+        traverse: Boolean = true
+    ): ValueAnimator{
+
         if (!built) {
             tailChoreography.build()
         }
@@ -892,15 +952,21 @@ class Choreographer(context: Context) {
             it.control.reset()
         }
 
-        animator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+        animator = ValueAnimator.ofFloat(startFraction, endFraction)
         animator.interpolator = null
         animator.startDelay = startDelay
-        animator.duration = totalDuration
+        animator.duration = duration
+        animator.repeatMode = repeatMode
+        animator.repeatCount = repeatCount
         animator.addUpdateListener {
             val fraction = (it.animatedValue as Float)
             transitionTo(choreography, fraction, traverse)
         }
-        animator.start()
+        if (playReversed) {
+            animator.reverse()
+        } else {
+            animator.start()
+        }
 
         return animator
     }
@@ -910,7 +976,7 @@ class Choreographer(context: Context) {
      * A call to this function will reset this choreographer to
      * its initial state by destroying all of its choreographies
      * and by canceling any currently ongoing choreographies.
-     * @return this choreographer.
+     * @return This choreographer.
      */
     fun clear(): Choreographer {
         if (!::tailChoreography.isInitialized)
@@ -934,8 +1000,9 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Resets all the choreographies for this [Choreographer].
-     * @return the choreographer
+     * Resets properties for all the choreographies contained within this [Choreographer].
+     *
+     * @return This choreographer.
      */
     fun reset(): Choreographer {
         predecessors(tailChoreography) { _, choreography ->
@@ -948,8 +1015,9 @@ class Choreographer(context: Context) {
      * Resets all the [Choreography] for the specified [MorphLayout].
      * If the specified view is not present in this choreographer a call
      * to this function will do nothing.
+     *
      * @param view The view which will have its choreography reset.
-     * @return the choreographer
+     * @return This choreographer.
      */
     fun reset(view: MorphLayout): Choreographer {
         predecessors(tailChoreography) { _, choreography ->
@@ -966,8 +1034,9 @@ class Choreographer(context: Context) {
      * Resets all the [Choreography] for the specified [View].
      * If the specified view is not present in this choreographer a call
      * to this function will do nothing.
+     *
      * @param view The view which will have its choreography reset.
-     * @return the choreographer
+     * @return This choreographer.
      */
     fun reset(view: View): Choreographer {
         val target = morphViewPool[view.id]
@@ -979,53 +1048,6 @@ class Choreographer(context: Context) {
             choreography.morphViews.forEach { v ->
                 if (target == v) {
                     choreography.resetProperties()
-                }
-            }
-        }
-        return this
-    }
-
-    /**
-     * Resets the [Choreography] for the specified [MorphLayout] with the specified duration by
-     * animating back to its original state.
-     * @param view the view to which the reset choreography belongs to.
-     * @param duration the duration of the reset animaation.
-     * @return this choreographer.
-     */
-    fun resetWithAnimation(view: MorphLayout, duration: Long = defaultDuration): Choreographer {
-        predecessors(tailChoreography) { _, choreography ->
-            choreography.morphViews.forEach { v ->
-                if (view == v) {
-                    choreography
-                        .reverseAnimate(view)
-                        .withDuration(duration)
-                    play(choreography, MIN_DURATION, false)
-                }
-            }
-        }
-        return this
-    }
-
-    /**
-     * Resets the [Choreography] for the specified [MorphLayout] with the specified duration by
-     * animating back to its original state.
-     * @param view the view to which the reset choreography belongs to.
-     * @param duration the duration of the reset animaation.
-     * @return this choreographer.
-     */
-    fun resetWithAnimation(view: View, duration: Long = defaultDuration): Choreographer {
-        val target = morphViewPool[view.id]
-
-        if (target == null)
-            return this
-
-        predecessors(tailChoreography) { _, choreography ->
-            choreography.morphViews.forEach { v ->
-                if (target == v) {
-                    choreography
-                        .reverseAnimate(view)
-                        .withDuration(duration)
-                    play(choreography, MIN_DURATION, false)
                 }
             }
         }
@@ -1144,8 +1166,8 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Applies the arc translation control point for thes specified
-     * [Choreography]
+     * Applies the arc translation control point for the specified [Choreography]
+     *
      * @param choreography The choreography to which its control point is applied to.
      */
     private fun applyArcType(choreography: Choreography) {
@@ -1161,8 +1183,8 @@ class Choreographer(context: Context) {
     /**
      * Creates the stagger info objects used for creating the stagger
      * effect used for animating the views within a [Choreography].
+     *
      * See: [StaggerInfo]
-     * [Choreography]
      * @param choreography The choreography to which its control point is applied to.
      */
     private fun createStagger(choreography: Choreography) {
@@ -1176,6 +1198,7 @@ class Choreographer(context: Context) {
     /**
      * Applies the reveal for the specified [Choreography]. The reveal
      * is applied to the choreography if it contains a specified [Reveal].
+     *
      * @param choreography The choreography to which its reveal is applied to.
      */
     private fun applyReveal(choreography: Choreography) {
@@ -1194,6 +1217,7 @@ class Choreographer(context: Context) {
     /**
      * Applies the conceal for the specified [Choreography]. The conceal
      * is applied to the choreography if it contains a specified [Conceal].
+     *
      * @param choreography The choreography to which its conceal is applied to.
      */
     private fun applyConceal(choreography: Choreography) {
@@ -1211,7 +1235,10 @@ class Choreographer(context: Context) {
 
     /**
      * Applies the easing [TimeInterpolator] for the specified [Choreography]. The interpolator
-     * is applied the *Choreography* if it contains a specified Interpolator. If the *Choreography*
+     * is applied the choreography if it contains a specified Interpolator. If the Choreography
+     * When a property within a choreography has a defined interpolator, the property interpolator
+     * takes precdence.
+     *
      * @param choreography The choreography to which the interpolator is applied to.
      */
     private fun applyInterpolators(choreography: Choreography) {
@@ -1255,9 +1282,10 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Applies the multiplies for [AnimatedValue] toValue property for each of the animation properties
+     * Applies the multipliers for [AnimatedValue] toValue property for each of the animation properties
      * of the specified [Choreography].
-     * @param choreography The choreography to which its multipliers are applied to.
+     *
+     * @param choreography The choreography to which its adders are applied to.
      */
     private fun applyMultipliers(choreography: Choreography) {
         if (choreography.width.multiply != MAX_OFFSET) {
@@ -1286,6 +1314,7 @@ class Choreographer(context: Context) {
     /**
      * Applies the adders for [AnimatedValue] toValue property for each of the animation properties
      * of the specified [Choreography].
+     *
      * @param choreography The choreography to which its adders are applied to.
      */
     internal fun applyAdders(choreography: Choreography) {
@@ -1316,10 +1345,15 @@ class Choreographer(context: Context) {
      * Animates the choreographies to the specified animation percentage/fraction recursively
      * by navigating through the successors of the head choreography using offset based prunning.
      * A value of 1.0f signifies the end of the animation while a value of 0.0f signifies
-     * the start of the animation.
+     * the start state of the animation.
+     *
      * @param percentage The amount to animation to.
+     * @throws IllegalArgumentException if the percentage is outside of the 0f to 1f range.
      */
     private fun transitionTo(percentage: Float) {
+        if (percentage < MIN_OFFSET || percentage > MAX_OFFSET) {
+            throw IllegalArgumentException("A percentage offset must be in the range of 0f and 1f: $percentage")
+        }
         transitionTo(headChoreography, percentage, true)
     }
 
@@ -1327,7 +1361,8 @@ class Choreographer(context: Context) {
      * Animates this [Choreography] to the specified animation percentage/fraction recursively
      * by navigating through the successors of the head choreography using offset based prunning.
      * A value of 1.0f signifies the end of the animation while a value of 0.0f signifies
-     * the start of the animation.
+     * the start state of the animation.
+     *
      * @param choreography the choreography currently being animated
      * @param percentage The amount to animation to.
      */
@@ -1354,6 +1389,7 @@ class Choreographer(context: Context) {
     /**
      * Animates the specified [Choreography] to specified animation fraction. The total duration
      * and the current playtime must be known.
+     *
      * @param choreography The choreography to be animated.
      * @param fraction The fraction to animate to.
      * @param duration The duration of the animation.
@@ -1388,25 +1424,11 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Animates the specified [MorphLayout] with the specified [Choreography] to the specified animation fraction using stagger.
-     * The total duration and the current playtime must be known. Each property is animated using its respective from and to
-     * values and the specified [TimeInterpolator] if any has been specified. This is the function where the animation
-     * happens.
-     * @param view The morph layout to be animated
-     * @param choreography The choreography to be animated.
-     * @param fraction The fraction to animate to.
-     * @param duration The duration of the animation.
-     * @param currentPlayTime The current playtime of the animation.
-     */
-    private fun animateStaggered(view: MorphLayout, choreography: Choreography, fraction: Float, duration: Long, currentPlayTime: Long) {
-
-    }
-
-    /**
      * Animates the specified [MorphLayout] with the specified [Choreography] to specified animation fraction.
      * The total duration and the current playtime must be known. Each property is animated using its respective from and to
      * values and the specified [TimeInterpolator] if any has been specified. This is the function where the animation
-     * happens.
+     * happens and must be kept as lightweight as possible.
+     *
      * @param view The morph layout to be animated
      * @param choreography The choreography to be animated.
      * @param fraction The fraction to animate to.
@@ -1488,6 +1510,8 @@ class Choreographer(context: Context) {
             } else {
                 view.morphTranslationX = choreography.positionX.fromValue + (choreography.positionX.toValue - choreography.positionX.fromValue) * positionXFraction
                 view.morphTranslationY = choreography.positionY.fromValue + (choreography.positionY.toValue - choreography.positionY.fromValue) * positionYFraction
+
+                //TODO(" Figure out a way to determine stretch direction ")
 
                 choreography.stretch?.let {
                     StretchAnimationHelper.applyStretch(view, choreography.positionY, it, view.morphTranslationY)
@@ -1587,15 +1611,22 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Animates the specified [MorphLayout] with the values specified on the [AnimatedFloatValueArray] to specified animation playtime.
+     * Animates the specified [MorphLayout] with the values specified on the [AnimatedFloatValueArray] to the specified animation playtime.
      * The total duration must be known and a [ViewPropertyValueListener] is used in order to notify the progression of the values.
-     * @param valueHolder The value holder containing the values to animate between
+     *
+     * @param valueHolder The value holder containing the values to animate between.
      * @param view The morph layout to animate
      * @param playTime The current playtime of the animation.
      * @param duration The duration of the animation.
      * @param listener The value progression listener
      */
-    private fun animateThroughPoints(valueHolder: AnimatedFloatValueArray, view: MorphLayout, playTime: Long, duration: Long, listener: ViewPropertyValueListener) {
+    private fun animateThroughPoints(
+        valueHolder: AnimatedFloatValueArray,
+        view: MorphLayout,
+        playTime: Long,
+        duration: Long,
+        listener: ViewPropertyValueListener
+    ) {
         val values = valueHolder.values
         val pointDuration = duration / values.size
 
@@ -1623,6 +1654,7 @@ class Choreographer(context: Context) {
      * successfully create the desired animation sequence. The choreography is gives
      * its [Choreographer] instructions on how to animated and holds values for animateable
      * properties a the specified morphViews.
+     *
      * @param choreographer The [Choreographer] used for animating this choreography
      * @param morphViews the morphViews which this choreography will animate. This assumes the premise that
      * all morphViews have similar layout properties.
@@ -1641,11 +1673,12 @@ class Choreographer(context: Context) {
         internal var useArcTranslator: Boolean = false
 
         internal var delay: Long = MIN_DURATION
-        internal var offset: Float = MIN_OFFSET
         internal var interval: Long = MIN_DURATION
         internal var duration: Long = MIN_DURATION
         internal var offsetDelayAlpha: Long = MIN_DURATION
         internal var offsetDelayDelta: Long = MIN_DURATION
+
+        internal var offset: Float = MIN_OFFSET
 
         internal var pivotValueX: Float = 0.5f
         internal var pivotValueY: Float = 0.5f
@@ -1710,16 +1743,17 @@ class Choreographer(context: Context) {
 
         internal var stagger: AnimationStagger? = null
 
-        internal var stretch: Stretch? = null
-
         internal var reveal: Reveal? = null
         internal var conceal: Conceal? = null
-
         internal var arcType: ArcType? = null
+        internal var stretch: Stretch? = null
 
         lateinit var control: ChoreographyControl
         internal var parent: Choreography? = null
         internal var child: Choreography? = null
+
+        val views: Array<out MorphLayout>
+            get() = morphViews
 
         init {
             applyDefaultValues()
@@ -1728,7 +1762,8 @@ class Choreographer(context: Context) {
         /**
          * Creates a the stagger data for [AnimationStagger] assigned
          * to this [Choreography].
-         * @param stagger the nonnull version of the stagger of this
+         *
+         * @param stagger The nonnull version of the stagger of this
          * choreography.
          */
         internal fun createStagger(stagger: AnimationStagger) {
@@ -1743,6 +1778,9 @@ class Choreographer(context: Context) {
          * Creates a control point for arc animations.
          * The control point is created using an [ArcType] which determines
          * how the translation happens between the start and end coordinates.
+         * @param animatedX The animated x value used for translation.
+         * @param animatedY The animated y value used for translation.
+         * @param arcType The type of arc translation to be perform.
          */
         internal fun createControlPoint(animatedX: AnimatedFloatValue, animatedY: AnimatedFloatValue, arcType: ArcType) {
             val coordinateFrom = Coordinates(animatedX.fromValue, animatedY.fromValue)
@@ -1755,6 +1793,9 @@ class Choreographer(context: Context) {
          * Creates a control point for arc animations.
          * The control point is created using an [ArcType] which determines
          * how the translation happens between the start and end coordinates.
+         * @param coordinatesFrom The coordinates to translate from.
+         * @param coordinatesTo The coordinates to translate to.
+         * @param arcType The type of arc translation to be perform.
          */
         internal fun createControlPoint(coordinatesFrom: Coordinates, coordinatesTo: Coordinates, arcType: ArcType): Coordinates{
             val controlX: Float
@@ -1773,9 +1814,10 @@ class Choreographer(context: Context) {
             return Coordinates(controlX, controlY)
         }
 
-        /***
+        /**
          * A map of the properties or [AnimatedValue] of this [Choreography]
-         * @return a map containing of the properties accessed by their respective names.
+         *
+         * @return A map containing of the properties accessed by their respective names.
          */
         internal fun properties(): Map<String, AnimatedValue<*>> {
             val properties: HashMap<String, AnimatedValue<*>> = HashMap()
@@ -1801,7 +1843,8 @@ class Choreographer(context: Context) {
 
         /**
          * A map containing of property sets or [AnimatedValueArray]
-         * @return a map containing of the properties sets accessed by their respective names.
+         *
+         * @return A map containing of the properties sets accessed by their respective names.
          */
         internal fun propertyHolders(): Map<String, AnimatedValueArray<*>> {
             val properties: HashMap<String, AnimatedValueArray<*>> = HashMap()
@@ -1818,6 +1861,7 @@ class Choreographer(context: Context) {
 
         /**
          * Sets the values for all properties using the given map of properties.
+         *
          * @param properties Map of all the properties to be set.
          */
         @Suppress("UNCHECKED_CAST")
@@ -1940,6 +1984,7 @@ class Choreographer(context: Context) {
             }
             this.duration = choreographer.defaultDuration
             this.interpolator = choreographer.interpolator
+
             this.choreographer.defaultPivot?.let {
                 this.pivotPoint.x = resolvePivot(Pivot.RELATIVE_TO_SELF, it.x, width.fromValue, viewParentSize.width)
                 this.pivotPoint.y = resolvePivot(Pivot.RELATIVE_TO_SELF, it.y, height.fromValue, viewParentSize.height)
@@ -1947,7 +1992,7 @@ class Choreographer(context: Context) {
         }
 
         /**
-         * Resets each of the morphViews held by this [Choreography] to their initial
+         * Resets each of the views held by this [Choreography] to their initial
          * pre animation state.
          */
         fun resetProperties() {
@@ -3928,22 +3973,7 @@ class Choreographer(context: Context) {
             return this
         }
 
-        fun withEpicenter(coordinates: Coordinates): Choreography {
-            TODO("Implement the logic necessary")
-            return this
-        }
-
-        fun withEpicenter(point: FloatPoint): Choreography {
-            TODO("Implement the logic necessary")
-            return this
-        }
-
-        fun withEpicenter(view: MorphLayout): Choreography {
-            TODO("Implement the logic necessary")
-            return this
-        }
-
-        fun withEpicenter(view: View): Choreography {
+        fun withImageChange(bitmapMorph: BitmapMorph): Choreography {
             TODO("Implement the logic necessary")
             return this
         }
@@ -3968,12 +3998,6 @@ class Choreographer(context: Context) {
             return this
         }
 
-        /**
-         * Animates the background of the morphViews of this [Choreography] to the specified [Background]
-         * @param background the background to animate the current to.
-         * @param interpolator the interpolator to use for this animation.
-         * @return this choreography.
-         */
         fun backgroundTo(background: Background, interpolator: TimeInterpolator? = null): Choreography {
             TODO("Implement the logic necessary")
             return this
@@ -4072,6 +4096,7 @@ class Choreographer(context: Context) {
         /**
          * Specifies the start delay of the animation for this [Choreography].
          * @param delay The delay of the choreography animation
+         * @throws IllegalArgumentException Thrown when the offset is negative.
          * @return this choreography.
          */
         fun withStartDelay(delay: Long): Choreography {
@@ -4382,164 +4407,18 @@ class Choreographer(context: Context) {
         }
 
         /**
-         * Creates a [Choreography] for the last given morphViews which will start directly at the same time
-         * as its parent. If no morphViews have been specified the morphViews of the previous choreography will be used.
-         * @return this choreography.
-         */
-        fun also(): Choreography {
-            choreographer.applyAdders(this)
-            choreographer.applyMultipliers(this)
-            return choreographer.alsoAnimate(this, *morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given views which will start directly at the same time
-         * as its parent. If no views have been specified the morphViews of the previous choreography will be used.
-         * @param views The views which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun alsoAnimate(vararg views: View? = emptyArray()): Choreography {
-            val morphViews = choreographer.getViews(views, this.morphViews)
-            return alsoAnimate(*morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given morphViews which will start directly at the same time
-         * as its parent. If no morphViews have been specified the morphViews of the previous choreography will be used.
-         * @param morphViews The morph layouts, see: [MorphLayout] which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun alsoAnimate(vararg morphViews: MorphLayout = this.morphViews): Choreography {
-            choreographer.applyAdders(this)
-            choreographer.applyMultipliers(this)
-            return choreographer.alsoAnimate(this, *morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given views which will start directly at the same time
-         * as its parent with the same properties as its parent unless specified otherwise. If no views
-         * have been specified the morphViews of the previous choreography will be used.
-         * @param views The views which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun andAnimate(vararg views: View? = emptyArray()): Choreography {
-            val morphViews = choreographer.getViews(views, this.morphViews)
-            return andAnimate(*morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given morphViews which will start directly at the same time
-         * as its parent with the same properties as its parent unless specified otherwise. If no morphViews
-         * have been specified the morphViews of the previous choreography will be used.
-         * @param morphViews The morph layouts, see: [MorphLayout] which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun andAnimate(vararg morphViews: MorphLayout = this.morphViews): Choreography {
-            choreographer.applyAdders(this)
-            choreographer.applyMultipliers(this)
-            return choreographer.andAnimate(this, *morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given views which will start directly after the specified duration
-         * offset of its parent with the same properties as its parent unless specified otherwise. If no views
-         * have been specified the morphViews of the previous choreography will be used.
-         * @param views The views which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun andAnimateAfter(offset: Float, vararg views: View? = emptyArray()): Choreography {
-            val morphViews = choreographer.getViews(views, this.morphViews)
-            return andAnimateAfter(offset, *morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given morphViews which will start directly after the specified duration
-         * offset of its parent with the same properties as its parent unless specified otherwise. If no morphViews
-         * have been specified the morphViews of the previous choreography will be used.
-         * @param morphViews The morph layouts, see: [MorphLayout] which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun andAnimateAfter(offset: Float, vararg morphViews: MorphLayout = this.morphViews): Choreography {
-            choreographer.applyAdders(this)
-            choreographer.applyMultipliers(this)
-            return choreographer.andAnimateAfter(this, offset, *morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given views which will reverse the last choreography which was
-         * assign to the same views if any. If the views have not been part of a previous choreography this
-         * will do nothing. The animation will play upon the end of the animation of its parent.
-         * If no views have been specified the morphViews of the previous choreography will be used.
-         * @param views The views which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun reverseAnimate(vararg views: View? = emptyArray()): Choreography {
-            val morphViews = choreographer.getViews(views, this.morphViews)
-            return reverseAnimate(*morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given morphViews which will reverse the last choreography which was
-         * assign to the same morphViews if any. If the morphViews have not been part of a previous choreography this
-         * will do nothing. The animation will play upon the end of the animation of its parent.
-         * If no morphViews have been specified the morphViews of the previous choreography will be used.
-         * @param morphViews The morph layouts, see: [MorphLayout] which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun reverseAnimate(vararg morphViews: MorphLayout = this.morphViews): Choreography {
-            choreographer.applyAdders(this)
-            choreographer.applyMultipliers(this)
-            return choreographer.reverseAnimate(this, *morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given views which will reverse the last choreography which was
-         * assign to the same views if any. If the views have not been part of a previous choreography this
-         * will do nothing. The animation will play at the same time as its parent and will clone its parents properties.
-         * If no views have been specified the morphViews of the previous choreography will be used.
-         * @param views The views which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun andReverseAnimate(vararg views: View? = emptyArray()): Choreography {
-            val morphViews = choreographer.getViews(views, this.morphViews)
-            return andReverseAnimate(*morphViews)
-        }
-
-        /**
-         * Creates a [Choreography] for the given morphViews which will reverse the last choreography which was
-         * assign to the same morphViews if any. If the morphViews have not been part of a previous choreography this
-         * will do nothing. The animation will play at the same time as its parent and will clone its parents properties.
-         * If no morphViews have been specified the morphViews of the previous choreography will be used.
-         * @param morphViews The morph layouts, see: [MorphLayout] which will be animated by this choreography.
-         * @return this choreography.
-         */
-        fun andReverseAnimate(vararg morphViews: MorphLayout = this.morphViews): Choreography {
-            choreographer.applyAdders(this)
-            choreographer.applyMultipliers(this)
-            return choreographer.andReverseAnimate(this, *morphViews)
-        }
-
-        /**
          * A call to this function will buildAll the current and all the previously appended choreographies.
          * This function must be called prior to starting the [Choreography] animation. Note that a
-         * call to this function will not only built the current choreography but also all its predecessors.
+         * call to this function will not only built the current choreography but and all its predecessors.
          * A built choreography can be saved to played at a later time. The ability to buildAll a
          * choreography helps to get rid of overhead.
          * @return the [Choreographer] which will animate this choreography.
          */
-        fun build(): Choreographer {
+        internal fun build(): Choreographer {
             choreographer.applyAdders(this)
             choreographer.applyMultipliers(this)
             return choreographer.buildAll()
         }
-
-        /**
-         * A call to this function will start the current and all the previously appended choreographies.
-         * call to this function will not only start the current choreography but also all its predecessors.
-         * If the choreographies are not yet buildAll they will also be built.
-         * choreography helps to get rid of overhead.
-         */
-        fun start() = choreographer.play()
 
         /**
          * Copies the properties of the give [Choreography] into the current
