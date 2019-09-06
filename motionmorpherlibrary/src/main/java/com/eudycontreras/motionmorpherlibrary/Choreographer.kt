@@ -1075,7 +1075,7 @@ class Choreographer(context: Context) {
      *
      * @return The choreographer being used.
      */
-     internal fun buildAll(): Choreographer {
+    internal fun buildAll(): Choreographer {
 
         var totalDelay: Long = MIN_DURATION
         var totalDuration: Long = MIN_DURATION
@@ -1365,9 +1365,7 @@ class Choreographer(context: Context) {
             return
         }
 
-        if (!choreography.control.ended) {
-            choreography.control.animateFraction(percentage)
-        }
+        choreography.control.animateFraction(percentage)
 
         if (!traverse)
             return

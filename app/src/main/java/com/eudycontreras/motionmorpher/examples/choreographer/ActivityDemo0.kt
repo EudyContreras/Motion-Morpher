@@ -12,6 +12,7 @@ import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
+import com.eudycontreras.motionmorpherlibrary.cast
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
 import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
@@ -69,10 +70,18 @@ class ActivityDemo0 : MorphActivity() {
         var chor1: Choreographer? = null
 
         cardLayout.post {
-            chor1 = createChoreographyTwo(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
+            chor1 = createChoreographyThree(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
         }
         cardLayout.setOnClickListener {
-            chor1?.play()
+            val animator = ValueAnimator.ofFloat(0f, 1f)
+            animator.setDuration(6000)
+            animator.setInterpolator(MaterialInterpolator(Interpolation.REVERSED_OUT))
+            animator.addUpdateListener {
+                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+                chor1?.transitionTo(fraction)
+            }
+            animator.start()
+
         }
     }
 
@@ -251,8 +260,8 @@ class ActivityDemo0 : MorphActivity() {
                 withDuration(1000)
                 withPivot(0.5f, 0.5f)
                 withInterpolator(DecelerateInterpolator())
-                withStagger(AnimationStagger(0.5f, type = Stagger.LINEAR))
-                rotateTo(360f)
+                withStagger(AnimationStagger(1f, type = Stagger.LINEAR))
+                rotateFrom(0f, 360f)
             }
             .thenAnimate(card) {
                 withDuration(2000)
