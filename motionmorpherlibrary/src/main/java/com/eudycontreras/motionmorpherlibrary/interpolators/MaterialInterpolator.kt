@@ -5,10 +5,28 @@ import androidx.core.view.animation.PathInterpolatorCompat
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 import java.lang.StrictMath.pow
 import kotlin.math.sin
 
+
+/*
+* Copyright 2019 The Android Open Source Project
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 /**
  * @Project MotionMorpher
@@ -63,5 +81,25 @@ class MaterialInterpolator(type: Interpolation? = null): TimeInterpolator {
         override fun getInterpolation(fraction: Float): Float {
             return 1.0f - fraction
         }
+    }
+
+    class Shared(
+        val base: TimeInterpolator,
+        val start: Float = MIN_OFFSET,
+        val end: Float = MAX_OFFSET
+    ): TimeInterpolator {
+        private val offset = base.getInterpolation(start)
+        private val xRatio = (end - start) / MAX_OFFSET
+        private val yRatio = (base.getInterpolation(end) - offset) / MAX_OFFSET
+
+        override fun getInterpolation(input: Float): Float {
+            return (base.getInterpolation(start + (input * xRatio)) - offset) / yRatio
+        }
+    }
+
+    companion object {
+        val ELASTIC: TimeInterpolator = ElasticOut()
+        val REVERESED: TimeInterpolator = Reversed()
+        val SPRING: TimeInterpolator = ElasticOut()
     }
 }

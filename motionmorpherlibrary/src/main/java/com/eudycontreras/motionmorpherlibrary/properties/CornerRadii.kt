@@ -54,7 +54,7 @@ class CornerRadii(
     }
 
     fun apply(cornerRadii: FloatArray) {
-        for (index in 0 until cornerRadii.size) {
+        for (index in cornerRadii.indices) {
             corners[index] = cornerRadii[index]
         }
         notifyChange(corners)
@@ -90,7 +90,7 @@ class CornerRadii(
     }
 
     override fun onBindingChanged(newValue: FloatArray) {
-        for (index in 0 until newValue.size) {
+        for (index in newValue.indices) {
             corners[index] = newValue[index]
         }
     }

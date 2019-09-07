@@ -4,10 +4,18 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toDrawable
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.doWith
+import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
+import com.eudycontreras.motionmorpherlibrary.extensions.toBitmap
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
 
 /**
  * @Project MotionMorpher
@@ -57,52 +65,53 @@ open class RoundedImageView : ImageView {
 
     private fun applyCorners(topLeft: Float = MIN_OFFSET, topRight: Float = MIN_OFFSET, bottomRight: Float = MIN_OFFSET, bottomLeft: Float = MIN_OFFSET) {
         corners.apply(topLeft, topRight, bottomRight, bottomLeft)
+
+        if (drawable is RoundedBitmapDrawable) {
+            doWith(drawable as RoundedBitmapDrawable) {
+                it.corners.apply(topLeft, topRight, bottomRight, bottomLeft)
+                it.invalidateSelf()
+            }
+
+        } else {
+            drawable?.let {
+                BitmapUtility.drawableToBitmap(it)?.let {
+                    val newDrawable = RoundedBitmapDrawable(it, measuredWidth, measuredHeight / 2)
+                    newDrawable.corners.apply(topLeft, topRight, bottomRight, bottomLeft)
+                    setImageDrawable(newDrawable)
+                }
+            }
+        }
     }
 
     fun updateCornerRadii(index: Int, corner: Float) {
-        corners[index] = corner
-        cornersChanged = true
-    }
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-
-        if (drawable !is BitmapDrawable)
-            return
-
-        if (changed || cornersChanged) {
-
-            recomputeCorners()
-
-            cornersChanged = false
+        if (drawable is RoundedBitmapDrawable) {
+            (drawable as RoundedBitmapDrawable).updateCornerRadii(index, corner)
         }
     }
 
-    private fun recomputeCorners() {
-        if (width == 0 || height == 0) {
-            return
-        }
-        val fullSizeBitmap = (drawable as BitmapDrawable).bitmap
-
-        val scaledWidth = measuredWidth
-        val scaledHeight = measuredHeight
-
-        val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
-            fullSizeBitmap
-        } else {
-            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
-        }
-
-        val shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-
-        paint.shader = shader
+    fun setBitmapDrawable(drawable: BitmapDrawable?) {
+        super.setImageDrawable(drawable)
     }
 
-    override fun onDraw(canvas: Canvas) {
-        path.rewind()
-        path.addRoundRect(MIN_OFFSET, MIN_OFFSET, measuredWidth.toFloat(), measuredHeight.toFloat(), corners.corners, Path.Direction.CCW)
-        path.close()
+    override fun setImageDrawable(drawable: Drawable?) {
+        drawable?.let {
+           if (it is RoundedBitmapDrawable) {
+                super.setImageDrawable(drawable)
+           } else  {
+               BitmapUtility.drawableToBitmap(it)?.let {
+                   super.setImageDrawable(RoundedBitmapDrawable(it, width, height / 2))
+               }
+           }
+        }
+    }
 
-        canvas.drawPath(path, paint)
+    override fun setImageResource(resId: Int) {
+        setImageDrawable(ContextCompat.getDrawable(context, resId))
+    }
+
+    override fun setImageBitmap(bitmap: Bitmap?) {
+        bitmap?.let {
+            setImageDrawable(it.toDrawable(resources))
+        }
     }
 }

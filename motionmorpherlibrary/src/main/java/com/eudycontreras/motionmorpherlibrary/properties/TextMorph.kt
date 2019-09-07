@@ -13,10 +13,9 @@ import androidx.annotation.IdRes
 class TextMorph(
     var view: TextView,
     var textFrom: String,
-    var textTo: String
-) {
+    var textTo: String,
     var onOffset: Float = 0.3f
-
+) {
     var fontSizeFrom: Float = view.textSize
     var fontSizeTo: Float = view.textSize
 

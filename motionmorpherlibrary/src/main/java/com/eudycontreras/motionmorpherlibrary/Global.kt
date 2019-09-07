@@ -1,10 +1,17 @@
 package com.eudycontreras.motionmorpherlibrary
 
+import android.animation.TimeInterpolator
 import androidx.core.math.MathUtils.clamp
+import androidx.core.view.animation.PathInterpolatorCompat
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
+import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.hypot
+import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
+import kotlin.reflect.full.isSupertypeOf
 
 /**
  * @Project MotionMorpher
@@ -57,6 +64,43 @@ const val MIN_DURATION: Long = 0L
  */
 const val DEFAULT_COLOR: Int = 0x000000
 
+
+/**
+ * Standard easing.
+ *
+ * Elements that begin and end at rest use standard easing. They speed up quickly and slow down
+ * gradually, in order to emphasize the end of the transition.
+ *
+ * Copyright 2019 The Android Open Source Project.
+ */
+val STANDARD: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
+    PathInterpolatorCompat.create(0.4f, 0f, 0.2f, 1f)
+}
+
+/**
+ * Decelerate easing.
+ *
+ * Incoming elements are animated using deceleration easing, which starts a transition at peak
+ * velocity (the fastest point of an element’s movement) and ends at rest.
+ *
+ * Copyright 2019 The Android Open Source Project.
+ */
+val INCOMING: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
+    PathInterpolatorCompat.create(0f, 0f, 0.2f, 1f)
+}
+
+/**
+ * Accelerate easing.
+ *
+ * Elements exiting a screen use acceleration easing, where they start at rest and end at peak
+ * velocity.
+ *
+ * Copyright 2019 The Android Open Source Project.
+ */
+val OUTGOING: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
+    PathInterpolatorCompat.create(0.4f, 0f, 1f, 1f)
+}
+
 /**
  * Generates and returns an unique globa id by incrementing
  * an atomic integer. See: [AtomicInteger]
@@ -72,8 +116,8 @@ fun getUniqueId(): Int {
  * @param to the end value
  * @param fraction the amount to lerp to given the range
  */
-fun lerp(from: Int, to: Int, fraction: Float): Float {
-    return from + (to - from) * fraction
+fun lerp(from: Int, to: Int, fraction: Float): Int {
+    return (from + (to - from) * fraction).toInt()
 }
 
 /**

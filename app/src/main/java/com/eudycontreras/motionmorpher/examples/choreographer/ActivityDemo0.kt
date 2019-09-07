@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.*
+import androidx.core.animation.addListener
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
@@ -70,18 +71,22 @@ class ActivityDemo0 : MorphActivity() {
         var chor1: Choreographer? = null
 
         cardLayout.post {
-            chor1 = createChoreographyThree(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
+            chor1 = createChoreographyTwo(cardLayout as ConstraintLayout, root, FastOutSlowInInterpolator())
         }
         cardLayout.setOnClickListener {
-            val animator = ValueAnimator.ofFloat(0f, 1f)
-            animator.setDuration(6000)
-            animator.setInterpolator(MaterialInterpolator(Interpolation.REVERSED_OUT))
+           /* val animator = ValueAnimator.ofFloat(0f, 1f)
+            animator.setDuration(10000)
+            animator.setInterpolator(LinearInterpolator())
             animator.addUpdateListener {
-                val fraction = it.animatedFraction.clamp(MIN_OFFSET, MAX_OFFSET)
+                val fraction = (it.animatedValue as Float).clamp(MIN_OFFSET, MAX_OFFSET)
                 chor1?.transitionTo(fraction)
             }
-            animator.start()
-
+            animator.addListener(
+                onStart = { chor1?.transitionTo(MIN_OFFSET) },
+                onEnd = { chor1?.transitionTo(MAX_OFFSET) }
+            )
+            animator.start()*/
+            chor1?.play()
         }
     }
 
@@ -260,7 +265,7 @@ class ActivityDemo0 : MorphActivity() {
                 withDuration(1000)
                 withPivot(0.5f, 0.5f)
                 withInterpolator(DecelerateInterpolator())
-                withStagger(AnimationStagger(1f, type = Stagger.LINEAR))
+                withStagger(AnimationStagger(0.3f, type = Stagger.LINEAR))
                 rotateFrom(0f, 360f)
             }
             .thenAnimate(card) {
@@ -299,13 +304,11 @@ class ActivityDemo0 : MorphActivity() {
                 withDuration(500)
             }
             .after(0.3f) {
-                val textMorph = TextMorph(card.demo_0_header, "Deadpool", "Deadpool 2")
                 val concel = Conceal(card.demo_0_image_2, 0.5f, 0.5f, 0f)
 
                 withDuration(400)
                 withInterpolator(AnticipateOvershootInterpolator())
                 withConceal(concel)
-               /// withTextChange(textMorph)
                 anchorTo(Anchor.LEFT, root, 30.dp)
                 rotateFrom(0f, -35f)
             }
@@ -318,6 +321,14 @@ class ActivityDemo0 : MorphActivity() {
                 withInterpolator(OvershootInterpolator())
                 withDuration(500)
                 anchorTo(Anchor.CENTER, root)
+            }
+            .then {
+                val textMorph = TextMorph(card.demo_0_header, "Deadpool", "Deadpool 2")
+               // val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background1)
+
+                withDuration(1000)
+                //withTextChange(textMorph)
+               // withImageChange(imageMorph)
             }
             .build()
 

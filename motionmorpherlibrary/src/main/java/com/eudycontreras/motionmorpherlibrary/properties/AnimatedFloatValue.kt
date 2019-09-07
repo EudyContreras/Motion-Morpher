@@ -1,7 +1,9 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
+import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.lerp
 import com.google.android.material.math.MathUtils
 import kotlin.math.abs
 
@@ -30,8 +32,8 @@ class AnimatedFloatValue(
         this.interpolateOffsetEnd = endOffset
     }
 
-    var add: Float = 0f
-    var multiply: Float = 1f
+    var add: Float = MIN_OFFSET
+    var multiply: Float = MAX_OFFSET
 
     override var interpolator: TimeInterpolator? = null
 
@@ -50,7 +52,7 @@ class AnimatedFloatValue(
     var difference: Float = abs(fromValue - toValue)
         private set
 
-    fun lerp(fraction: Float) = MathUtils.lerp(fromValue, toValue, fraction)
+    fun lerp(fraction: Float): Float = lerp(fromValue, toValue, fraction)
 
     fun set(value: AnimatedFloatValue) {
         super.set(value)

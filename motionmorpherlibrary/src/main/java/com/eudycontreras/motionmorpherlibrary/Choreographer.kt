@@ -3,12 +3,12 @@ package com.eudycontreras.motionmorpherlibrary
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.Context
-import android.os.Handler
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import androidx.core.animation.addListener
 import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.enumerations.*
 import com.eudycontreras.motionmorpherlibrary.extensions.*
@@ -40,6 +40,8 @@ import kotlin.math.abs
  * @since July 30 2019
  */
 class Choreographer(context: Context) {
+
+    //TODO(" Figure out a way to determine stretch direction ")
 
     private lateinit var headChoreography: Choreography
     private lateinit var tailChoreography: Choreography
@@ -875,37 +877,8 @@ class Choreographer(context: Context) {
      *
      * @param startDelay The time to wait before playing the choreography sequence.
      */
-    fun play(startDelay: Long = MIN_DURATION): ValueAnimator{
-        return play(headChoreography, totalDuration, startDelay, traverse = true)
-    }
-
-    /**
-     * Plays all the choreographies within this [Choreographer].
-     * A start delay may be specified. The current start value for the [startDelay]
-     * is 0L. The play function uses a single animator in order to animate the
-     * entire choreography sequence. This animator is started and returned.
-     *
-     * @param startDelay The time to wait before playing the choreography sequence.
-     */
-    fun play(
-        duration: Long = totalDuration,
-        startDelay: Long = 0L,
-        repeatMode: Int = 0,
-        repeatCount: Int = 0,
-        playReversed: Boolean = false,
-        startFraction: Float = MIN_OFFSET,
-        endFraction: Float = MAX_OFFSET
-    ): ValueAnimator{
-        return play(
-            headChoreography,
-            duration,
-            startDelay,
-            repeatMode,
-            repeatCount,
-            playReversed,
-            startFraction,
-            endFraction
-        )
+    fun play(duration: Long = totalDuration, startDelay: Long = MIN_DURATION): ValueAnimator{
+        return play(headChoreography, duration = duration, startDelay = startDelay, traverse = true)
     }
 
     /**
@@ -953,6 +926,10 @@ class Choreographer(context: Context) {
             val fraction = (it.animatedValue as Float)
             transitionTo(choreography, fraction, traverse)
         }
+        animator.addListener(
+            onStart = { transitionTo(choreography, MIN_OFFSET, traverse) },
+            onEnd = { transitionTo(choreography, MAX_OFFSET, traverse) }
+        )
         if (playReversed) {
             animator.reverse()
         } else {
@@ -1087,6 +1064,7 @@ class Choreographer(context: Context) {
             applyConceal(current)
             applyArcType(current)
             createStagger(current)
+            buildImageMorph(current)
             applyInterpolators(current)
 
             val trim: Long = current.offsetDelayDelta
@@ -1184,6 +1162,17 @@ class Choreographer(context: Context) {
                 it
             )
         }
+    }
+
+    /**
+     * Builds the [BitmapMorph] for this [Choreography] when a bitmap morph
+     * is available.
+     *
+     * See: [BitmapMorph]
+     * @param choreography The choreography to which its control point is applied to.
+     */
+    private fun buildImageMorph(choreography: Choreography) {
+        choreography.bitmapMorph?.build()
     }
 
     /**
@@ -1332,6 +1321,7 @@ class Choreographer(context: Context) {
         }
     }
 
+    private var lastValue: Float = MIN_OFFSET
     /**
      * Animates the choreographies to the specified animation percentage/fraction recursively
      * by navigating through the successors of the head choreography using offset based prunning.
@@ -1507,8 +1497,6 @@ class Choreographer(context: Context) {
                 view.morphTranslationX = choreography.positionX.lerp(positionXFraction)
                 view.morphTranslationY = choreography.positionY.lerp(positionYFraction)
 
-                //TODO(" Figure out a way to determine stretch direction ")
-
                 choreography.stretch?.let {
                     StretchAnimationHelper.applyStretch(view, choreography.positionY, it, view.morphTranslationY)
                 }
@@ -1601,6 +1589,8 @@ class Choreographer(context: Context) {
             boundsChanged = true
         }
 
+        choreography.bitmapMorph?.morph(fraction)
+
         if (boundsChanged) {
             view.updateLayout()
         }
@@ -1641,9 +1631,9 @@ class Choreographer(context: Context) {
 
             val mapFraction = mapRange(playTime.toFloat(), timeStart.toFloat(), timeEnd.toFloat(), MIN_OFFSET, MAX_OFFSET)
 
-            val valueXFraction = valueHolder.interpolator?.getInterpolation(mapFraction) ?: mapFraction
+            val valueFraction = valueHolder.interpolator?.getInterpolation(mapFraction) ?: mapFraction
 
-            listener(view,start + (end - start) * valueXFraction)
+            listener(view,start + (end - start) * valueFraction)
         }
     }
 
@@ -1745,6 +1735,9 @@ class Choreographer(context: Context) {
         internal var conceal: Conceal? = null
         internal var arcType: ArcType? = null
         internal var stretch: Stretch? = null
+
+        internal var textMorph: TextMorph? = null
+        internal var bitmapMorph: BitmapMorph? = null
 
         lateinit var control: ChoreographyControl
         internal var parent: Choreography? = null
@@ -3995,7 +3988,7 @@ class Choreographer(context: Context) {
         }
 
         fun withImageChange(bitmapMorph: BitmapMorph): Choreography {
-            TODO("Implement the logic necessary")
+            this.bitmapMorph = bitmapMorph
             return this
         }
 

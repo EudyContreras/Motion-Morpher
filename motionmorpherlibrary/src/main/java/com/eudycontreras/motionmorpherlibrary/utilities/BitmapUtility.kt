@@ -1,8 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.utilities
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
+import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
@@ -10,6 +9,19 @@ import android.graphics.drawable.VectorDrawable
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
+import android.graphics.PorterDuffXfermode
+import android.graphics.RectF
+import android.opengl.ETC1.getHeight
+import android.opengl.ETC1.getWidth
+import android.graphics.Bitmap
+import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.extensions.dp
+import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
+import android.opengl.ETC1.getHeight
+import android.opengl.ETC1.getWidth
+import android.widget.ImageView
+import com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
+import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
 
 
 /**
@@ -59,5 +71,67 @@ object BitmapUtility {
         } else {
             throw IllegalArgumentException("unsupported drawable propertyName")
         }
+    }
+
+    fun getRoundedCornerBitmap(bitmap: Bitmap, pixels: Int): Bitmap {
+        val output = Bitmap.createBitmap(
+            bitmap.width, bitmap
+                .height, Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(output)
+
+        val color = -0xbdbdbe
+        val paint = Paint()
+        val rect = Rect(0, 0, bitmap.width, bitmap.height)
+        val rectF = RectF(rect)
+        val roundPx = pixels.toFloat()
+
+        paint.setAntiAlias(true)
+        canvas.drawARGB(0, 0, 0, 0)
+        paint.setColor(color)
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint)
+
+        paint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_IN))
+        canvas.drawBitmap(bitmap, rect, rect, paint)
+
+        return output
+    }
+
+    fun drawableToBitmap(drawable: Drawable, defaultWidth: Int = 0, defaultHeight: Int = 0): Bitmap? {
+        if (drawable is BitmapDrawable) {
+            return drawable.bitmap
+        }
+        var bitmap: Bitmap
+
+        val width = Math.max(drawable.intrinsicWidth, defaultWidth)
+        val height = Math.max(drawable.intrinsicHeight, defaultHeight)
+
+        try {
+            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            return bitmap
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    fun asRoundedBitmap(view: ImageView, image: BitmapDrawable): RoundedBitmapDrawable {
+        val fullSizeBitmap = image.bitmap
+
+        val scaledWidth = view.width
+        val scaledHeight = view.height
+
+        val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
+            fullSizeBitmap
+        } else {
+            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
+        }
+
+        val cornerRadii = if (view is RoundedImageView) view.corners else CornerRadii(MIN_OFFSET)
+
+        return RoundedBitmapDrawable(scaledBitmap, scaledWidth, scaledHeight, cornerRadii)
     }
 }

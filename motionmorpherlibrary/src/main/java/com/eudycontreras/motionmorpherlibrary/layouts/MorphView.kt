@@ -305,6 +305,8 @@ class MorphView: MorphLayout {
         }
     }
 
+    fun getOverlay() = view.overlay
+
     override fun getView(): View = view
 
     override fun isFloatingActionButton(): Boolean = isActionButton
@@ -354,7 +356,7 @@ class MorphView: MorphLayout {
             return false
         }
 
-        for (index in 0 until cornerRadii.size) {
+        for (index in cornerRadii.indices) {
             val corner = cornerRadii[index]
             this.cornerRadii[index] = corner
             if (view is RoundedImageView) {
