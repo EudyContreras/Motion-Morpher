@@ -2,7 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 
 /**
- * Class which represents a point of generic type [T].
+ * Class which represents a point of generic fadeType [T].
  * The point holds an arbitrary `x` and `y` value
  *
  * @Project MotionMorpher

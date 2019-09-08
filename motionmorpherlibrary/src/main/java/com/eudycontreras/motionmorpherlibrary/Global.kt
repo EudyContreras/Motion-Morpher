@@ -24,6 +24,7 @@ import kotlin.reflect.full.isSupertypeOf
  */
 private var id = AtomicInteger(Int.MIN_VALUE)
 
+const val MID_OFFSET: Float = 0.33f
 /**
  * The global maximun offset for lerping interpolations. Value: `1F`
  */
@@ -305,7 +306,7 @@ inline fun <reified X,reified Y,reified Z> doWith(first: X?, second: Y?, third: 
 }
 
 /**
- * Casts the target to the precedding type of its assignment.
+ * Casts the target to the precedding fadeType of its assignment.
  */
 inline fun <reified T> Any.cast(): T{
     return this as T

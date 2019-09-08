@@ -3,7 +3,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
 /**
  * Class which holds information about a gradient
  * This internally holds an array of colors. See: [Color],
- * and the type of gradient. See: [Type]
+ * and the fadeType of gradient. See: [Type]
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 12 2019
@@ -14,7 +14,7 @@ data class Gradient(
     val type: Type = Type.LINEAR
 ) {
     /**
-     * The type of a gradient. The types
+     * The fadeType of a gradient. The types
      * can currently be: [Type.RADIAL], [Type.LINEAR]
      * and [Type.SWEEP]
      */

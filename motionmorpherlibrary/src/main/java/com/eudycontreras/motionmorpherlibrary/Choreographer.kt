@@ -15,7 +15,6 @@ import com.eudycontreras.motionmorpherlibrary.extensions.*
 import com.eudycontreras.motionmorpherlibrary.helpers.ArcTranslationHelper
 import com.eudycontreras.motionmorpherlibrary.helpers.StaggerAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
-import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.listeners.AnimationProgressListener
 import com.eudycontreras.motionmorpherlibrary.properties.*
@@ -25,6 +24,15 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.math.abs
+import android.graphics.drawable.ColorDrawable
+import android.content.res.ColorStateList
+import android.graphics.drawable.RippleDrawable
+import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValueArray
+import android.os.Build
+import android.os.Handler
+
 
 /**
  * Class which manages and creates complex choreographies. The choreographer
@@ -1041,6 +1049,14 @@ class Choreographer(context: Context) {
         return this
     }
 
+    protected fun forceRipple(view: View, ripple: RippleDrawable) {
+        ripple.setHotspot((view.width / 2).toFloat(), (view.height / 2).toFloat())
+        ripple.state = intArrayOf(android.R.attr.state_pressed, android.R.attr.state_enabled)
+
+        val handler = Handler()
+
+        handler.postDelayed(Runnable { ripple.state = intArrayOf() }, 200)
+    }
     /**
      * Builds the [Choreographer] by applying the defined values of each [Choreography]
      * and prepares the choreographies to be played. The build process is and must be called prior
@@ -1099,8 +1115,15 @@ class Choreographer(context: Context) {
                 current.reveal?.let {
                     RevealUtility.circularReveal(it)
                 }
+
                 current.conceal?.let {
                     RevealUtility.circularConceal(it)
+                }
+
+                current.ripple?.let {
+                    var view = current.views.last().getView()
+                    view.overlay.add(it)
+                    forceRipple(view, it)
                 }
             }
 
@@ -1540,7 +1563,7 @@ class Choreographer(context: Context) {
             }
         }
 
-        if (view.mutateCorners && view.hasGradientDrawable() && choreography.cornerRadii.canInterpolate) {
+        if (view.mutateCorners && choreography.cornerRadii.canInterpolate) {
             val cornersFraction = choreography.cornerRadii.interpolator?.getInterpolation(fraction) ?: fraction
 
             view.updateCorners(0, choreography.cornerRadii.fromValue[0] + (choreography.cornerRadii.toValue[0] - choreography.cornerRadii.fromValue[0]) * cornersFraction)
@@ -1739,6 +1762,8 @@ class Choreographer(context: Context) {
         internal var textMorph: TextMorph? = null
         internal var bitmapMorph: BitmapMorph? = null
 
+        internal var ripple: RippleDrawable? = null
+
         lateinit var control: ChoreographyControl
         internal var parent: Choreography? = null
         internal var child: Choreography? = null
@@ -1771,7 +1796,7 @@ class Choreographer(context: Context) {
          * how the translation happens between the start and end coordinates.
          * @param animatedX The animated x value used for translation.
          * @param animatedY The animated y value used for translation.
-         * @param arcType The type of arc translation to be perform.
+         * @param arcType The fadeType of arc translation to be perform.
          */
         internal fun createControlPoint(animatedX: AnimatedFloatValue, animatedY: AnimatedFloatValue, arcType: ArcType) {
             val coordinateFrom = Coordinates(animatedX.fromValue, animatedY.fromValue)
@@ -1786,7 +1811,7 @@ class Choreographer(context: Context) {
          * how the translation happens between the start and end coordinates.
          * @param coordinatesFrom The coordinates to translate from.
          * @param coordinatesTo The coordinates to translate to.
-         * @param arcType The type of arc translation to be perform.
+         * @param arcType The fadeType of arc translation to be perform.
          */
         internal fun createControlPoint(coordinatesFrom: Coordinates, coordinatesTo: Coordinates, arcType: ArcType): Coordinates{
             val controlX: Float
@@ -3987,6 +4012,30 @@ class Choreographer(context: Context) {
             return this
         }
 
+        fun withRipple(normalColor: Int, pressedColor: Int) {
+            this.ripple = RippleDrawable(
+                getPressedColorSelector(normalColor, pressedColor),
+                getColorDrawableFromColor(normalColor),
+                null
+            )
+        }
+
+        private fun getPressedColorSelector(normalColor: Int, pressedColor: Int): ColorStateList {
+            return ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_pressed),
+                    intArrayOf(android.R.attr.state_focused),
+                    intArrayOf(android.R.attr.state_activated),
+                    intArrayOf()
+                ),
+                intArrayOf(pressedColor, pressedColor, pressedColor, normalColor)
+            )
+        }
+
+        private fun getColorDrawableFromColor(color: Int): ColorDrawable {
+            return ColorDrawable(color)
+        }
+
         fun withImageChange(bitmapMorph: BitmapMorph): Choreography {
             this.bitmapMorph = bitmapMorph
             return this
@@ -4126,7 +4175,7 @@ class Choreographer(context: Context) {
          * is used the value will range between a threshold.
          * @param multiplier The stagger multiplier to use. The multiplier determines the range of the offset
          * a value of 1f means full offset.
-         * @param type The [Stagger] type to use.
+         * @param type The [Stagger] fadeType to use.
          * @return this choreography.
          */
         fun withStagger(offset: Float = MIN_OFFSET, multiplier: Float = MAX_OFFSET, type: Stagger = Stagger.LINEAR): Choreography {
@@ -4149,7 +4198,7 @@ class Choreographer(context: Context) {
         /**
          * Specifies the way the arc translation control point should be computer. If arc
          * translation is used the control point will be calculated based on the specified
-         * type. The available types are:
+         * fadeType. The available types are:
          * * [ArcType.INNER] : Arc translates across the inner path of its destination.
          * * [ArcType.OUTER] : Arc translates across the outer path of its destination.
          * @param arcType the arc path to use for the arc translation.
@@ -4635,7 +4684,7 @@ class Choreographer(context: Context) {
 
     companion object {
         /**
-         * Resolves the pivot for a given type and value
+         * Resolves the pivot for a given fadeType and value
          * @param type specifies in relation to what the pivot should be computed
          * @param value the value to map the size of the view to
          * @param parentSize the size of the parent of the view whose pivot

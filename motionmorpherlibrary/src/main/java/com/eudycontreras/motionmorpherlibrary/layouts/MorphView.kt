@@ -273,14 +273,14 @@ class MorphView: MorphLayout {
     constructor(view: View, shape: Int, topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
         this.view = view
 
-        applyDrawable(shape, topLeft, topRight, bottomRight, bottomLeft)
+        if (view is RoundedImageView) {
+            morphCornerRadii = view.corners
+        } else {
+            applyDrawable(shape, topLeft, topRight, bottomRight, bottomLeft)
+        }
 
         this.view.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             bounds = ViewBounds(this.getView())
-        }
-
-        if (view is RoundedImageView) {
-            morphCornerRadii = view.corners
         }
     }
 
@@ -364,7 +364,9 @@ class MorphView: MorphLayout {
             }
         }
 
-        mutableDrawable.cornerRadii = this.cornerRadii.corners
+        if (view !is RoundedImageView) {
+            mutableDrawable.cornerRadii = this.cornerRadii.corners
+        }
         return true
     }
 
@@ -374,10 +376,10 @@ class MorphView: MorphLayout {
         }
 
         cornerRadii[index] = corner
-        mutableDrawable.cornerRadii = cornerRadii.corners
-
         if (view is RoundedImageView) {
-            view.updateCornerRadii(index, corner)
+            view. updateCornerRadii(index, corner)
+        } else {
+            mutableDrawable.cornerRadii = cornerRadii.corners
         }
         return true
     }

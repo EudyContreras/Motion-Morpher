@@ -9,14 +9,9 @@ import android.view.animation.*
 import androidx.core.animation.addListener
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
-import com.eudycontreras.motionmorpherlibrary.Choreographer
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
-import com.eudycontreras.motionmorpherlibrary.cast
-import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
-import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
-import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
+import com.eudycontreras.motionmorpherlibrary.enumerations.*
 import com.eudycontreras.motionmorpherlibrary.extensions.clamp
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.interpolators.MaterialInterpolator
@@ -253,6 +248,19 @@ class ActivityDemo0 : MorphActivity() {
             .withDefaultInterpolator(interpolator)
 
             .animate(card){
+                val textMorph = TextMorph(card.demo_0_header, "Deadpool", "Deadpool 2")
+                val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background1, FadeType.DISSOLVE)
+
+                withDuration(350)
+                withRipple(AndroidColor.GREEN, AndroidColor.BLUE)
+                //withTextChange(textMorph)
+               // withImageChange(imageMorph)
+            }
+            .thenAnimate (card.demo_0_image){
+                withDuration(2000)
+                cornerRadiusTo(Corner.ALL, 40.dp)
+            }
+            .thenAnimate(card) {
                 xRotateAdd(30f)
             }
             .then {
@@ -321,14 +329,6 @@ class ActivityDemo0 : MorphActivity() {
                 withInterpolator(OvershootInterpolator())
                 withDuration(500)
                 anchorTo(Anchor.CENTER, root)
-            }
-            .then {
-                val textMorph = TextMorph(card.demo_0_header, "Deadpool", "Deadpool 2")
-               // val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background1)
-
-                withDuration(1000)
-                //withTextChange(textMorph)
-               // withImageChange(imageMorph)
             }
             .build()
 

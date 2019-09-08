@@ -13,6 +13,7 @@ import androidx.core.graphics.drawable.toDrawable
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
+import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.extensions.toBitmap
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
@@ -65,22 +66,6 @@ open class RoundedImageView : ImageView {
 
     private fun applyCorners(topLeft: Float = MIN_OFFSET, topRight: Float = MIN_OFFSET, bottomRight: Float = MIN_OFFSET, bottomLeft: Float = MIN_OFFSET) {
         corners.apply(topLeft, topRight, bottomRight, bottomLeft)
-
-        if (drawable is RoundedBitmapDrawable) {
-            doWith(drawable as RoundedBitmapDrawable) {
-                it.corners.apply(topLeft, topRight, bottomRight, bottomLeft)
-                it.invalidateSelf()
-            }
-
-        } else {
-            drawable?.let {
-                BitmapUtility.drawableToBitmap(it)?.let {
-                    val newDrawable = RoundedBitmapDrawable(it, measuredWidth, measuredHeight / 2)
-                    newDrawable.corners.apply(topLeft, topRight, bottomRight, bottomLeft)
-                    setImageDrawable(newDrawable)
-                }
-            }
-        }
     }
 
     fun updateCornerRadii(index: Int, corner: Float) {
@@ -89,19 +74,16 @@ open class RoundedImageView : ImageView {
         }
     }
 
-    fun setBitmapDrawable(drawable: BitmapDrawable?) {
-        super.setImageDrawable(drawable)
-    }
-
     override fun setImageDrawable(drawable: Drawable?) {
         drawable?.let {
-           if (it is RoundedBitmapDrawable) {
+            if (it is RoundedBitmapDrawable || (measuredWidth <= 0 || measuredHeight <= 0)) {
                 super.setImageDrawable(drawable)
-           } else  {
-               BitmapUtility.drawableToBitmap(it)?.let {
-                   super.setImageDrawable(RoundedBitmapDrawable(it, width, height / 2))
-               }
-           }
+            } else  {
+                BitmapUtility.drawableToBitmap(it)?.let {
+                    val newDrawable = BitmapUtility.asRoundedBitmap(this, it)
+                    super.setImageDrawable(newDrawable)
+                }
+            }
         }
     }
 
@@ -114,4 +96,46 @@ open class RoundedImageView : ImageView {
             setImageDrawable(it.toDrawable(resources))
         }
     }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        if (changed) {
+            drawable?.let {
+                BitmapUtility.drawableToBitmap(it)?.let {
+                    val newDrawable = BitmapUtility.asRoundedBitmap(this, it)
+                    setImageDrawable(newDrawable)
+                }
+            }
+        }
+    }
+/*
+    private fun recomputeCorners() {
+        if (width == 0 || height == 0) {
+            return
+        }
+        val fullSizeBitmap = (drawable as BitmapDrawable).bitmap
+
+        val scaledWidth = measuredWidth
+        val scaledHeight = measuredHeight
+
+        val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
+            fullSizeBitmap
+        } else {
+            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
+        }
+
+        val shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+
+        paint.shader = shader
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        path.rewind()
+        path.addRoundRect(MIN_OFFSET, MIN_OFFSET, measuredWidth.toFloat(), measuredHeight.toFloat(), corners.corners, Path.Direction.CCW)
+        path.close()
+
+        canvas.drawPath(path, paint)
+
+        super.onDraw(canvas)
+    }*/
 }

@@ -212,7 +212,7 @@ class Explode(
 
             /*
              * The amount of delay for each of the elements is calculated based on
-             * the type of stagger being used. With incremental stagger the later elements
+             * the fadeType of stagger being used. With incremental stagger the later elements
              * have higher delays. With decremental stagger the later elements have lower
              * delays while with linear stagger all elements have the same amount of delay
              * between them.

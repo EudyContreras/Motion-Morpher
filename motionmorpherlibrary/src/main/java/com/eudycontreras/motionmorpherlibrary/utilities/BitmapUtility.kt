@@ -119,10 +119,14 @@ object BitmapUtility {
     }
 
     fun asRoundedBitmap(view: ImageView, image: BitmapDrawable): RoundedBitmapDrawable {
-        val fullSizeBitmap = image.bitmap
+        return asRoundedBitmap(view, image.bitmap)
+    }
 
-        val scaledWidth = view.width
-        val scaledHeight = view.height
+    fun asRoundedBitmap(view: ImageView, image: Bitmap): RoundedBitmapDrawable {
+        val fullSizeBitmap = image
+
+        val scaledWidth = if (view.measuredWidth <= 0) 2 else view.measuredWidth
+        val scaledHeight = if (view.measuredHeight <= 0) 2 else view.measuredHeight
 
         val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
             fullSizeBitmap
@@ -132,6 +136,6 @@ object BitmapUtility {
 
         val cornerRadii = if (view is RoundedImageView) view.corners else CornerRadii(MIN_OFFSET)
 
-        return RoundedBitmapDrawable(scaledBitmap, scaledWidth, scaledHeight, cornerRadii)
+        return RoundedBitmapDrawable(view.resources, scaledBitmap, scaledWidth, scaledHeight, cornerRadii)
     }
 }

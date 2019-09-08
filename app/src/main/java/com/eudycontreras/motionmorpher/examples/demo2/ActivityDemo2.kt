@@ -82,8 +82,8 @@ class ActivityDemo2 : MorphActivity() {
         choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 0.7f).apply {
             outInterpolator = interpolator
             inInterpolator = interpolator
-            //animationStaggerOut = AnimationStagger(0f, type = Stagger.LINEAR)
-            //animationStaggerIn = AnimationStagger(0f, type = Stagger.LINEAR)
+            //animationStaggerOut = AnimationStagger(0f, fadeType = Stagger.LINEAR)
+            //animationStaggerIn = AnimationStagger(0f, fadeType = Stagger.LINEAR)
             //stretch = Stretch(1f, 0.1f)
         }
 

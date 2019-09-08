@@ -17,6 +17,7 @@ import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
  */
 
 class RoundedBitmapDrawable(
+    res: Resources,
     bitmap: Bitmap,
     cornerRadii: CornerRadii = CornerRadii()
 ) : Drawable() {
@@ -51,28 +52,34 @@ class RoundedBitmapDrawable(
         color = -0xbdbdbe
     }
 
-    constructor(bitmap: Bitmap, width: Int, height: Int, cornerRadii: CornerRadii = CornerRadii()) : this(bitmap, cornerRadii) {
-        recomputeImage(width, height)
+    constructor(res: Resources, bitmap: Bitmap, width: Int, height: Int, cornerRadii: CornerRadii? = CornerRadii()) : this(res, bitmap, cornerRadii ?: CornerRadii()) {
+        this.viewWidth = width
+        this.viewHeight = height
+        recomputeCorners()
         invalidateSelf()
     }
 
     override fun onBoundsChange(bounds: Rect) {
         super.onBoundsChange(bounds)
 
-        recomputeImage(bounds.width(), bounds.height() / 2)
+        viewWidth = bounds.width()
+        viewHeight = bounds.height()
+
+        recomputeCorners()
         invalidateSelf()
     }
 
     fun updateCornerRadii(index: Int, corner: Float) {
         corners[index] = corner
         cornersChanged = true
+        invalidateSelf()
     }
 
     fun updateCornerRadii(cornerRadii: CornerRadii) {
         corners = cornerRadii
         cornersChanged = true
+        invalidateSelf()
     }
-
 
     override fun setAlpha(alpha: Int) {
         val oldAlpha = paint.getAlpha()
@@ -82,21 +89,21 @@ class RoundedBitmapDrawable(
         }
     }
 
-    fun recomputeImage(width: Int, height: Int) {
+    private fun recomputeCorners() {
         val fullSizeBitmap = bitmap
 
-        viewWidth = width
-        viewHeight = height
+        val scaledWidth = viewWidth
+        val scaledHeight = viewHeight
 
-        if (viewWidth <= 0 || viewHeight <= 0)
-            return
-
-        val scaledBitmap = if (viewWidth == fullSizeBitmap.width && viewHeight == fullSizeBitmap.height) {
+        val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
             fullSizeBitmap
         } else {
-            Bitmap.createScaledBitmap(fullSizeBitmap, viewWidth, viewHeight, true)
+            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
         }
+
         paint.apply {
+            isAntiAlias = true
+            color = -0xbdbdbe
             shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         }
     }

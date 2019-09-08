@@ -134,8 +134,9 @@ interface MorphLayout {
 
         drawable.shape = if (shape == RECTANGULAR) {
             GradientDrawable.RECTANGLE
-        } else
+        } else {
             GradientDrawable.OVAL
+        }
 
         if (shape == RECTANGULAR) {
             val corners = floatArrayOf(
