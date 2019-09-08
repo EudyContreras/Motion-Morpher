@@ -249,17 +249,14 @@ class ActivityDemo0 : MorphActivity() {
 
             .animate(card){
                 val textMorph = TextMorph(card.demo_0_header, "Deadpool", "Deadpool 2")
-                val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background1, FadeType.DISSOLVE)
 
-                withDuration(350)
-                withRipple(AndroidColor.GREEN, AndroidColor.BLUE)
+                val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background13, R.drawable.background2, FadeType.FADETHROUGH)
+
+                withDuration(4550)
                 //withTextChange(textMorph)
-               // withImageChange(imageMorph)
+                withImageChange(imageMorph)
             }
-            .thenAnimate (card.demo_0_image){
-                withDuration(2000)
-                cornerRadiusTo(Corner.ALL, 40.dp)
-            }
+
             .thenAnimate(card) {
                 xRotateAdd(30f)
             }

@@ -136,6 +136,6 @@ object BitmapUtility {
 
         val cornerRadii = if (view is RoundedImageView) view.corners else CornerRadii(MIN_OFFSET)
 
-        return RoundedBitmapDrawable(view.resources, scaledBitmap, scaledWidth, scaledHeight, cornerRadii)
+        return RoundedBitmapDrawable(scaledBitmap, scaledWidth, scaledHeight, cornerRadii)
     }
 }

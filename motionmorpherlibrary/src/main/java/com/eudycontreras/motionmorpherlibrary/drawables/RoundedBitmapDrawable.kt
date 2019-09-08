@@ -17,7 +17,6 @@ import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
  */
 
 class RoundedBitmapDrawable(
-    res: Resources,
     bitmap: Bitmap,
     cornerRadii: CornerRadii = CornerRadii()
 ) : Drawable() {
@@ -52,7 +51,12 @@ class RoundedBitmapDrawable(
         color = -0xbdbdbe
     }
 
-    constructor(res: Resources, bitmap: Bitmap, width: Int, height: Int, cornerRadii: CornerRadii? = CornerRadii()) : this(res, bitmap, cornerRadii ?: CornerRadii()) {
+    constructor(
+        bitmap: Bitmap,
+        width: Int,
+        height: Int,
+        cornerRadii: CornerRadii? = CornerRadii()
+    ) : this(bitmap, cornerRadii ?: CornerRadii()) {
         this.viewWidth = width
         this.viewHeight = height
         recomputeCorners()

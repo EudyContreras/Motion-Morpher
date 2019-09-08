@@ -24,7 +24,7 @@ import kotlin.reflect.full.isSupertypeOf
  */
 private var id = AtomicInteger(Int.MIN_VALUE)
 
-const val MID_OFFSET: Float = 0.33f
+const val MID_OFFSET: Float = 0.6f
 /**
  * The global maximun offset for lerping interpolations. Value: `1F`
  */

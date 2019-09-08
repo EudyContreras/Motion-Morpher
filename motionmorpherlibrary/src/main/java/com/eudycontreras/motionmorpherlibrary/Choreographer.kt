@@ -32,6 +32,9 @@ import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValueArray
 import android.os.Build
 import android.os.Handler
+import com.eudycontreras.motionmorpherlibrary.drawables.ParticleEffectDrawable
+import com.eudycontreras.motionmorpherlibrary.particles.effects.RippleEffect
+import com.google.android.material.ripple.RippleUtils
 
 
 /**
@@ -55,6 +58,8 @@ class Choreographer(context: Context) {
     private lateinit var tailChoreography: Choreography
 
     private var animator: ValueAnimator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+
+    private var particleEffect: ParticleEffectDrawable = ParticleEffectDrawable()
 
     private val defaultInterpolator: TimeInterpolator = AccelerateDecelerateInterpolator()
 
@@ -1049,14 +1054,6 @@ class Choreographer(context: Context) {
         return this
     }
 
-    protected fun forceRipple(view: View, ripple: RippleDrawable) {
-        ripple.setHotspot((view.width / 2).toFloat(), (view.height / 2).toFloat())
-        ripple.state = intArrayOf(android.R.attr.state_pressed, android.R.attr.state_enabled)
-
-        val handler = Handler()
-
-        handler.postDelayed(Runnable { ripple.state = intArrayOf() }, 200)
-    }
     /**
      * Builds the [Choreographer] by applying the defined values of each [Choreography]
      * and prepares the choreographies to be played. The build process is and must be called prior
@@ -1122,8 +1119,7 @@ class Choreographer(context: Context) {
 
                 current.ripple?.let {
                     var view = current.views.last().getView()
-                    view.overlay.add(it)
-                    forceRipple(view, it)
+                    view.overlay.add(particleEffect.setupWith(RippleEffect(it)))
                 }
             }
 
@@ -1754,6 +1750,7 @@ class Choreographer(context: Context) {
 
         internal var stagger: AnimationStagger? = null
 
+        internal var ripple: Ripple? = null
         internal var reveal: Reveal? = null
         internal var conceal: Conceal? = null
         internal var arcType: ArcType? = null
@@ -1761,8 +1758,6 @@ class Choreographer(context: Context) {
 
         internal var textMorph: TextMorph? = null
         internal var bitmapMorph: BitmapMorph? = null
-
-        internal var ripple: RippleDrawable? = null
 
         lateinit var control: ChoreographyControl
         internal var parent: Choreography? = null
@@ -4012,28 +4007,9 @@ class Choreographer(context: Context) {
             return this
         }
 
-        fun withRipple(normalColor: Int, pressedColor: Int) {
-            this.ripple = RippleDrawable(
-                getPressedColorSelector(normalColor, pressedColor),
-                getColorDrawableFromColor(normalColor),
-                null
-            )
-        }
-
-        private fun getPressedColorSelector(normalColor: Int, pressedColor: Int): ColorStateList {
-            return ColorStateList(
-                arrayOf(
-                    intArrayOf(android.R.attr.state_pressed),
-                    intArrayOf(android.R.attr.state_focused),
-                    intArrayOf(android.R.attr.state_activated),
-                    intArrayOf()
-                ),
-                intArrayOf(pressedColor, pressedColor, pressedColor, normalColor)
-            )
-        }
-
-        private fun getColorDrawableFromColor(color: Int): ColorDrawable {
-            return ColorDrawable(color)
+        fun withRipple(ripple: Ripple): Choreography {
+            this.ripple = ripple
+            return this
         }
 
         fun withImageChange(bitmapMorph: BitmapMorph): Choreography {
