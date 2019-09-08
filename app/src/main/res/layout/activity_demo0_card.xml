@@ -18,7 +18,7 @@
     <com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
             android:tag="demo0Image"
             android:id="@+id/demo_0_image"
-            android:src="@drawable/background2"
+            android:src="@drawable/background13"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
             android:layout_width="match_parent"

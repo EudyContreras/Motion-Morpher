@@ -20,7 +20,7 @@ import com.eudycontreras.motionmorpherlibrary.R
  * @since July 19 2019
  */
 
-class ScaleUtility {
+object ScaleUtility {
 
     private var currentAnimator: Animator? = null
 

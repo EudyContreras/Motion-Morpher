@@ -1,16 +1,10 @@
 package com.eudycontreras.motionmorpherlibrary.drawables
 
-import android.content.res.Resources
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
-import com.eudycontreras.motionmorpherlibrary.extensions.dp
-import com.eudycontreras.motionmorpherlibrary.interfaces.Clipable
 import com.eudycontreras.motionmorpherlibrary.particles.Particle
 import com.eudycontreras.motionmorpherlibrary.particles.effects.RippleEffect
-import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
-import com.eudycontreras.motionmorpherlibrary.properties.Ripple
+import com.eudycontreras.motionmorpherlibrary.particles.data.Ripple
 
 
 /**
@@ -19,9 +13,7 @@ import com.eudycontreras.motionmorpherlibrary.properties.Ripple
  * @since September 07 2019
  */
 
-class ParticleEffectDrawable() : Drawable() {
-
-    private lateinit var particle: Particle
+class ParticleEffectDrawable(var particle: Particle = Particle.DEFAULT) : Drawable() {
 
     private var path: Path = Path()
 
@@ -47,7 +39,14 @@ class ParticleEffectDrawable() : Drawable() {
         return paint.alpha
     }
 
-    override fun setColorFilter(colorFilter: ColorFilter?) { }
+    override fun setColorFilter(colorFilter: ColorFilter?) {
+        paint.setColorFilter(colorFilter)
+        invalidateSelf()
+    }
+
+    override fun getColorFilter(): ColorFilter? {
+        return paint.getColorFilter()
+    }
 
     override fun draw(canvas: Canvas) {
 
@@ -55,9 +54,7 @@ class ParticleEffectDrawable() : Drawable() {
 
     companion object {
         fun ofRipple(ripple: Ripple): ParticleEffectDrawable{
-            return ParticleEffectDrawable().apply {
-                setupWith(RippleEffect(ripple))
-            }
+            return ParticleEffectDrawable(RippleEffect(ripple))
         }
     }
 }

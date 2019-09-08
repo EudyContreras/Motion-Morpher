@@ -24,17 +24,12 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.math.abs
-import android.graphics.drawable.ColorDrawable
-import android.content.res.ColorStateList
-import android.graphics.drawable.RippleDrawable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValueArray
-import android.os.Build
-import android.os.Handler
 import com.eudycontreras.motionmorpherlibrary.drawables.ParticleEffectDrawable
+import com.eudycontreras.motionmorpherlibrary.particles.data.Ripple
 import com.eudycontreras.motionmorpherlibrary.particles.effects.RippleEffect
-import com.google.android.material.ripple.RippleUtils
 
 
 /**
@@ -262,9 +257,9 @@ class Choreographer(context: Context) {
      * @return The created choreography.
      */
     private fun animateFor(choreography: Choreography, offset: Float, allowInheritance: Boolean = this.allowInheritance, vararg views: MorphLayout): Choreographer {
-        val properties = getProperties(choreography, *views)
-
         require(offset >= MIN_OFFSET) { "A duration offset may not be less than zero: $offset" }
+
+        val properties = getProperties(choreography, *views)
 
         tailChoreography =  Choreography(this, *views).apply {
             this.setStartProperties(properties)
@@ -294,9 +289,9 @@ class Choreographer(context: Context) {
      * @return The created choreography.
      */
     internal fun reverseAnimateFor(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreographer {
-        var oldChoreography: Choreography? = null
-
         require(offset >= MIN_OFFSET) { "A duration offset may not be less than zero: $offset" }
+
+        var oldChoreography: Choreography? = null
 
         predecessors(choreography) { control, _choreography ->
             loopA@ for(viewA in _choreography.morphViews) {
@@ -853,7 +848,6 @@ class Choreographer(context: Context) {
         return this
     }
 
-
     /**
      * Prepends the tail [Choreography] of the specified [Choreographer] to the
      * head choreography of this Choreographer. The prepended choreography will become part
@@ -909,9 +903,6 @@ class Choreographer(context: Context) {
         choreography: Choreography,
         duration: Long = totalDuration,
         startDelay: Long = MIN_DURATION,
-        repeatMode: Int = 0,
-        repeatCount: Int = 0,
-        playReversed: Boolean = false,
         startFraction: Float = MIN_OFFSET,
         endFraction: Float = MAX_OFFSET,
         traverse: Boolean = true
@@ -926,6 +917,7 @@ class Choreographer(context: Context) {
 
         successors(headChoreography) { _, it ->
             it.control.reset()
+            it.resetMorphs()
         }
 
         animator = ValueAnimator.ofFloat(startFraction, endFraction)
@@ -933,8 +925,6 @@ class Choreographer(context: Context) {
         animator.interpolator = null
         animator.startDelay = startDelay
         animator.duration = duration
-        animator.repeatMode = repeatMode
-        animator.repeatCount = repeatCount
         animator.addUpdateListener {
             val fraction = (it.animatedValue as Float)
             transitionTo(choreography, fraction, traverse)
@@ -943,11 +933,8 @@ class Choreographer(context: Context) {
             onStart = { transitionTo(choreography, MIN_OFFSET, traverse) },
             onEnd = { transitionTo(choreography, MAX_OFFSET, traverse) }
         )
-        if (playReversed) {
-            animator.reverse()
-        } else {
-            animator.start()
-        }
+
+        animator.start()
 
         return animator
     }
@@ -1077,7 +1064,6 @@ class Choreographer(context: Context) {
             applyConceal(current)
             applyArcType(current)
             createStagger(current)
-            buildImageMorph(current)
             applyInterpolators(current)
 
             val trim: Long = current.offsetDelayDelta
@@ -1106,8 +1092,11 @@ class Choreographer(context: Context) {
             }
 
             val startListener: Action = {
+
                 current.startAction?.invoke(current)
                 current.isRunning = true
+
+                buildMorphables(current)
 
                 current.reveal?.let {
                     RevealUtility.circularReveal(it)
@@ -1124,14 +1113,16 @@ class Choreographer(context: Context) {
             }
 
             val endListener: Action = {
+                current.bitmapMorph?.onEnd()
+                current.textMorph?.onEnd()
                 current.endAction?.invoke(current)
                 current.isRunning = false
                 current.done = true
             }
 
-            current.control.offsetDelay = (delay + current.delay)
             current.control.duration = current.duration
             current.control.startDelay = totalDelay
+            current.control.offsetDelay = (delay + current.delay)
             current.control.updateListener = updateListener
             current.control.startListener = startListener
             current.control.endListener = endListener
@@ -1190,8 +1181,9 @@ class Choreographer(context: Context) {
      * See: [BitmapMorph]
      * @param choreography The choreography to which its control point is applied to.
      */
-    private fun buildImageMorph(choreography: Choreography) {
+    private fun buildMorphables(choreography: Choreography) {
         choreography.bitmapMorph?.build()
+        choreography.textMorph?.build()
     }
 
     /**
@@ -1340,7 +1332,6 @@ class Choreographer(context: Context) {
         }
     }
 
-    private var lastValue: Float = MIN_OFFSET
     /**
      * Animates the choreographies to the specified animation percentage/fraction recursively
      * by navigating through the successors of the head choreography using offset based prunning.
@@ -1609,6 +1600,7 @@ class Choreographer(context: Context) {
         }
 
         choreography.bitmapMorph?.morph(fraction)
+        choreography.textMorph?.morph(fraction)
 
         if (boundsChanged) {
             view.updateLayout()
@@ -1696,6 +1688,13 @@ class Choreographer(context: Context) {
         internal var pivotValueTypeX: Pivot = Pivot.RELATIVE_TO_SELF
         internal var pivotValueTypeY: Pivot = Pivot.RELATIVE_TO_SELF
 
+        internal val alpha: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ALPHA, MAX_OFFSET, MAX_OFFSET)
+
+        internal val color: AnimatedIntValue = AnimatedIntValue(AnimatedValue.COLOR, DEFAULT_COLOR, DEFAULT_COLOR)
+
+        internal val width: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.WIDTH, MIN_OFFSET, MIN_OFFSET)
+        internal val height: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.HEIGHT, MIN_OFFSET, MIN_OFFSET)
+
         internal val scaleX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_X, MAX_OFFSET, MAX_OFFSET)
         internal val scaleY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_Y, MAX_OFFSET, MAX_OFFSET)
 
@@ -1710,17 +1709,10 @@ class Choreographer(context: Context) {
         internal val translateY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET)
         internal val translateZ: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_Z, MIN_OFFSET, MIN_OFFSET)
 
-        internal val width: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.WIDTH, MIN_OFFSET, MIN_OFFSET)
-        internal val height: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.HEIGHT, MIN_OFFSET, MIN_OFFSET)
-
-        internal val alpha: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ALPHA, MAX_OFFSET, MAX_OFFSET)
-
-        internal val color: AnimatedIntValue = AnimatedIntValue(AnimatedValue.COLOR, DEFAULT_COLOR, DEFAULT_COLOR)
-
-        internal val cornerRadii: AnimatedValue<CornerRadii> = AnimatedValue.instance(AnimatedValue.CORNERS, CornerRadii(), CornerRadii())
-
         internal val paddings: AnimatedValue<Paddings> = AnimatedValue.instance(AnimatedValue.PADDING, Paddings(), Paddings())
         internal val margings: AnimatedValue<Margings> = AnimatedValue.instance(AnimatedValue.MARGIN, Margings(), Margings())
+
+        internal val cornerRadii: AnimatedValue<CornerRadii> = AnimatedValue.instance(AnimatedValue.CORNERS, CornerRadii(), CornerRadii())
 
         internal var scaleXValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.SCALE_X)
         internal var scaleYValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.SCALE_Y)
@@ -1768,6 +1760,11 @@ class Choreographer(context: Context) {
 
         init {
             applyDefaultValues()
+        }
+
+        internal fun resetMorphs() {
+            bitmapMorph?.reset()
+            textMorph?.reset()
         }
 
         /**
@@ -2016,6 +2013,7 @@ class Choreographer(context: Context) {
                     }
                 }
             }
+
             this.duration = choreographer.defaultDuration
             this.interpolator = choreographer.interpolator
 
@@ -2034,7 +2032,6 @@ class Choreographer(context: Context) {
                 morphViews.forEach {
                     it.morphX = positionX.fromValue
                     it.morphY = positionY.fromValue
-                    it.morphStateList = color.fromValue.toStateList()
                     it.morphAlpha = alpha.fromValue
                     it.morphScaleX = scaleX.fromValue
                     it.morphScaleY = scaleY.fromValue
@@ -2056,6 +2053,7 @@ class Choreographer(context: Context) {
                     it.morphHeight = height.fromValue
                     it.morphMargings = margings.fromValue
                     it.morphPaddings = paddings.fromValue
+                    it.morphStateList = color.fromValue.toStateList()
                     if (it.mutateCorners && it.hasGradientDrawable()) {
                         it.morphCornerRadii = cornerRadii.fromValue.getCopy()
                     }
@@ -4018,17 +4016,15 @@ class Choreographer(context: Context) {
         }
 
         fun withTextChange(textMorph: TextMorph): Choreography {
-            TODO("Implement the logic necessary")
-            return this
-        }
-
-        fun withTextChange(fromView: TextView, toView: TextView): Choreography {
-            TODO("Implement the logic necessary")
+            this.textMorph = textMorph
             return this
         }
 
         fun withTextChange(view: TextView, toText: String, toSize: Float = -1f, toColor: Int = -1): Choreography {
-            TODO("Implement the logic necessary")
+            this.textMorph = TextMorph(view, toText).apply {
+                this.textSizeTo = toSize
+                this.textColorTo = toColor
+            }
             return this
         }
 

@@ -21,14 +21,6 @@ class RoundedBitmapDrawable(
     cornerRadii: CornerRadii = CornerRadii()
 ) : Drawable() {
 
-    override fun getOpacity(): Int {
-        return paint.alpha
-    }
-
-    override fun setColorFilter(colorFilter: ColorFilter?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     private var path: Path = Path()
 
     var bitmap: Bitmap = bitmap
@@ -61,6 +53,19 @@ class RoundedBitmapDrawable(
         this.viewHeight = height
         recomputeCorners()
         invalidateSelf()
+    }
+
+    override fun getOpacity(): Int {
+        return paint.alpha
+    }
+
+    override fun setColorFilter(colorFilter: ColorFilter?) {
+        paint.setColorFilter(colorFilter)
+        invalidateSelf()
+    }
+
+    override fun getColorFilter(): ColorFilter? {
+        return paint.getColorFilter()
     }
 
     override fun onBoundsChange(bounds: Rect) {

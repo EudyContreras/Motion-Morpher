@@ -1,9 +1,11 @@
-package com.eudycontreras.motionmorpherlibrary.properties
+package com.eudycontreras.motionmorpherlibrary.particles.data
 
 import android.animation.TimeInterpolator
 import android.graphics.Canvas
 import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
+import com.eudycontreras.motionmorpherlibrary.properties.Color
+import com.eudycontreras.motionmorpherlibrary.properties.MutableColor
 
 
 /**
@@ -20,8 +22,10 @@ import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
  
 class Ripple {
 
-    var colorStart: Color = MutableColor.WHITE
-    var colorEnd: Color = MutableColor.WHITE
+    var colorStart: Color =
+        MutableColor.WHITE
+    var colorEnd: Color =
+        MutableColor.WHITE
 
     var centerX: Float = Float.MIN_VALUE
     var centerY: Float = Float.MIN_VALUE

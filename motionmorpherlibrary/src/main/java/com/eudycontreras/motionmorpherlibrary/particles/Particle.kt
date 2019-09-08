@@ -122,8 +122,17 @@ abstract class Particle {
         } else lifeSpan > 0
     }
 
+    class Default: Particle() {
+        override fun init() { }
+        override fun draw(canvas: Canvas) { }
+    }
+
     companion object {
         const val DEFAULT_LIFE_TIME = 5f
         const val DEFAULT_VELOCITY = 5f
+
+        val DEFAULT: Particle by lazy {
+            Default()
+        }
     }
 }

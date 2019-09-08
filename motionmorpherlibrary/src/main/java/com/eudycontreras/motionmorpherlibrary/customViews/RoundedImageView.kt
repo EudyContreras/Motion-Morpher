@@ -26,16 +26,6 @@ import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
 
 open class RoundedImageView : ImageView {
 
-    private var path: Path = Path()
-
-    private var paint: Paint = Paint().apply {
-        isAntiAlias = true
-        color = -0xbdbdbe
-    }
-
-    var cornersChanged: Boolean = false
-        private set
-
     var corners: CornerRadii = CornerRadii()
         private set
 
@@ -108,34 +98,4 @@ open class RoundedImageView : ImageView {
             }
         }
     }
-/*
-    private fun recomputeCorners() {
-        if (width == 0 || height == 0) {
-            return
-        }
-        val fullSizeBitmap = (drawable as BitmapDrawable).bitmap
-
-        val scaledWidth = measuredWidth
-        val scaledHeight = measuredHeight
-
-        val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
-            fullSizeBitmap
-        } else {
-            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
-        }
-
-        val shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-
-        paint.shader = shader
-    }
-
-    override fun onDraw(canvas: Canvas) {
-        path.rewind()
-        path.addRoundRect(MIN_OFFSET, MIN_OFFSET, measuredWidth.toFloat(), measuredHeight.toFloat(), corners.corners, Path.Direction.CCW)
-        path.close()
-
-        canvas.drawPath(path, paint)
-
-        super.onDraw(canvas)
-    }*/
 }

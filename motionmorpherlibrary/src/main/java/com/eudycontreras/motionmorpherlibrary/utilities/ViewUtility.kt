@@ -13,32 +13,30 @@ import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
  */
  
  
-class ViewUtility {
-    companion object {
+object ViewUtility {
 
-        fun getRoundedBitmap(
-            input: Bitmap,
-            width: Int,
-            height: Int,
-            paint: Paint,
-            clipPath: Path,
-            cornerRadii: CornerRadii
-        ): Bitmap {
+    fun getRoundedBitmap(
+        input: Bitmap,
+        width: Int,
+        height: Int,
+        paint: Paint,
+        clipPath: Path,
+        cornerRadii: CornerRadii
+    ): Bitmap {
 
-            val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(output).apply { drawARGB(MIN_COLOR, MIN_COLOR, MIN_COLOR, MIN_COLOR) }
+        val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output).apply { drawARGB(MIN_COLOR, MIN_COLOR, MIN_COLOR, MIN_COLOR) }
 
-            clipPath.rewind()
-            clipPath.addRoundRect(MIN_OFFSET, MIN_OFFSET, width.toFloat(), height.toFloat(), cornerRadii.corners, Path.Direction.CCW)
-            clipPath.close()
+        clipPath.rewind()
+        clipPath.addRoundRect(MIN_OFFSET, MIN_OFFSET, width.toFloat(), height.toFloat(), cornerRadii.corners, Path.Direction.CCW)
+        clipPath.close()
 
-            canvas.drawPath(clipPath, paint)
+        canvas.drawPath(clipPath, paint)
 
-            paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
 
-            canvas.drawBitmap(input, MIN_OFFSET, MIN_OFFSET, paint)
+        canvas.drawBitmap(input, MIN_OFFSET, MIN_OFFSET, paint)
 
-            return output
-        }
+        return output
     }
 }

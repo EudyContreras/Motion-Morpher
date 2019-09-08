@@ -1,6 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
+import com.eudycontreras.motionmorpherlibrary.lerp
 import kotlin.math.abs
 
 /**
@@ -45,6 +46,8 @@ class AnimatedIntValue(
 
     var difference: Int = abs(fromValue - toValue)
         private set
+
+    fun lerp(fraction: Float): Int = lerp(fromValue, toValue, fraction)
 
     fun set(value: AnimatedIntValue) {
         super.set(value)

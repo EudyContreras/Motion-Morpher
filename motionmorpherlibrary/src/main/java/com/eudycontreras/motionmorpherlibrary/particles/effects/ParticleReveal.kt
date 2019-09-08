@@ -1,8 +1,9 @@
-package com.eudycontreras.motionmorpherlibrary.particles
+package com.eudycontreras.motionmorpherlibrary.particles.effects
 
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import com.eudycontreras.motionmorpherlibrary.particles.Particle
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 
 /**

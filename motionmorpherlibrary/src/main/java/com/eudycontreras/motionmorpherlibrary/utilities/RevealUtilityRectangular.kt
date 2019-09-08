@@ -12,7 +12,7 @@ import com.eudycontreras.motionmorpherlibrary.Action
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
-import com.eudycontreras.motionmorpherlibrary.particles.ParticleReveal
+import com.eudycontreras.motionmorpherlibrary.particles.effects.ParticleReveal
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.properties.Dimension

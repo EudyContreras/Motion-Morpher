@@ -8,6 +8,8 @@ import androidx.core.content.ContextCompat
 import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
 import com.eudycontreras.motionmorpherlibrary.enumerations.FadeType
+import com.eudycontreras.motionmorpherlibrary.interfaces.Morphable
+import com.eudycontreras.motionmorpherlibrary.interpolators.Easing
 import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
 
 
@@ -17,15 +19,15 @@ import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
  * @since September 01 2019
  */
 
-class BitmapMorph {
+class BitmapMorph: Morphable {
     lateinit var view: ImageView
 
     var onOffset: Float = MID_OFFSET
 
     var fadeType: FadeType = FadeType.DISSOLVE
 
-    var incomingInterpolator: TimeInterpolator = INCOMING
-    var outgoingInterpolator: TimeInterpolator = OUTGOING
+    var incomingInterpolator: TimeInterpolator = Easing.INCOMING
+    var outgoingInterpolator: TimeInterpolator = Easing.OUTGOING
 
     @DrawableRes lateinit var imageFrom: RoundedBitmapDrawable
     @DrawableRes lateinit var imageTo: RoundedBitmapDrawable
@@ -39,8 +41,7 @@ class BitmapMorph {
         fadeType: FadeType = FadeType.DISSOLVE
     ) {
         this.view = view
-        this.view.setImageResource(resFrom)
-        this.imageFrom = view.drawable as RoundedBitmapDrawable
+        this.imageFrom = BitmapUtility.asRoundedBitmap(view, ContextCompat.getDrawable(view.context, resFrom) as BitmapDrawable)
         this.imageTo = BitmapUtility.asRoundedBitmap(view, ContextCompat.getDrawable(view.context, resTo) as BitmapDrawable)
         this.fadeType = fadeType
     }
@@ -56,7 +57,7 @@ class BitmapMorph {
         this.fadeType = fadeType
     }
 
-    fun build() {
+    override fun build() {
         view.setImageDrawable(imageTo)
 
         view.overlay.add(imageFrom)
@@ -66,7 +67,9 @@ class BitmapMorph {
         }
     }
 
-    fun morph(fraction: Float) {
+    override fun reset() { }
+
+    override fun morph(fraction: Float) {
         when (fadeType) {
             FadeType.DISSOLVE -> dissolve(fraction)
             FadeType.CROSSFADE -> crossFade(fraction)
@@ -99,7 +102,7 @@ class BitmapMorph {
         imageFrom.alpha = alphaTo
     }
 
-    fun onEnd() {
+    override fun onEnd() {
         view.overlay.remove(imageFrom)
     }
 }

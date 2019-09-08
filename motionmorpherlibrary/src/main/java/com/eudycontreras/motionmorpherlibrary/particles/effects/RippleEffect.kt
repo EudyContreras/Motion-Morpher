@@ -2,7 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.particles.effects
 
 import android.graphics.Canvas
 import com.eudycontreras.motionmorpherlibrary.particles.Particle
-import com.eudycontreras.motionmorpherlibrary.properties.Ripple
+import com.eudycontreras.motionmorpherlibrary.particles.data.Ripple
 
 
 /**

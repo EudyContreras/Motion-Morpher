@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.*
+import android.widget.TextView
 import androidx.core.animation.addListener
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
@@ -14,7 +15,6 @@ import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.enumerations.*
 import com.eudycontreras.motionmorpherlibrary.extensions.clamp
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
-import com.eudycontreras.motionmorpherlibrary.interpolators.MaterialInterpolator
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
@@ -248,12 +248,11 @@ class ActivityDemo0 : MorphActivity() {
             .withDefaultInterpolator(interpolator)
 
             .animate(card){
-                val textMorph = TextMorph(card.demo_0_header, "Deadpool", "Deadpool 2")
-
+                val textMorph = TextMorph(card.demo_0_header,"Deadpool 2", textSizeTo = 16f)
                 val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background13, R.drawable.background2, FadeType.FADETHROUGH)
 
-                withDuration(4550)
-                //withTextChange(textMorph)
+                withDuration(550)
+                withTextChange(textMorph)
                 withImageChange(imageMorph)
             }
 
@@ -323,8 +322,13 @@ class ActivityDemo0 : MorphActivity() {
                 rotateBetween( -35f * 0.6f, 25f, -20f, 15f, -10f, 8f, -6f, 4f, -2f, 0f)
             }
             .after(0.6f) {
-                withInterpolator(OvershootInterpolator())
+                val textMorph = TextMorph(card.demo_0_header,"Deadpool", textSizeTo = 16f)
+                val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background2, R.drawable.background13, FadeType.CROSSFADE)
+
                 withDuration(500)
+                withTextChange(textMorph)
+                withImageChange(imageMorph)
+                withInterpolator(OvershootInterpolator())
                 anchorTo(Anchor.CENTER, root)
             }
             .build()
@@ -393,7 +397,12 @@ class ActivityDemo0 : MorphActivity() {
             }
 
             .then{
+                val textMorph = TextMorph(card.demo_0_header,"Deadpool", textSizeTo = 16f)
+                val imageMorph = BitmapMorph(card.demo_0_image, R.drawable.background13, FadeType.CROSSFADE)
+
                 withDuration(500)
+                withTextChange(textMorph)
+                withImageChange(imageMorph)
                 anchorTo(Anchor.CENTER, root)
             }
 

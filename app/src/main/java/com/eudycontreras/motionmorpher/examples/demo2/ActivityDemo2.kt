@@ -8,14 +8,11 @@ import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.activities.MorphDialog
-import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
-import com.eudycontreras.motionmorpherlibrary.enumerations.Interpolation
 import com.eudycontreras.motionmorpherlibrary.interactions.Explode
-import com.eudycontreras.motionmorpherlibrary.interpolators.MaterialInterpolator
+import com.eudycontreras.motionmorpherlibrary.interpolators.Easing
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
-import com.eudycontreras.motionmorpherlibrary.properties.Stretch
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bind
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Binder
 import kotlinx.android.synthetic.main.activity_demo2.*
@@ -53,7 +50,7 @@ class ActivityDemo2 : MorphActivity() {
 
     fun testMorphing() {
 
-        val interpolator = MaterialInterpolator(Interpolation.FAST_OUT_SLOW_IN)
+        val interpolator = Easing.STANDARD
 
         choreographer = Choreographer(this)
 
