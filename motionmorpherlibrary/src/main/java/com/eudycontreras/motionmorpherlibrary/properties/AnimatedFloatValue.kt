@@ -52,6 +52,9 @@ class AnimatedFloatValue(
     var difference: Float = abs(fromValue - toValue)
         private set
 
+    var differenceRatio: Float = toValue / fromValue
+        private set
+
     fun lerp(fraction: Float): Float = lerp(fromValue, toValue, fraction)
 
     fun set(value: AnimatedFloatValue) {
@@ -59,8 +62,6 @@ class AnimatedFloatValue(
     }
 
     fun copy(other: AnimatedFloatValue) {
-        this.multiply = other.multiply
-        this.add = other.add
         this.difference = other.difference
         this.fromValue = other.fromValue
         this.toValue = other.toValue

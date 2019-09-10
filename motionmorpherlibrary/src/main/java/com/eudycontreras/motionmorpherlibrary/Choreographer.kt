@@ -30,6 +30,8 @@ import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValueArray
 import com.eudycontreras.motionmorpherlibrary.drawables.ParticleEffectDrawable
 import com.eudycontreras.motionmorpherlibrary.particles.data.Ripple
 import com.eudycontreras.motionmorpherlibrary.particles.effects.RippleEffect
+import kotlin.math.max
+import kotlin.math.min
 
 
 /**
@@ -1819,6 +1821,7 @@ class Choreographer(context: Context) {
 
         internal var done: Boolean = false
         internal var reverse: Boolean = false
+        internal var snapToRatio: Boolean = false
         internal var reverseToStartState: Boolean = false
         internal var useArcTranslator: Boolean = false
 
@@ -3758,18 +3761,17 @@ class Choreographer(context: Context) {
             when(measurement) {
                 Measurement.WIDTH -> {
                     this.width.toValue = width.toValue + delta
+                    this.width.interpolator = interpolator
                 }
                 Measurement.HEIGHT -> {
                     this.height.toValue = height.toValue + delta
+                    this.height.interpolator = interpolator
                 }
                 Measurement.BOTH -> {
-                    this.width.toValue = width.toValue + delta
-                    this.height.toValue = height.toValue + delta
+                    addToSize(Measurement.WIDTH, delta, interpolator)
+                    addToSize(Measurement.HEIGHT, delta, interpolator)
                 }
             }
-
-            this.width.interpolator = interpolator
-            this.height.interpolator = interpolator
             return this
         }
 
@@ -3785,18 +3787,16 @@ class Choreographer(context: Context) {
         fun resizeBy(measurement: Measurement, multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
             when(measurement) {
                 Measurement.WIDTH -> {
-                    this.width.multiply = multiplier
+                    this.width.multiply = this.width.toValue * multiplier
                     this.width.interpolator = interpolator
                 }
                 Measurement.HEIGHT ->  {
-                    this.height.multiply = multiplier
+                    this.height.toValue = this.height.toValue * multiplier
                     this.height.interpolator = interpolator
                 }
                 Measurement.BOTH -> {
-                    this.width.multiply = multiplier
-                    this.width.interpolator = interpolator
-                    this.height.multiply = multiplier
-                    this.height.interpolator = interpolator
+                    resizeBy(Measurement.WIDTH, multiplier, interpolator)
+                    resizeBy(Measurement.HEIGHT, multiplier, interpolator)
                 }
             }
             return this
@@ -3809,7 +3809,17 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun resizeTo(bounds: Bounds, interpolator: TimeInterpolator? = null): Choreography {
-            return resizeTo(bounds.dimension(), interpolator)
+            return resizeTo(Measurement.BOTH, bounds.dimension(), interpolator)
+        }
+
+        /**
+         * Animates the size (Width, Height) values of the morphViews of this [Choreography] to the specified [Bounds] value.
+         * @param bounds The bounds to animate to.
+         * @param interpolator the interpolator to use for this animation.
+         * @return this choreography.
+         */
+        fun resizeTo(measurement: Measurement, bounds: Bounds, interpolator: TimeInterpolator? = null): Choreography {
+            return resizeTo(measurement, bounds.dimension(), interpolator)
         }
 
         /**
@@ -3818,13 +3828,27 @@ class Choreographer(context: Context) {
          * @param interpolator the interpolator to use for this animation.
          * @return this choreography.
          */
-        fun resizeTo(dimension: Dimension, interpolator: TimeInterpolator? = null): Choreography {
-            this.width.toValue = dimension.width
-            this.height.toValue = dimension.height
-
-            this.width.interpolator = interpolator
-            this.height.interpolator = interpolator
-
+        fun resizeTo(measurement: Measurement, dimension: Dimension, interpolator: TimeInterpolator? = null): Choreography {
+            when (measurement) {
+                Measurement.WIDTH -> {
+                    this.width.toValue = dimension.width
+                    this.width.interpolator = interpolator
+                    if (snapToRatio) {
+                        setForRatio(height, width)
+                    }
+                }
+                Measurement.HEIGHT ->  {
+                    this.height.toValue = dimension.height
+                    this.height.interpolator = interpolator
+                    if (snapToRatio) {
+                        setForRatio(width, height)
+                    }
+                }
+                Measurement.BOTH -> {
+                    resizeTo(Measurement.WIDTH, dimension, interpolator)
+                    resizeTo(Measurement.HEIGHT, dimension, interpolator)
+                }
+            }
             return this
         }
 
@@ -3841,16 +3865,20 @@ class Choreographer(context: Context) {
                 Measurement.WIDTH -> {
                     this.width.toValue = value
                     this.width.interpolator = interpolator
+                    if (snapToRatio) {
+                        setForRatio(height, width)
+                    }
                 }
                 Measurement.HEIGHT ->  {
                     this.height.toValue = value
                     this.height.interpolator = interpolator
+                    if (snapToRatio) {
+                        setForRatio(width, height)
+                    }
                 }
                 Measurement.BOTH -> {
-                    this.width.toValue = value
-                    this.height.toValue = value
-                    this.width.interpolator = interpolator
-                    this.height.interpolator = interpolator
+                    resizeTo(Measurement.WIDTH, value, interpolator)
+                    resizeTo(Measurement.HEIGHT, value, interpolator)
                 }
             }
             return this
@@ -3871,20 +3899,21 @@ class Choreographer(context: Context) {
                     this.width.fromValue = fromValue
                     this.width.toValue = toValue
                     this.width.interpolator = interpolator
+                    if (snapToRatio) {
+                        setForRatio(height, width)
+                    }
                 }
                 Measurement.HEIGHT ->  {
                     this.height.fromValue = fromValue
                     this.height.toValue = toValue
                     this.height.interpolator = interpolator
+                    if (snapToRatio) {
+                        setForRatio(height, width)
+                    }
                 }
                 Measurement.BOTH -> {
-                    this.width.fromValue = fromValue
-                    this.width.toValue = toValue
-                    this.width.interpolator = interpolator
-
-                    this.height.fromValue = fromValue
-                    this.height.toValue = toValue
-                    this.height.interpolator = interpolator
+                    resizeFrom(Measurement.WIDTH, fromValue, toValue, interpolator)
+                    resizeFrom(Measurement.HEIGHT, fromValue, toValue, interpolator)
                 }
             }
             return this
@@ -4239,6 +4268,20 @@ class Choreographer(context: Context) {
             pivotValueY = pivotY
             pivotValueTypeY = type
             pivotPoint.y = resolvePivot(pivotValueTypeY, pivotValueY, height.fromValue, viewParentSize.height)
+            return this
+        }
+
+        /**
+         * This flag determines if the view animated by this [Choreography] should maintain its ratio when
+         * its dimension is changed. If only the width is resize the height of the view will be resize with it
+         * and if only the height is resize the width of the view will be resize with it. This is done in order
+         * to maintain the ratio of the view.
+         * **Default value:** `true`
+         * @param snapoRatio Determins whether ratio snapping should be used.
+         * @return this choreography.
+         */
+        fun withEvenRatio(snapToRatio: Boolean = true): Choreography {
+            this.snapToRatio = snapToRatio
             return this
         }
 
@@ -4820,6 +4863,15 @@ class Choreographer(context: Context) {
                 Pivot.RELATIVE_TO_PARENT -> parentSize * value
                 Pivot.BASE_ON_PARENT -> parentSize * value
                 Pivot.BASE_ON_VIEW -> parentSize * value
+            }
+        }
+
+        private fun setForRatio(target: AnimatedFloatValue, other: AnimatedFloatValue) {
+            if (!target.canInterpolate) {
+                val aspectRato = target.fromValue / other.fromValue
+
+                target.toValue = (target.toValue) + (other.difference * aspectRato)
+                target.interpolator = other.interpolator
             }
         }
     }

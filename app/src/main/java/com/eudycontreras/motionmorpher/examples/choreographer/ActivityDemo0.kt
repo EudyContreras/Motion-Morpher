@@ -120,8 +120,9 @@ class ActivityDemo0 : MorphActivity() {
                 withDuration(1000)
             }
             .and(image) {
+                withEvenRatio()
                 cornerRadiusTo(Corner.TOP_LEFT and Corner.TOP_RIGHT, 0.dp)
-                resizeTo(root.viewBounds)
+                resizeTo(Measurement.HEIGHT, root.viewBounds)
                 withDuration(1000)
             }
             .and(icon1, icon2, icon3) {
