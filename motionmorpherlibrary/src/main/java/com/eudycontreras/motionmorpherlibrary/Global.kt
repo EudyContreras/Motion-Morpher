@@ -5,8 +5,11 @@ import androidx.core.math.MathUtils.clamp
 import androidx.core.view.animation.PathInterpolatorCompat
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
+import java.lang.IllegalStateException
 import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.math.hypot
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -310,4 +313,18 @@ inline fun <reified X,reified Y,reified Z> doWith(first: X?, second: Y?, third: 
  */
 inline fun <reified T> Any.cast(): T{
     return this as T
+}
+
+
+
+/**
+ * Throws an [IllegalStateException] with the result of calling [lazyMessage] if the [value] is false.
+ *
+ * @sample samples.misc.Preconditions.failRequireWithLazyMessage
+ */
+public inline fun requireThat(value: Boolean, lazyMessage: () -> Any): Unit {
+    if (!value) {
+        val message = lazyMessage()
+        throw IllegalStateException(message.toString())
+    }
 }

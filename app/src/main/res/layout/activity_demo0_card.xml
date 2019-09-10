@@ -21,7 +21,7 @@
             android:src="@drawable/background13"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:riv_topLeftCornerRadius="6dp"
             app:riv_topRightCornerRadius="6dp"

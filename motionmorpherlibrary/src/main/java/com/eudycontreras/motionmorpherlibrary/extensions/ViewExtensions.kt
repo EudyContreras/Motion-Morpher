@@ -2,6 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.extensions
 
 import android.graphics.drawable.ColorDrawable
 import android.view.View
+import android.widget.TextView
 import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
@@ -105,6 +106,12 @@ fun MorphLayout.show(duration: Long = MIN_DURATION, delay: Long = MIN_DURATION, 
         .setStartDelay(delay)
         .setDuration(duration)
         .start()
+}
+
+fun TextView.getTextSizeSp(): Float {
+    val px = this.textSize
+    val scaledDensity = this.context.getResources().getDisplayMetrics().scaledDensity
+    return px/scaledDensity
 }
 
 fun MorphLayout.applyProps(props: Morpher.Properties) {

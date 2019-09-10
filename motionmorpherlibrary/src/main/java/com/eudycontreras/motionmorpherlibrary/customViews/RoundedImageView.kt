@@ -69,10 +69,8 @@ open class RoundedImageView : ImageView {
             if (it is RoundedBitmapDrawable || (measuredWidth <= 0 || measuredHeight <= 0)) {
                 super.setImageDrawable(drawable)
             } else  {
-                BitmapUtility.drawableToBitmap(it)?.let {
-                    val newDrawable = BitmapUtility.asRoundedBitmap(this, it)
-                    super.setImageDrawable(newDrawable)
-                }
+                val newDrawable = BitmapUtility.asRoundedBitmap(this, it.toBitmap())
+                super.setImageDrawable(newDrawable)
             }
         }
     }
@@ -87,13 +85,18 @@ open class RoundedImageView : ImageView {
         }
     }
 
+    private var created: Boolean = false
+
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        if (changed) {
+        if (changed && !created) {
+            created = true
             drawable?.let {
-                BitmapUtility.drawableToBitmap(it)?.let {
-                    val newDrawable = BitmapUtility.asRoundedBitmap(this, it)
-                    setImageDrawable(newDrawable)
+                if (it is RoundedBitmapDrawable || (measuredWidth <= 0 || measuredHeight <= 0)) {
+                    super.setImageDrawable(drawable)
+                } else  {
+                    val newDrawable = BitmapUtility.asRoundedBitmap(this, it.toBitmap())
+                    super.setImageDrawable(newDrawable)
                 }
             }
         }

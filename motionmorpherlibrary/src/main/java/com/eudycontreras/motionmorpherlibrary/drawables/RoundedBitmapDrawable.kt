@@ -51,7 +51,7 @@ class RoundedBitmapDrawable(
     ) : this(bitmap, cornerRadii ?: CornerRadii()) {
         this.viewWidth = width
         this.viewHeight = height
-        recomputeCorners()
+        computeDimensions()
         invalidateSelf()
     }
 
@@ -71,10 +71,12 @@ class RoundedBitmapDrawable(
     override fun onBoundsChange(bounds: Rect) {
         super.onBoundsChange(bounds)
 
-        viewWidth = bounds.width()
-        viewHeight = bounds.height()
+        if (bounds.width() != viewWidth || bounds.height() != viewHeight) {
+            viewWidth = bounds.width()
+            viewHeight = bounds.height()
 
-        recomputeCorners()
+            computeDimensions()
+        }
         invalidateSelf()
     }
 
@@ -98,7 +100,7 @@ class RoundedBitmapDrawable(
         }
     }
 
-    private fun recomputeCorners() {
+    private fun computeDimensions() {
         val fullSizeBitmap = bitmap
 
         val scaledWidth = viewWidth
@@ -107,14 +109,10 @@ class RoundedBitmapDrawable(
         val scaledBitmap = if (scaledWidth == fullSizeBitmap.width && scaledHeight == fullSizeBitmap.height) {
             fullSizeBitmap
         } else {
-            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, true)
+            Bitmap.createScaledBitmap(fullSizeBitmap, scaledWidth, scaledHeight, false)
         }
 
-        paint.apply {
-            isAntiAlias = true
-            color = -0xbdbdbe
-            shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-        }
+        paint.shader = BitmapShader(scaledBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
     }
 
     override fun draw(canvas: Canvas) {

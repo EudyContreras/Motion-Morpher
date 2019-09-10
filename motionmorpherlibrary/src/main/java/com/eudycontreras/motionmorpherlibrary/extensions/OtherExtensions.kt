@@ -2,8 +2,10 @@ package com.eudycontreras.motionmorpherlibrary.extensions
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
+import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
@@ -80,6 +82,13 @@ fun MorphLayout.getBackgroundType(): MorphTransitionDrawable.DrawableType {
         this.hasBitmapDrawable() -> MorphTransitionDrawable.DrawableType.BITMAP
         else -> MorphTransitionDrawable.DrawableType.OTHER
     }
+}
+
+fun BitmapDrawable.asRounded(corners: CornerRadii = CornerRadii()): RoundedBitmapDrawable {
+    val scaledWidth = if (this.intrinsicWidth <= 0) 2 else this.intrinsicWidth
+    val scaledHeight = if (this.intrinsicHeight <= 0) 2 else this.intrinsicHeight
+
+    return RoundedBitmapDrawable(this.bitmap, scaledWidth, scaledHeight, corners)
 }
 
 fun Context.getStatusBarHeight(): Int {

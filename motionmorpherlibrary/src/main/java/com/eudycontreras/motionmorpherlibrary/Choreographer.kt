@@ -217,6 +217,8 @@ class Choreographer(context: Context) {
      * Creates the initial head [Choreography] for the given [View]. The head
      * is the first choreography to be played in a choreography sequence.
      *
+     * **Note**: Must be called before using [then], [and] etc.
+     *
      * @param views The view which are to be animated by this choreography.
      * @param block The encapsulation block of the created choreography
      * @return This choreographer.
@@ -228,6 +230,8 @@ class Choreographer(context: Context) {
     /**
      * Creates the initial head [Choreography] for the given [View]. The head
      * is the first choreography to be played in a choreography sequence.
+     *
+     * **Note**: Must be called before using [then], [and] etc.
      *
      * @param morphViews The view which are to be animated by this choreography.
      * @param block The encapsulation block of the created choreography
@@ -261,7 +265,7 @@ class Choreographer(context: Context) {
 
         val properties = getProperties(choreography, *views)
 
-        tailChoreography =  Choreography(this, *views).apply {
+        tailChoreography = Choreography(this, *views).apply {
             this.setStartProperties(properties)
             this.parent = choreography
             this.offset = offset
@@ -320,6 +324,141 @@ class Choreographer(context: Context) {
     }
 
     /**
+     * Reverse animates the specified [Choreography] to its initial state for the specified morphViews.
+     * The reverse animation will occur after the parent animation is done animating. Only the latest
+     * choreography for the specified view will be reversed.
+     *
+     * @param choreography The parent choreography of the current.
+     * @param views The morphViews to which the choreography belongs to.
+     * @throws IllegalArgumentException Thrown when the offset is negative.
+     * @return The created choreography.
+     */
+    internal fun reverseAnimateWith(offset: Float, vararg views: MorphLayout): List<Choreography> {
+        require(offset >= MIN_OFFSET) { "A duration offset may not be less than zero: $offset" }
+
+        var oldChoreography: Choreography? = null
+
+        val choreographies: ArrayList<Choreography> = ArrayList()
+
+        for ((index, view) in views.withIndex()) {
+            predecessors(tailChoreography) { control, _choreography ->
+                loopA@ for(viewA in _choreography.morphViews) {
+                    if (view == viewA) {
+                        oldChoreography = _choreography
+                        control.breakTraversal()
+                        break@loopA
+                    }
+                }
+            }
+
+            val choreography = (oldChoreography?.clone(view) ?: Choreography(this, view)).apply {
+                this.flipValues()
+                if (index == 0) {
+                    this.offset = offset
+                } else {
+                    this.offset = MIN_OFFSET
+                }
+                this.reverseToStartState = true
+                this.parent = tailChoreography
+                this.child = null
+                tailChoreography.child = this
+            }
+
+            choreographies.add(choreography)
+            tailChoreography = choreography
+        }
+
+        return choreographies
+    }
+
+    internal fun animateWith(offset: Float, vararg views: MorphLayout): List<Choreography> {
+        val properties = getProperties(tailChoreography, *views)
+
+        val choreographies: ArrayList<Choreography> = ArrayList()
+
+        for((index,view) in views.withIndex()) {
+            val choreography = Choreography(this, view).apply {
+                this.setStartProperties(properties)
+                this.parent = tailChoreography
+                if (index == 0) {
+                    this.offset = offset
+                } else {
+                    this.offset = MIN_OFFSET
+                }
+                this.offsetDelayAlpha = (this.offset * tailChoreography.duration).toLong()
+                this.offsetDelayDelta = ((MAX_OFFSET - this.offset) * tailChoreography.duration).toLong()
+                if (allowInheritance) {
+                    this.duration = tailChoreography.duration
+                    this.interpolator = tailChoreography.interpolator
+                    this.pivotPoint = tailChoreography.pivotPoint
+                    this.controlPoint = tailChoreography.controlPoint
+                }
+                tailChoreography.child = this
+            }
+            choreographies.add(choreography)
+            tailChoreography = choreography
+        }
+        return choreographies
+    }
+
+    fun with(offset: Float, vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
+        var allViews = ArrayList<MorphLayout>()
+
+        allViews.addAll(morphViews.filter { it is MorphLayout}.map { it as MorphLayout })
+        allViews.addAll(getViews(morphViews.filter { it !is MorphLayout}.map { it as View }.toTypedArray()))
+
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        val choreographies = animateWith(offset, *allViews.toTypedArray())
+        for(choreography in choreographies) {
+            block(choreography)
+        }
+        return this
+    }
+
+    fun thenWith(vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
+        return with(MAX_OFFSET, morphViews = *morphViews, block = block)
+    }
+
+    fun thenWith(offset: Float, vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
+        return with(offset, morphViews = *morphViews, block = block)
+    }
+
+    fun andWith(vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
+        return with(MIN_OFFSET, morphViews = *morphViews, block = block)
+    }
+
+    private fun reversedWith(offset: Float, vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        var allViews = ArrayList<MorphLayout>()
+
+        val viewsOne = morphViews.filter { it is MorphLayout}.map { it as MorphLayout }
+        val viewsTwo = morphViews.filter { it !is MorphLayout}.map { it as View }
+
+        allViews.addAll(viewsOne)
+        allViews.addAll(getViews(viewsTwo.toTypedArray()))
+
+        applyAdders(tailChoreography)
+        applyMultipliers(tailChoreography)
+        val choreographies = reverseAnimateWith(offset, *allViews.toTypedArray())
+        for(choreography in choreographies) {
+            block(choreography)
+        }
+        return this
+    }
+
+    fun thenReversedWith(vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        return reversedWith(MAX_OFFSET, morphViews = *morphViews, block = block)
+    }
+
+    fun thenReversedWith(offset: Float, vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        return reversedWith(offset, morphViews = *morphViews, block = block)
+    }
+
+    fun andReverseWith(vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        return reversedWith(MIN_OFFSET, morphViews = *morphViews, block = block)
+    }
+
+    /**
      * Creates a [Choreography] for the latest given views which will start after the specified
      * duration offset relative to its parent. An offset of 0.5f indicates that this choreography will play when
      * the animation of its parent is 50 percent done.
@@ -328,8 +467,8 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography
      * @return This choreographer.
      */
-    fun after(offset: Float, block: Choreography.() -> Unit): Choreographer {
-        return animateAfter(offset = offset, morphViews = *tailChoreography.morphViews, block = block)
+    fun then(offset: Float, block: Choreography.() -> Unit): Choreographer {
+        return then(offset = offset, morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
@@ -342,9 +481,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography
      * @return This choreographer.
      */
-    fun animateAfter(offset: Float, vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+    fun then(offset: Float, vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
         val morphViews = getViews(views, tailChoreography.morphViews)
-        return animateAfter(offset = offset, morphViews = *morphViews, block = block)
+        return then(offset = offset, morphViews = *morphViews, block = block)
     }
 
     /**
@@ -357,7 +496,10 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography
      * @return This choreographer.
      */
-    fun animateAfter(offset: Float, vararg morphViews: MorphLayout = tailChoreography.morphViews, block: Choreography.() -> Unit): Choreographer {
+    fun then(offset: Float, vararg morphViews: MorphLayout = tailChoreography.morphViews, block: Choreography.() -> Unit): Choreographer {
+        requireThat(::headChoreography.isInitialized) {
+            "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
+        }
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
         animateFor(tailChoreography, offset, allowInheritance, *morphViews)
@@ -372,7 +514,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun then(block: Choreography.() -> Unit): Choreographer {
-        return thenAnimate(morphViews = *tailChoreography.morphViews, block = block)
+        return then(morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
@@ -384,8 +526,8 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return this choreographer.
      */
-    fun thenAnimate(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
-        return thenAnimate(morphViews = *getViews(views, tailChoreography.morphViews), block = block)
+    fun then(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        return then(morphViews = *getViews(views, tailChoreography.morphViews), block = block)
     }
 
     /**
@@ -397,7 +539,10 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun thenAnimate(vararg morphViews: MorphLayout = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+    fun then(vararg morphViews: MorphLayout = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        requireThat(::headChoreography.isInitialized) {
+            "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
+        }
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
         animateFor(tailChoreography, MAX_OFFSET, allowInheritance, *morphViews)
@@ -413,7 +558,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun and(block: Choreography.() -> Unit): Choreographer {
-        return andAnimate(morphViews = *tailChoreography.morphViews, block = block)
+        return and(morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
@@ -425,8 +570,8 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun andAnimate(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
-        return andAnimate(morphViews = *getViews(views, tailChoreography.morphViews), block = block)
+    fun and(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        return and(morphViews = *getViews(views, tailChoreography.morphViews), block = block)
     }
 
     /**
@@ -438,7 +583,10 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun andAnimate(vararg morphViews: MorphLayout = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+    fun and(vararg morphViews: MorphLayout = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+        requireThat(::headChoreography.isInitialized) {
+            "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
+        }
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
         animateFor(tailChoreography, MIN_OFFSET, allowInheritance, *morphViews)
@@ -457,7 +605,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun thenReverse(block: (Choreography.() -> Unit)? = null): Choreographer {
-        return thenReverseAnimate(morphViews = *tailChoreography.morphViews, block = block)
+        return thenReverse(morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
@@ -470,9 +618,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun thenReverseAnimate(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
+    fun thenReverse(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
         val morphViews = getViews(views, tailChoreography.morphViews)
-        return thenReverseAnimate(morphViews = *morphViews, block = block)
+        return thenReverse(morphViews = *morphViews, block = block)
     }
 
     /**
@@ -485,7 +633,10 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun thenReverseAnimate(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+    fun thenReverse(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+        requireThat(::headChoreography.isInitialized) {
+            "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
+        }
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
         reverseAnimateFor(tailChoreography, MAX_OFFSET, *morphViews)
@@ -503,7 +654,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun andReverse(block: (Choreography.() -> Unit)? = null): Choreographer {
-        return andReverseAnimate(morphViews = *tailChoreography.morphViews, block = block)
+        return andReverse(morphViews = *tailChoreography.morphViews, block = block)
     }
 
     /**
@@ -516,9 +667,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography,
      * @return This choreographer.
      */
-    fun andReverseAnimate(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
+    fun andReverse(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
         val morphViews = getViews(views, tailChoreography.morphViews)
-        return andReverseAnimate(morphViews = *morphViews, block = block)
+        return andReverse(morphViews = *morphViews, block = block)
     }
 
     /**
@@ -531,7 +682,10 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography,
      * @return This choreographer.
      */
-    fun andReverseAnimate(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+    fun andReverse(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+        requireThat(::headChoreography.isInitialized) {
+            "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
+        }
         applyAdders(tailChoreography)
         applyMultipliers(tailChoreography)
         reverseAnimateFor(tailChoreography, MIN_OFFSET, *morphViews)
@@ -549,7 +703,7 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography
      * @return This choreographer.
      */
-    fun animateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
+    fun childrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         if (!view.hasChildren())
             return this
 
@@ -567,7 +721,7 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography
      * @return This choreographer.
      */
-    fun animateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
+    fun childrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
         if(view.childCount <= 0)
             return this
 
@@ -588,9 +742,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun animateChildrenOfAfter(offset: Float, view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
+    fun thenChildrenOf(offset: Float, view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        return animateAfter(offset = offset, morphViews = *children, block = block)
+        return then(offset = offset, morphViews = *children, block = block)
     }
 
     /**
@@ -604,9 +758,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun animateChildrenOfAfter(view: ViewGroup, offset: Float, block: Choreography.() -> Unit): Choreographer {
+    fun thenChildrenOf(view: ViewGroup, offset: Float, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.children.toArrayList().toTypedArray())
-        return animateAfter(offset = offset, morphViews = *children, block = block)
+        return then(offset = offset, morphViews = *children, block = block)
     }
 
     /**
@@ -618,9 +772,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun thenAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
+    fun thenChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        return thenAnimate(morphViews = *children, block = block)
+        return then(morphViews = *children, block = block)
     }
 
     /**
@@ -631,22 +785,9 @@ class Choreographer(context: Context) {
      * @param stagger The stagger to use when animating the children. See [AnimationStagger]
      * @return This choreographer.
      */
-    fun thenAnimateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
+    fun thenChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.children.toArrayList().toTypedArray())
-        return thenAnimate(morphViews = *children, block = block)
-    }
-
-    /**
-     * Creates a [Choreography] for the given children of the specified view which will start when the animation
-     * of the parent choreography starts. If a stagger is specified the morphViews will be animated
-     * with the specified stagger.
-     * @param view The morph layouts, see: [MorphLayout] which children will be animated by this choreography.
-     * @param stagger The stagger to use when animating the children. See [AnimationStagger]
-     * @return This choreographer.
-     */
-    fun alsoAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
-        val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        return andAnimate(morphViews = *children, block = block)
+        return then(morphViews = *children, block = block)
     }
 
     /**
@@ -658,9 +799,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun alsoAnimateChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
+    fun andChildrenOf(view: ViewGroup, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.children.toArrayList().toTypedArray())
-        return andAnimate(morphViews = *children, block = block)
+        return and(morphViews = *children, block = block)
     }
 
     /**
@@ -672,9 +813,9 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun andAnimateChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
+    fun andChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
-        return andAnimate(morphViews = *children, block = block)
+        return and(morphViews = *children, block = block)
     }
 
     /**
@@ -1065,6 +1206,7 @@ class Choreographer(context: Context) {
             applyArcType(current)
             createStagger(current)
             applyInterpolators(current)
+            applyChildProperties(*current.views)
 
             val trim: Long = current.offsetDelayDelta
             val delay: Long = abs(lastDuration - trim)
@@ -1142,6 +1284,15 @@ class Choreographer(context: Context) {
         this.built = true
 
         return this
+    }
+
+    private fun applyChildProperties(vararg views: MorphLayout) {
+       for (view in views) {
+           for (child in view.getChildren()) {
+               child.layoutParams.width = child.width
+               child.layoutParams.height = child.height
+           }
+       }
     }
 
     /**
