@@ -1,6 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bindable
 
 /**
@@ -17,7 +18,7 @@ class CornerRadii(
     topRight: Float = MIN_OFFSET,
     bottomRight: Float = MIN_OFFSET,
     bottomLeft: Float = MIN_OFFSET
-): Bindable<FloatArray>() {
+): Bindable<FloatArray>(), Cloneable<CornerRadii>{
 
     val topLeft: Float
         get() = corners[0]
@@ -31,7 +32,7 @@ class CornerRadii(
     val bottomLeft: Float
         get() = corners[6]
 
-    val corners = FloatArray(8)
+    val corners = FloatArray(SIZE)
 
     val size: Int
         get() = corners.size
@@ -60,7 +61,12 @@ class CornerRadii(
         notifyChange(corners)
     }
 
-    fun apply(topLeft: Float, topRight: Float, bottomRight: Float, bottomLeft: Float) {
+    fun apply(
+        topLeft: Float = MIN_OFFSET,
+        topRight: Float = MIN_OFFSET,
+        bottomRight: Float = MIN_OFFSET,
+        bottomLeft: Float = MIN_OFFSET
+    ) {
         corners[0] = topLeft
         corners[1] = topLeft
 
@@ -76,6 +82,26 @@ class CornerRadii(
         notifyChange(corners)
     }
 
+    fun setTopLeft(radii: Float) {
+        corners[0] = radii
+        corners[1] = radii
+    }
+
+    fun setTopRight(radii: Float) {
+        corners[2] = radii
+        corners[3] = radii
+    }
+
+    fun setBottomRight(radii: Float) {
+        corners[4] = radii
+        corners[5] = radii
+    }
+
+    fun setBottomLeft(radii: Float) {
+        corners[6] = radii
+        corners[7] = radii
+    }
+
     fun getCopy(): CornerRadii {
         return CornerRadii(topLeft, topRight, bottomRight, bottomLeft)
     }
@@ -87,6 +113,10 @@ class CornerRadii(
     operator fun set(index: Int, value: Float) {
         corners[index] = value
         notifyChange(corners)
+    }
+
+    override fun clone(): CornerRadii {
+        return getCopy()
     }
 
     override fun onBindingChanged(newValue: FloatArray) {
@@ -110,5 +140,9 @@ class CornerRadii(
 
     override fun hashCode(): Int {
         return corners.contentHashCode()
+    }
+
+    companion object {
+        const val SIZE = 8
     }
 }

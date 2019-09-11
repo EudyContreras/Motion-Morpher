@@ -1,4 +1,4 @@
-package com.eudycontreras.motionmorpherlibrary.properties
+package com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues
 
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import kotlin.math.abs

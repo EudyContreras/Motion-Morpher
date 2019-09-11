@@ -1,10 +1,9 @@
-package com.eudycontreras.motionmorpherlibrary.properties
+package com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues
 
 import android.animation.TimeInterpolator
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.lerp
-import com.google.android.material.math.MathUtils
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
 import kotlin.math.abs
 
 /**
@@ -19,7 +18,7 @@ class AnimatedFloatValue(
     override val propertyName: String,
     fromValue: Float = MIN_OFFSET,
     toValue: Float = MIN_OFFSET
-) : AnimatedValue<Float>() {
+): AnimatedValue<Float>() {
 
     constructor(
         propertyName: String,
@@ -31,9 +30,6 @@ class AnimatedFloatValue(
         this.interpolateOffsetStart = startOffset
         this.interpolateOffsetEnd = endOffset
     }
-
-    var add: Float = MIN_OFFSET
-    var multiply: Float = MAX_OFFSET
 
     override var interpolator: TimeInterpolator? = null
 
@@ -52,7 +48,7 @@ class AnimatedFloatValue(
     var difference: Float = abs(fromValue - toValue)
         private set
 
-    var differenceRatio: Float = toValue / fromValue
+    var differenceRatio: Float = if (fromValue == MIN_OFFSET) MIN_OFFSET else toValue / fromValue
         private set
 
     fun lerp(fraction: Float): Float = lerp(fromValue, toValue, fraction)
@@ -62,10 +58,29 @@ class AnimatedFloatValue(
     }
 
     fun copy(other: AnimatedFloatValue) {
-        this.difference = other.difference
         this.fromValue = other.fromValue
         this.toValue = other.toValue
         this.interpolator = other.interpolator
+        this.difference = other.difference
+        this.differenceRatio = other.differenceRatio
+    }
+
+    override fun clone(): AnimatedValue<Float> {
+       val values = AnimatedFloatValue(
+           propertyName,
+           fromValue,
+           toValue
+       ).let {
+           it.durationOffsetStart = durationOffsetStart
+           it.durationOffsetEnd = durationOffsetEnd
+           it.interpolateOffsetStart = interpolateOffsetStart
+           it.interpolateOffsetEnd = interpolateOffsetEnd
+           it.interpolator = interpolator?.let { it::class.java.newInstance() }
+           it.differenceRatio = differenceRatio
+           it.difference = difference
+           it
+       }
+        return values
     }
 
     override fun toString(): String {

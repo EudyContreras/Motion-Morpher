@@ -9,6 +9,8 @@ import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.mapRange
 import com.eudycontreras.motionmorpherlibrary.properties.*
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
 import java.util.*
 import kotlin.math.hypot
 import kotlin.math.round
@@ -77,8 +79,18 @@ class Explode(
 
                 val distance = hypot(centerPoint.x - epicenter.x, centerPoint.y - epicenter.y)
 
-                val mappingX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET)
-                val mappingY = AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET)
+                val mappingX =
+                    AnimatedFloatValue(
+                        AnimatedValue.TRANSLATION_X,
+                        MIN_OFFSET,
+                        MIN_OFFSET
+                    )
+                val mappingY =
+                    AnimatedFloatValue(
+                        AnimatedValue.TRANSLATION_Y,
+                        MIN_OFFSET,
+                        MIN_OFFSET
+                    )
 
                 val xDelta = if (type == Type.LOOSE) xDifference else MIN_OFFSET
                 val yDelta = if (type == Type.LOOSE) yDifference else MIN_OFFSET
@@ -109,8 +121,16 @@ class Explode(
             val animationNode = AnimationNode(
                 view = endView,
                 distance = MIN_OFFSET,
-                translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-                translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                translationX = AnimatedFloatValue(
+                    AnimatedValue.TRANSLATION_X,
+                    MIN_OFFSET,
+                    MIN_OFFSET
+                ),
+                translationY = AnimatedFloatValue(
+                    AnimatedValue.TRANSLATION_X,
+                    MIN_OFFSET,
+                    MIN_OFFSET
+                ),
                 epicenter = true
             )
             animationNodes.addFirst(animationNode)
@@ -242,8 +262,16 @@ class Explode(
                 val animationNode = AnimationNode(
                     view = endView,
                     distance = MIN_OFFSET,
-                    translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-                    translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                    translationX = AnimatedFloatValue(
+                        AnimatedValue.TRANSLATION_X,
+                        MIN_OFFSET,
+                        MIN_OFFSET
+                    ),
+                    translationY = AnimatedFloatValue(
+                        AnimatedValue.TRANSLATION_X,
+                        MIN_OFFSET,
+                        MIN_OFFSET
+                    ),
                     epicenter = true
                 )
                 animationNode.copyOffsets(last)
@@ -254,8 +282,16 @@ class Explode(
                 val animationNode = AnimationNode(
                     view = endView,
                     distance = MIN_OFFSET,
-                    translationX = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-                    translationY = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
+                    translationX = AnimatedFloatValue(
+                        AnimatedValue.TRANSLATION_X,
+                        MIN_OFFSET,
+                        MIN_OFFSET
+                    ),
+                    translationY = AnimatedFloatValue(
+                        AnimatedValue.TRANSLATION_X,
+                        MIN_OFFSET,
+                        MIN_OFFSET
+                    ),
                     epicenter = true
                 )
                 animationNode.copyOffsets(first)

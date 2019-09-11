@@ -3,18 +3,11 @@ package com.eudycontreras.motionmorpherlibrary
 import android.animation.TimeInterpolator
 import androidx.core.math.MathUtils.clamp
 import androidx.core.view.animation.PathInterpolatorCompat
-import com.eudycontreras.motionmorpherlibrary.properties.AnimatedFloatValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.IllegalStateException
-import java.lang.reflect.Type
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 import kotlin.math.hypot
-import kotlin.reflect.KClass
-import kotlin.reflect.KType
-import kotlin.reflect.KTypeParameter
-import kotlin.reflect.full.isSupertypeOf
 
 /**
  * @Project MotionMorpher

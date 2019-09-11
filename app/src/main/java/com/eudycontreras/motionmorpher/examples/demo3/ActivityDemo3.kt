@@ -116,7 +116,7 @@ class ActivityDemo3 : MorphActivity() {
         choreographer.morpher.morphIntoDuration = 450
         choreographer.morpher.morphFromDuration = 350
 
-        choreographer.morpher.animateChildren = true
+        choreographer.morpher.animateChildren = false
         choreographer.morpher.useArcTranslator = false
 
         choreographer.morpher.morphIntoInterpolator = standardInterpolator
@@ -153,13 +153,14 @@ class ActivityDemo3 : MorphActivity() {
         choreographer.morpher.containerChildStateIn.stagger?.staggerOffset = 0.09f
         choreographer.morpher.containerChildStateIn.interpolator = incomingInterpolator
 
-        choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 0.1f).apply {
+        choreographer.morpher.siblingInteraction = Explode(Explode.Type.TIGHT, 1f).apply {
             outInterpolator = standardInterpolator
             inInterpolator = standardInterpolator
             //stretch = Stretch(1f, 0.1f)
         }
 
         val dialog = MorphDialog.instance(this, choreographer.morpher, R.layout.activity_demo3_details, R.style.AppTheme_Dialog)
+
         dialog.addCreateListener {
             DetailsDemo3(this, dialog)
         }

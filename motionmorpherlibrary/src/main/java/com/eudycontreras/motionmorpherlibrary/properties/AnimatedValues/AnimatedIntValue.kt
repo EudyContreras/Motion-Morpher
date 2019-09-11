@@ -1,7 +1,8 @@
-package com.eudycontreras.motionmorpherlibrary.properties
+package com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues
 
 import android.animation.TimeInterpolator
 import com.eudycontreras.motionmorpherlibrary.lerp
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
 import kotlin.math.abs
 
 /**
@@ -47,6 +48,9 @@ class AnimatedIntValue(
     var difference: Int = abs(fromValue - toValue)
         private set
 
+    var differenceRatio: Int = if (fromValue == 0) 0 else (toValue / fromValue).toInt()
+        private set
+
     fun lerp(fraction: Float): Int = lerp(fromValue, toValue, fraction)
 
     fun set(value: AnimatedIntValue) {
@@ -60,5 +64,23 @@ class AnimatedIntValue(
         this.fromValue = other.fromValue
         this.toValue = other.toValue
         this.interpolator = other.interpolator
+    }
+
+    override fun clone(): AnimatedValue<Int> {
+        val values = AnimatedIntValue(
+            propertyName,
+            fromValue,
+            toValue
+        ).let {
+            it.durationOffsetStart = durationOffsetStart
+            it.durationOffsetEnd = durationOffsetEnd
+            it.interpolateOffsetStart = interpolateOffsetStart
+            it.interpolateOffsetEnd = interpolateOffsetEnd
+            it.interpolator = interpolator?.let { it::class.java.newInstance() }
+            it.differenceRatio = differenceRatio
+            it.difference = difference
+            it
+        }
+        return values
     }
 }

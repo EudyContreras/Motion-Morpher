@@ -25,13 +25,11 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.math.abs
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
-import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
-import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValueArray
 import com.eudycontreras.motionmorpherlibrary.drawables.ParticleEffectDrawable
 import com.eudycontreras.motionmorpherlibrary.particles.data.Ripple
 import com.eudycontreras.motionmorpherlibrary.particles.effects.RippleEffect
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.*
 import kotlin.math.max
-import kotlin.math.min
 
 
 /**
@@ -244,8 +242,6 @@ class Choreographer(context: Context) {
         this.headChoreography.offset = MAX_OFFSET
         this.tailChoreography = headChoreography
 
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         block(headChoreography)
 
         return this
@@ -374,11 +370,12 @@ class Choreographer(context: Context) {
     }
 
     internal fun animateWith(offset: Float, vararg views: MorphLayout): List<Choreography> {
-        val properties = getProperties(tailChoreography, *views)
 
         val choreographies: ArrayList<Choreography> = ArrayList()
 
         for((index,view) in views.withIndex()) {
+            val properties = getProperties(tailChoreography, view)
+
             val choreography = Choreography(this, view).apply {
                 this.setStartProperties(properties)
                 this.parent = tailChoreography
@@ -409,8 +406,6 @@ class Choreographer(context: Context) {
         allViews.addAll(morphViews.filter { it is MorphLayout}.map { it as MorphLayout })
         allViews.addAll(getViews(morphViews.filter { it !is MorphLayout}.map { it as View }.toTypedArray()))
 
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         val choreographies = animateWith(offset, *allViews.toTypedArray())
         for(choreography in choreographies) {
             block(choreography)
@@ -439,8 +434,6 @@ class Choreographer(context: Context) {
         allViews.addAll(viewsOne)
         allViews.addAll(getViews(viewsTwo.toTypedArray()))
 
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         val choreographies = reverseAnimateWith(offset, *allViews.toTypedArray())
         for(choreography in choreographies) {
             block(choreography)
@@ -502,8 +495,6 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         animateFor(tailChoreography, offset, allowInheritance, *morphViews)
         block(tailChoreography)
         return this
@@ -545,8 +536,6 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         animateFor(tailChoreography, MAX_OFFSET, allowInheritance, *morphViews)
         block(tailChoreography)
         return this
@@ -589,8 +578,6 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         animateFor(tailChoreography, MIN_OFFSET, allowInheritance, *morphViews)
         block(tailChoreography)
         return this
@@ -639,8 +626,6 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         reverseAnimateFor(tailChoreography, MAX_OFFSET, *morphViews)
         block?.invoke(tailChoreography)
         return this
@@ -688,8 +673,6 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        applyAdders(tailChoreography)
-        applyMultipliers(tailChoreography)
         reverseAnimateFor(tailChoreography, MIN_OFFSET, *morphViews)
         block?.invoke(tailChoreography)
         return this
@@ -1207,8 +1190,9 @@ class Choreographer(context: Context) {
             applyConceal(current)
             applyArcType(current)
             createStagger(current)
+            applyCornerClamp(current)
             applyInterpolators(current)
-            applyChildProperties(*current.views)
+            snapChildDimensions(*current.views)
 
             val trim: Long = current.offsetDelayDelta
             val delay: Long = abs(lastDuration - trim)
@@ -1288,7 +1272,13 @@ class Choreographer(context: Context) {
         return this
     }
 
-    private fun applyChildProperties(vararg views: MorphLayout) {
+    /**
+     * Assures that the child of parent views are not resize when the dimension/bounds
+     * of the parent view changes.
+     *
+     * @param views The view which are to be snapped.
+     */
+    private fun snapChildDimensions(vararg views: MorphLayout) {
        for (view in views) {
            for (child in view.getChildren()) {
                child.layoutParams.width = child.width
@@ -1309,6 +1299,26 @@ class Choreographer(context: Context) {
                 choreography.positionY,
                 it
             )
+        }
+    }
+
+    /**
+     * Applies clamping to corner radii in order to prevent overflow.
+     * A corner radii may not exceed the dimensions of the view corner radius is
+     * being targetted.
+     *
+     * See: [CornerRadii]
+     * @param choreography The choreography to which the corner radii is being clamped.
+     */
+    private fun applyCornerClamp(choreography: Choreography) {
+        if (choreography.cornerRadii.canInterpolate) {
+            val clamp = max(choreography.width.toValue, choreography.height.toValue)
+            for (index in 0 until choreography.cornerRadii.toValue.size) {
+                val valueTo = choreography.cornerRadii.toValue[index]
+                val valueFrom = choreography.cornerRadii.fromValue[index]
+                choreography.cornerRadii.toValue[index] = valueTo.clamp(MIN_OFFSET, clamp)
+                choreography.cornerRadii.fromValue[index] = valueFrom.clamp(MIN_OFFSET, clamp)
+            }
         }
     }
 
@@ -1423,66 +1433,6 @@ class Choreographer(context: Context) {
         choreography.translateXValues.interpolator = choreography.translateXValues.interpolator ?: choreography.interpolator
         choreography.translateYValues.interpolator = choreography.translateYValues.interpolator ?: choreography.interpolator
         choreography.translateZValues.interpolator = choreography.translateZValues.interpolator ?: choreography.interpolator
-    }
-
-    /**
-     * Applies the multipliers for [AnimatedValue] toValue property for each of the animation properties
-     * of the specified [Choreography].
-     *
-     * @param choreography The choreography to which its adders are applied to.
-     */
-    private fun applyMultipliers(choreography: Choreography) {
-        if (choreography.width.multiply != MAX_OFFSET) {
-            choreography.width.toValue = choreography.width.fromValue * choreography.width.multiply
-        }
-        if (choreography.height.multiply != MAX_OFFSET) {
-            choreography.height.toValue = choreography.height.fromValue * choreography.height.multiply
-        }
-        if (choreography.scaleX.multiply != MAX_OFFSET) {
-            choreography.scaleX.toValue = choreography.scaleX.fromValue * choreography.scaleX.multiply
-        }
-        if (choreography.scaleY.multiply != MAX_OFFSET) {
-            choreography.scaleY.toValue = choreography.scaleY.fromValue * choreography.scaleY.multiply
-        }
-        if (choreography.rotation.multiply != MAX_OFFSET) {
-            choreography.rotation.toValue = choreography.rotation.fromValue * choreography.rotation.multiply
-        }
-        if (choreography.rotationX.multiply != MAX_OFFSET) {
-            choreography.rotationX.toValue = choreography.rotationX.fromValue * choreography.rotationX.multiply
-        }
-        if (choreography.rotationY.multiply != MAX_OFFSET) {
-            choreography.rotationY.toValue = choreography.rotationY.fromValue * choreography.rotationY.multiply
-        }
-    }
-
-    /**
-     * Applies the adders for [AnimatedValue] toValue property for each of the animation properties
-     * of the specified [Choreography].
-     *
-     * @param choreography The choreography to which its adders are applied to.
-     */
-    internal fun applyAdders(choreography: Choreography) {
-        if (choreography.width.add != MIN_OFFSET) {
-            choreography.width.toValue = choreography.width.fromValue + choreography.width.add
-        }
-        if (choreography.height.add != MIN_OFFSET) {
-            choreography.height.toValue = choreography.height.fromValue + choreography.height.add
-        }
-        if (choreography.scaleX.add != MIN_OFFSET) {
-            choreography.scaleX.toValue = choreography.scaleX.fromValue + choreography.scaleX.add
-        }
-        if (choreography.scaleY.add != MIN_OFFSET) {
-            choreography.scaleY.toValue = choreography.scaleY.fromValue + choreography.scaleY.add
-        }
-        if (choreography.rotation.add != MIN_OFFSET) {
-            choreography.rotation.toValue = choreography.rotation.fromValue + choreography.rotation.add
-        }
-        if (choreography.rotationX.add != MIN_OFFSET) {
-            choreography.rotationX.toValue = choreography.rotationX.fromValue + choreography.rotationX.add
-        }
-        if (choreography.rotationY.add != MIN_OFFSET) {
-            choreography.rotationY.toValue = choreography.rotationY.fromValue + choreography.rotationY.add
-        }
     }
 
     /**
@@ -1714,6 +1664,8 @@ class Choreographer(context: Context) {
             view.updateCorners(5, choreography.cornerRadii.fromValue[5] + (choreography.cornerRadii.toValue[5] - choreography.cornerRadii.fromValue[5]) * cornersFraction)
             view.updateCorners(6, choreography.cornerRadii.fromValue[6] + (choreography.cornerRadii.toValue[6] - choreography.cornerRadii.fromValue[6]) * cornersFraction)
             view.updateCorners(7, choreography.cornerRadii.fromValue[7] + (choreography.cornerRadii.toValue[7] - choreography.cornerRadii.fromValue[7]) * cornersFraction)
+
+            boundsChanged = true
         }
 
         if (choreography.color.canInterpolate) {
@@ -1811,7 +1763,7 @@ class Choreographer(context: Context) {
      * @param morphViews the morphViews which this choreography will animate. This assumes the premise that
      * all morphViews have similar layout properties.
      */
-    class Choreography (
+    open class Choreography (
         var choreographer: Choreographer,
         internal vararg var morphViews: MorphLayout
     ) {
@@ -1842,42 +1794,155 @@ class Choreographer(context: Context) {
         internal var pivotValueTypeX: Pivot = Pivot.RELATIVE_TO_SELF
         internal var pivotValueTypeY: Pivot = Pivot.RELATIVE_TO_SELF
 
-        internal val alpha: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ALPHA, MAX_OFFSET, MAX_OFFSET)
+        internal val alpha: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.ALPHA,
+                MAX_OFFSET,
+                MAX_OFFSET
+            )
 
-        internal val color: AnimatedIntValue = AnimatedIntValue(AnimatedValue.COLOR, DEFAULT_COLOR, DEFAULT_COLOR)
+        internal val color: AnimatedIntValue =
+            AnimatedIntValue(
+                AnimatedValue.COLOR,
+                DEFAULT_COLOR,
+                DEFAULT_COLOR
+            )
 
-        internal val width: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.WIDTH, MIN_OFFSET, MIN_OFFSET)
-        internal val height: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.HEIGHT, MIN_OFFSET, MIN_OFFSET)
+        internal val width: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.WIDTH,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
 
-        internal val scaleX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_X, MAX_OFFSET, MAX_OFFSET)
-        internal val scaleY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_Y, MAX_OFFSET, MAX_OFFSET)
+        internal val height: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.HEIGHT,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
 
-        internal val rotation: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION, MIN_OFFSET, MIN_OFFSET)
-        internal val rotationX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION_X, MIN_OFFSET, MIN_OFFSET)
-        internal val rotationY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION_Y, MIN_OFFSET, MIN_OFFSET)
+        internal val scaleX: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.SCALE_X,
+                MAX_OFFSET,
+                MAX_OFFSET
+            )
 
-        internal val positionX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.POSITION_X, MIN_OFFSET, MIN_OFFSET)
-        internal val positionY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.POSITION_Y, MIN_OFFSET, MIN_OFFSET)
+        internal val scaleY: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.SCALE_Y,
+                MAX_OFFSET,
+                MAX_OFFSET
+            )
 
-        internal val translateX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET)
-        internal val translateY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET)
-        internal val translateZ: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_Z, MIN_OFFSET, MIN_OFFSET)
+        internal val rotation: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.ROTATION,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
 
-        internal val paddings: AnimatedValue<Paddings> = AnimatedValue.instance(AnimatedValue.PADDING, Paddings(), Paddings())
-        internal val margings: AnimatedValue<Margings> = AnimatedValue.instance(AnimatedValue.MARGIN, Margings(), Margings())
+        internal val rotationX: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.ROTATION_X,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
 
-        internal val cornerRadii: AnimatedValue<CornerRadii> = AnimatedValue.instance(AnimatedValue.CORNERS, CornerRadii(), CornerRadii())
+        internal val rotationY: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.ROTATION_Y,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
 
-        internal var scaleXValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.SCALE_X)
-        internal var scaleYValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.SCALE_Y)
+        internal val positionX: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.POSITION_X,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
 
-        internal var rotationValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.ROTATION)
-        internal var rotationXValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.ROTATION_X)
-        internal var rotationYValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.ROTATION_Y)
+        internal val positionY: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.POSITION_Y,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
 
-        internal var translateXValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.TRANSLATION_X)
-        internal var translateYValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.TRANSLATION_Y)
-        internal var translateZValues: AnimatedFloatValueArray = AnimatedFloatValueArray(AnimatedValue.TRANSLATION_Z)
+        internal val translateX: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.TRANSLATION_X,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
+
+        internal val translateY: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.TRANSLATION_Y,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
+
+        internal val translateZ: AnimatedFloatValue =
+            AnimatedFloatValue(
+                AnimatedValue.TRANSLATION_Z,
+                MIN_OFFSET,
+                MIN_OFFSET
+            )
+
+        internal var scaleXValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.SCALE_X
+            )
+
+        internal var scaleYValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.SCALE_Y
+            )
+
+        internal var rotationValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.ROTATION
+            )
+
+        internal var rotationXValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.ROTATION_X
+            )
+
+        internal var rotationYValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.ROTATION_Y
+            )
+
+        internal var translateXValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.TRANSLATION_X
+            )
+
+        internal var translateYValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.TRANSLATION_Y
+            )
+
+        internal var translateZValues: AnimatedFloatValueArray =
+            AnimatedFloatValueArray(
+                AnimatedValue.TRANSLATION_Z
+            )
+
+        internal val paddings: AnimatedValue<Paddings> = AnimatedValue.instance(
+            AnimatedValue.PADDING, Paddings(), Paddings()
+        )
+
+        internal val margings: AnimatedValue<Margings> = AnimatedValue.instance(
+            AnimatedValue.MARGIN, Margings(), Margings()
+        )
+
+        internal val cornerRadii: AnimateCornerRadii = AnimateCornerRadii(
+            AnimatedValue.CORNERS, CornerRadii(), CornerRadii()
+        )
 
         internal var progressListener: TransitionProgressListener = null
 
@@ -1983,29 +2048,29 @@ class Choreographer(context: Context) {
          */
         internal fun properties(): Map<String, AnimatedValue<*>> {
             val properties: HashMap<String, AnimatedValue<*>> = HashMap()
-            properties[width.propertyName] = width
+            properties[width.propertyName] = width.clone()
+            properties[height.propertyName] = height.clone()
 
-            properties[height.propertyName] = height
-            properties[alpha.propertyName] = alpha
+            properties[alpha.propertyName] = alpha.clone()
 
-            properties[scaleX.propertyName] = scaleX
-            properties[scaleY.propertyName] = scaleY
+            properties[scaleX.propertyName] = scaleX.clone()
+            properties[scaleY.propertyName] = scaleY.clone()
 
-            properties[rotation.propertyName] = rotation
-            properties[rotationX.propertyName] = rotationX
-            properties[rotationY.propertyName] = rotationY
+            properties[rotation.propertyName] = rotation.clone()
+            properties[rotationX.propertyName] = rotationX.clone()
+            properties[rotationY.propertyName] = rotationY.clone()
 
-            properties[positionX.propertyName] = positionX
-            properties[positionY.propertyName] = positionY
+            properties[positionX.propertyName] = positionX.clone()
+            properties[positionY.propertyName] = positionY.clone()
 
-            properties[translateX.propertyName] = translateX
-            properties[translateY.propertyName] = translateY
-            properties[translateZ.propertyName] = translateZ
+            properties[translateX.propertyName] = translateX.clone()
+            properties[translateY.propertyName] = translateY.clone()
+            properties[translateZ.propertyName] = translateZ.clone()
 
-            properties[color.propertyName] = color
-            properties[paddings.propertyName] = paddings
-            properties[margings.propertyName] = margings
-            properties[cornerRadii.propertyName] = cornerRadii
+            properties[color.propertyName] = color.clone()
+            properties[paddings.propertyName] = paddings.clone()
+            properties[margings.propertyName] = margings.clone()
+            properties[cornerRadii.propertyName] = cornerRadii.clone()
             return properties
         }
 
@@ -2016,16 +2081,16 @@ class Choreographer(context: Context) {
          */
         internal fun propertyHolders(): Map<String, AnimatedValueArray<*>> {
             val properties: HashMap<String, AnimatedValueArray<*>> = HashMap()
-            properties[scaleXValues.propertyName] = scaleXValues
-            properties[scaleYValues.propertyName] = scaleYValues
+            properties[scaleXValues.propertyName] = scaleXValues.clone()
+            properties[scaleYValues.propertyName] = scaleYValues.clone()
 
-            properties[rotationValues.propertyName] = rotationValues
-            properties[rotationXValues.propertyName] = rotationXValues
-            properties[rotationYValues.propertyName] = rotationYValues
+            properties[rotationValues.propertyName] = rotationValues.clone()
+            properties[rotationXValues.propertyName] = rotationXValues.clone()
+            properties[rotationYValues.propertyName] = rotationYValues.clone()
 
-            properties[translateXValues.propertyName] = translateXValues
-            properties[translateYValues.propertyName] = translateYValues
-            properties[translateZValues.propertyName] = translateZValues
+            properties[translateXValues.propertyName] = translateXValues.clone()
+            properties[translateYValues.propertyName] = translateYValues.clone()
+            properties[translateZValues.propertyName] = translateZValues.clone()
             return properties
         }
 
@@ -2061,7 +2126,7 @@ class Choreographer(context: Context) {
             color.set(properties.getValue(color.propertyName) as AnimatedValue<Color>)
             paddings.set(properties.getValue(paddings.propertyName) as AnimatedValue<Padding>)
             margings.set(properties.getValue(margings.propertyName) as AnimatedValue<Margin>)
-            cornerRadii.set(properties.getValue(cornerRadii.propertyName) as AnimatedValue<CornerRadii>)
+            cornerRadii.set(properties.getValue(cornerRadii.propertyName) as AnimateCornerRadii)
         }
 
         /**
@@ -2150,8 +2215,8 @@ class Choreographer(context: Context) {
                     this.margings.toValue = it.morphMargings.getCopy()
                     this.paddings.fromValue = it.morphPaddings.getCopy()
                     this.paddings.toValue = it.morphPaddings.getCopy()
-                    this.cornerRadii.fromValue = it.morphCornerRadii.getCopy()
-                    this.cornerRadii.toValue = it.morphCornerRadii.getCopy()
+                    this.cornerRadii.fromValue = it.morphCornerRadii.clone()
+                    this.cornerRadii.toValue = it.morphCornerRadii.clone()
                     this.pivotPoint.x = it.morphPivotX
                     this.pivotPoint.y = it.morphPivotY
 
@@ -2927,7 +2992,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun addRotation(delta: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.rotation.add += delta
+            this.rotation.toValue += delta
             this.rotation.interpolator = interpolator
             return this
         }
@@ -2941,7 +3006,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun rotateBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.rotation.multiply = multiplier
+            this.rotation.toValue *=  multiplier
             this.rotation.interpolator = interpolator
             return this
         }
@@ -3045,7 +3110,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun xRotateAdd(delta: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.rotationX.add += delta
+            this.rotationX.toValue += delta
             this.rotationX.interpolator = interpolator
             return this
         }
@@ -3059,7 +3124,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun xRotateBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.rotationX.multiply = multiplier
+            this.rotationX.toValue *= multiplier
             this.rotationX.interpolator = interpolator
             return this
         }
@@ -3163,7 +3228,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun yRotateAdd(delta: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.rotationY.add += delta
+            this.rotationY.toValue += delta
             this.rotationY.interpolator = interpolator
             return this
         }
@@ -3177,7 +3242,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun yRotateBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.rotationY.multiply = multiplier
+            this.rotationY.toValue *= multiplier
             this.rotationY.interpolator = interpolator
             return this
         }
@@ -3361,7 +3426,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun xScaleAdd(delta: Float, interpolator: TimeInterpolator?): Choreography {
-            this.scaleX.add += delta
+            this.scaleX.toValue += delta
             this.scaleX.interpolator = interpolator
             return this
         }
@@ -3375,7 +3440,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun xScaleBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.scaleX.multiply = multiplier
+            this.scaleX.toValue *= multiplier
             this.scaleX.interpolator = interpolator
             return this
         }
@@ -3479,7 +3544,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun yScaleAdd(delta: Float, interpolator: TimeInterpolator?): Choreography {
-            this.scaleY.add += delta
+            this.scaleY.toValue += delta
             this.scaleY.interpolator = interpolator
             return this
         }
@@ -3493,7 +3558,7 @@ class Choreographer(context: Context) {
          * @return this choreography.
          */
         fun yScaleBy(multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
-            this.scaleY.multiply = multiplier
+            this.scaleY.toValue *= multiplier
             this.scaleY.interpolator = interpolator
             return this
         }
@@ -3634,30 +3699,22 @@ class Choreographer(context: Context) {
             cornerRadii.interpolator = interpolator
             when (corner) {
                 Corner.TOP_LEFT ->  {
-                    cornerRadii.toValue[0] = radius
-                    cornerRadii.toValue[1] = radius
+                    cornerRadii.toValue.setTopLeft(radius)
                 }
                 Corner.TOP_RIGHT -> {
-                    cornerRadii.toValue[2] = radius
-                    cornerRadii.toValue[3] = radius
+                    cornerRadii.toValue.setTopRight(radius)
                 }
                 Corner.BOTTOM_RIGHT -> {
-                    cornerRadii.toValue[4] = radius
-                    cornerRadii.toValue[5] = radius
+                    cornerRadii.toValue.setBottomRight(radius)
                 }
                 Corner.BOTTOM_LEFT -> {
-                    cornerRadii.toValue[6] = radius
-                    cornerRadii.toValue[7] = radius
+                    cornerRadii.toValue.setBottomLeft(radius)
                 }
                 Corner.ALL -> {
-                    cornerRadii.toValue[0] = radius
-                    cornerRadii.toValue[1] = radius
-                    cornerRadii.toValue[2] = radius
-                    cornerRadii.toValue[3] = radius
-                    cornerRadii.toValue[4] = radius
-                    cornerRadii.toValue[5] = radius
-                    cornerRadii.toValue[6] = radius
-                    cornerRadii.toValue[7] = radius
+                    cornerRadiusTo(Corner.TOP_LEFT, radius, interpolator)
+                    cornerRadiusTo(Corner.TOP_RIGHT, radius, interpolator)
+                    cornerRadiusTo(Corner.BOTTOM_RIGHT, radius, interpolator)
+                    cornerRadiusTo(Corner.BOTTOM_LEFT, radius, interpolator)
                 }
             }
             return this
@@ -3704,23 +3761,10 @@ class Choreographer(context: Context) {
                     cornerRadii.toValue[7] = toValue
                 }
                 Corner.ALL -> {
-                    cornerRadii.fromValue[0] = fromValue
-                    cornerRadii.fromValue[1] = fromValue
-                    cornerRadii.fromValue[2] = fromValue
-                    cornerRadii.fromValue[3] = fromValue
-                    cornerRadii.fromValue[4] = fromValue
-                    cornerRadii.fromValue[5] = fromValue
-                    cornerRadii.fromValue[6] = fromValue
-                    cornerRadii.fromValue[7] = fromValue
-
-                    cornerRadii.toValue[0] = toValue
-                    cornerRadii.toValue[1] = toValue
-                    cornerRadii.toValue[2] = toValue
-                    cornerRadii.toValue[3] = toValue
-                    cornerRadii.toValue[4] = toValue
-                    cornerRadii.toValue[5] = toValue
-                    cornerRadii.toValue[6] = toValue
-                    cornerRadii.toValue[7] = toValue
+                    cornerRadiusFrom(Corner.TOP_LEFT, fromValue, toValue, interpolator)
+                    cornerRadiusFrom(Corner.TOP_RIGHT, fromValue, toValue, interpolator)
+                    cornerRadiusFrom(Corner.BOTTOM_RIGHT, fromValue, toValue, interpolator)
+                    cornerRadiusFrom(Corner.BOTTOM_LEFT, fromValue, toValue, interpolator)
                 }
             }
             return this
@@ -3787,11 +3831,11 @@ class Choreographer(context: Context) {
         fun resizeBy(measurement: Measurement, multiplier: Float, interpolator: TimeInterpolator? = null): Choreography {
             when(measurement) {
                 Measurement.WIDTH -> {
-                    this.width.multiply = this.width.toValue * multiplier
+                    this.width.toValue *= multiplier
                     this.width.interpolator = interpolator
                 }
                 Measurement.HEIGHT ->  {
-                    this.height.toValue = this.height.toValue * multiplier
+                    this.height.toValue *= multiplier
                     this.height.interpolator = interpolator
                 }
                 Measurement.BOTH -> {
@@ -4640,8 +4684,6 @@ class Choreographer(context: Context) {
          * @return the [Choreographer] which will animate this choreography.
          */
         internal fun build(): Choreographer {
-            choreographer.applyAdders(this)
-            choreographer.applyMultipliers(this)
             return choreographer.buildAll()
         }
 
@@ -4649,30 +4691,30 @@ class Choreographer(context: Context) {
          * Copies the properties of the give [Choreography] into the current
          */
         private fun copyProps(other: Choreography) {
-            color.copy(other.color)
-            width.copy(other.width)
-            height.copy(other.height)
-            alpha.copy(other.alpha)
-            scaleX.copy(other.scaleX)
-            scaleY.copy(other.scaleY)
-            rotation.copy(other.rotation)
-            rotationX.copy(other.rotationX)
-            rotationY.copy(other.rotationY)
-            positionX.copy(other.positionX)
-            positionY.copy(other.positionY)
-            translateX.copy(other.translateX)
-            translateY.copy(other.translateY)
-            translateZ.copy(other.translateZ)
-            cornerRadii.copy(other.cornerRadii)
-            scaleXValues.copy(other.scaleXValues)
-            scaleYValues.copy(other.scaleYValues)
-            rotationValues.copy(other.rotationValues)
-            rotationXValues.copy(other.rotationXValues)
-            rotationYValues.copy(other.rotationYValues)
-            translateXValues.copy(other.translateXValues)
-            translateYValues.copy(other.translateYValues)
-            translateZValues.copy(other.translateZValues)
-            pivotPoint.copy(other.pivotPoint)
+            color.copy(other.color.clone())
+            width.copy(other.width.clone())
+            height.copy(other.height.clone())
+            alpha.copy(other.alpha.clone())
+            scaleX.copy(other.scaleX.clone())
+            scaleY.copy(other.scaleY.clone())
+            rotation.copy(other.rotation.clone())
+            rotationX.copy(other.rotationX.clone())
+            rotationY.copy(other.rotationY.clone())
+            positionX.copy(other.positionX.clone())
+            positionY.copy(other.positionY.clone())
+            translateX.copy(other.translateX.clone())
+            translateY.copy(other.translateY.clone())
+            translateZ.copy(other.translateZ.clone())
+            cornerRadii.copy(other.cornerRadii.clone())
+            scaleXValues.copy(other.scaleXValues.clone())
+            scaleYValues.copy(other.scaleYValues.clone())
+            rotationValues.copy(other.rotationValues.clone())
+            rotationXValues.copy(other.rotationXValues.clone())
+            rotationYValues.copy(other.rotationYValues.clone())
+            translateXValues.copy(other.translateXValues.clone())
+            translateYValues.copy(other.translateYValues.clone())
+            translateZValues.copy(other.translateZValues.clone())
+            pivotPoint.copy(other.pivotPoint.clone())
         }
 
         /**
@@ -4683,30 +4725,30 @@ class Choreographer(context: Context) {
         fun clone(vararg views: MorphLayout): Choreography {
             val choreography = Choreography(choreographer, *views)
 
-            choreography.color.copy(this.color)
-            choreography.width.copy(this.width)
-            choreography.height.copy(this.height)
-            choreography.alpha.copy(this.alpha)
-            choreography.scaleX.copy(this.scaleX)
-            choreography.scaleY.copy(this.scaleY)
-            choreography.rotation.copy(this.rotation)
-            choreography.rotationX.copy(this.rotationX)
-            choreography.rotationY.copy(this.rotationY)
-            choreography.positionX.copy(this.positionX)
-            choreography.positionY.copy(this.positionY)
-            choreography.translateX.copy(this.translateX)
-            choreography.translateY.copy(this.translateY)
-            choreography.translateZ.copy(this.translateZ)
-            choreography.cornerRadii.copy(this.cornerRadii)
-            choreography.scaleXValues.copy(this.scaleXValues)
-            choreography.scaleYValues.copy(this.scaleYValues)
-            choreography.rotationValues.copy(this.rotationValues)
-            choreography.rotationXValues.copy(this.rotationXValues)
-            choreography.rotationYValues.copy(this.rotationYValues)
-            choreography.translateXValues.copy(this.translateXValues)
-            choreography.translateYValues.copy(this.translateYValues)
-            choreography.translateZValues.copy(this.translateZValues)
-            choreography.pivotPoint.copy(this.pivotPoint)
+            choreography.color.copy(this.color.clone())
+            choreography.width.copy(this.width.clone())
+            choreography.height.copy(this.height.clone())
+            choreography.alpha.copy(this.alpha.clone())
+            choreography.scaleX.copy(this.scaleX.clone())
+            choreography.scaleY.copy(this.scaleY.clone())
+            choreography.rotation.copy(this.rotation.clone())
+            choreography.rotationX.copy(this.rotationX.clone())
+            choreography.rotationY.copy(this.rotationY.clone())
+            choreography.positionX.copy(this.positionX.clone())
+            choreography.positionY.copy(this.positionY.clone())
+            choreography.translateX.copy(this.translateX.clone())
+            choreography.translateY.copy(this.translateY.clone())
+            choreography.translateZ.copy(this.translateZ.clone())
+            choreography.cornerRadii.copy(this.cornerRadii.clone())
+            choreography.scaleXValues.copy(this.scaleXValues.clone())
+            choreography.scaleYValues.copy(this.scaleYValues.clone())
+            choreography.rotationValues.copy(this.rotationValues.clone())
+            choreography.rotationXValues.copy(this.rotationXValues.clone())
+            choreography.rotationYValues.copy(this.rotationYValues.clone())
+            choreography.translateXValues.copy(this.translateXValues.clone())
+            choreography.translateYValues.copy(this.translateYValues.clone())
+            choreography.translateZValues.copy(this.translateZValues.clone())
+            choreography.pivotPoint.copy(this.pivotPoint.clone())
             choreography.duration = this.duration
             choreography.parent = null
             choreography.child = null

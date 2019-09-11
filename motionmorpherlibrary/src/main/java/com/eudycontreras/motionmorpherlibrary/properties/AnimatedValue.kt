@@ -3,6 +3,9 @@ package com.eudycontreras.motionmorpherlibrary.properties
 import android.animation.TimeInterpolator
 import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedIntValue
 
 /**
  * @Project MotionMorpher
@@ -10,7 +13,7 @@ import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
  * @since July 12 2019
  */
 
-abstract class AnimatedValue<T> {
+abstract class AnimatedValue<T>: Cloneable<AnimatedValue<T>> {
 
     abstract var fromValue: T
     abstract var toValue: T
@@ -51,27 +54,69 @@ abstract class AnimatedValue<T> {
         this.interpolator = other.interpolator
     }
 
+    override fun clone(): AnimatedValue<T> {
+        val value = AnimatedValueImpl<T>(
+            propertyName,
+            fromValue,
+            toValue
+        ).let {
+            it.durationOffsetStart = durationOffsetStart
+            it.durationOffsetEnd = durationOffsetEnd
+            it.interpolateOffsetStart = interpolateOffsetStart
+            it.interpolateOffsetEnd = interpolateOffsetEnd
+            it.interpolator = interpolator?.let { it::class.java.newInstance() }
+            it
+        }
+        return value
+    }
+
     class AnimatedValueImpl<T>(
         override val propertyName: String,
         override var fromValue: T,
         override var toValue: T
     ) : AnimatedValue<T>() {
-
         override var interpolator: TimeInterpolator? = null
+        override fun clone(): AnimatedValue<T> {
+            val value = AnimatedValueImpl<T>(
+                propertyName,
+                fromValue,
+                toValue
+            ).let {
+                it.durationOffsetStart = durationOffsetStart
+                it.durationOffsetEnd = durationOffsetEnd
+                it.interpolateOffsetStart = interpolateOffsetStart
+                it.interpolateOffsetEnd = interpolateOffsetEnd
+                it.interpolator = interpolator?.let { it::class.java.newInstance() }
+                it
+            }
+            return value
+        }
     }
 
     companion object {
 
         fun <T> instance(propertyName: String, fromValue: T, toValue: T): AnimatedValueImpl<T> {
-            return AnimatedValueImpl(propertyName, fromValue, toValue)
+            return AnimatedValueImpl(
+                propertyName,
+                fromValue,
+                toValue
+            )
         }
 
         fun ofFloat(propertyName: String, fromValue: Float, toValue: Float): AnimatedFloatValue {
-            return AnimatedFloatValue(propertyName, fromValue, toValue)
+            return AnimatedFloatValue(
+                propertyName,
+                fromValue,
+                toValue
+            )
         }
 
         fun ofInt(propertyName: String, fromValue: Int, toValue: Int): AnimatedIntValue {
-            return AnimatedIntValue(propertyName, fromValue, toValue)
+            return AnimatedIntValue(
+                propertyName,
+                fromValue,
+                toValue
+            )
         }
 
         const val X = "x"

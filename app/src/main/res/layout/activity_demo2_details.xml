@@ -19,7 +19,7 @@
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
             android:tag="demo2Image"
             android:id="@+id/demo_2_image"
-            android:src="@drawable/background11"
+            android:src="@drawable/background13"
             android:backgroundTint="@color/white"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
@@ -38,7 +38,7 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:textAlignment="center"
-            android:text="The Dark Knight"
+            android:text="Deadpool"
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:background="@color/overlay_dark"
@@ -75,7 +75,7 @@
 
         <View
                 android:id="@+id/demo_2_app_icon"
-                android:background="@drawable/app_icon_alt"
+                android:background="@drawable/app_logo"
                 android:layout_width="65dp"
                 android:layout_height="65dp"
                 android:layout_marginTop="@dimen/margin_XL"
@@ -90,7 +90,7 @@
                 android:textSize="34sp"
                 android:textAlignment="center"
                 android:fontFamily="sans-serif-medium"
-                android:text="The Dark Knight"
+                android:text="Deadpool"
                 android:paddingTop="16dp"
                 android:layout_marginStart="@dimen/margin_large"
                 app:layout_constraintTop_toTopOf="parent"
@@ -290,11 +290,7 @@
             android:paddingEnd="@dimen/margin_medium"
             android:backgroundTint="@color/white"
             android:visibility="visible"
-            android:scaleX="3"
-            android:scaleY="3"
-            android:transformPivotX="50dp"
-            android:transformPivotY="0dp"
-            app:cl_placeholder="true"
+            android:alpha="0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/demo_2_image">
@@ -309,7 +305,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/demo_2_book"
                 app:layout_constraintStart_toStartOf="parent"/>
-
         <View
                 android:id="@+id/demo_2_book"
                 android:layout_weight="1.4"
@@ -321,7 +316,6 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
-
         <View
                 android:id="@+id/demo_2_share"
                 android:layout_weight="1"
@@ -345,7 +339,7 @@
             android:background="@color/overlay_light"
             app:titleTextColor="@color/white"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:menu="@menu/menu_demo_2_details"
+            app:menu="@menu/menu_demo_3_details"
             app:popupTheme="@style/AppTheme.PopupOverlay"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

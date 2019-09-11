@@ -6,7 +6,7 @@ import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
-import com.eudycontreras.motionmorpherlibrary.properties.AnimatedFloatValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.AnimationStagger
 
 

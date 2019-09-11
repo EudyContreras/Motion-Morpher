@@ -5,7 +5,7 @@ import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.Direction
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.mapRange
-import com.eudycontreras.motionmorpherlibrary.properties.AnimatedFloatValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Stretch
 import kotlin.math.abs
 

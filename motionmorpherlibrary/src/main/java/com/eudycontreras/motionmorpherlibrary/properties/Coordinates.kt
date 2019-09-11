@@ -1,6 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
 
 /**
  * Class which epresents a location point with
@@ -13,7 +14,7 @@ import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 data class Coordinates(
     var x: Float = MIN_OFFSET,
     var y: Float = MIN_OFFSET
-) {
+): Cloneable<Coordinates> {
     fun copy(): Coordinates {
         return Coordinates(x, y)
     }
@@ -25,6 +26,10 @@ data class Coordinates(
 
     fun midPoint(other: Coordinates): Coordinates {
         return midPoint(this, other)
+    }
+
+    override fun clone(): Coordinates {
+        return Coordinates(x, y)
     }
 
     override fun equals(other: Any?): Boolean {

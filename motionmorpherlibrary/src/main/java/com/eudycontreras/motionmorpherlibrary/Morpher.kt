@@ -19,10 +19,14 @@ import com.eudycontreras.motionmorpherlibrary.extensions.*
 import com.eudycontreras.motionmorpherlibrary.helpers.ArcTranslationHelper
 import com.eudycontreras.motionmorpherlibrary.interactions.Interaction
 import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
+import com.eudycontreras.motionmorpherlibrary.interpolators.Easing
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
 import com.eudycontreras.motionmorpherlibrary.properties.*
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedIntValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
 import com.eudycontreras.motionmorpherlibrary.utilities.ColorUtility
 import java.util.*
 import kotlin.collections.ArrayList
@@ -54,21 +58,23 @@ class Morpher(private val context: Context) {
 
     private lateinit var mappings: List<MorphMap>
 
-    var dimPropertyInto: AnimatedFloatValue = AnimatedFloatValue(
-        propertyName = AnimatedValue.COLOR,
-        fromValue = MIN_OFFSET,
-        toValue = MAX_OFFSET,
-        startOffset = MIN_OFFSET,
-        endOffset = MAX_OFFSET
-    )
+    var dimPropertyInto: AnimatedFloatValue =
+        AnimatedFloatValue(
+            propertyName = AnimatedValue.COLOR,
+            fromValue = MIN_OFFSET,
+            toValue = MAX_OFFSET,
+            startOffset = MIN_OFFSET,
+            endOffset = MAX_OFFSET
+        )
 
-    var dimPropertyFrom: AnimatedFloatValue = AnimatedFloatValue(
-        propertyName = AnimatedValue.COLOR,
-        fromValue = MAX_OFFSET,
-        toValue = MIN_OFFSET,
-        startOffset = MIN_OFFSET,
-        endOffset = MAX_OFFSET
-    )
+    var dimPropertyFrom: AnimatedFloatValue =
+        AnimatedFloatValue(
+            propertyName = AnimatedValue.COLOR,
+            fromValue = MAX_OFFSET,
+            toValue = MIN_OFFSET,
+            startOffset = MIN_OFFSET,
+            endOffset = MAX_OFFSET
+        )
 
     var containerStateIn: AnimationDescriptor = AnimationDescriptor(AnimationType.REVEAL)
     var containerStateOut: AnimationDescriptor = AnimationDescriptor(AnimationType.CONCEAL)
@@ -94,11 +100,14 @@ class Morpher(private val context: Context) {
 
     var arcTranslationControlPoint: Coordinates? = null
 
-    var morphIntoInterpolator: TimeInterpolator? = null
-    var morphFromInterpolator: TimeInterpolator? = null
+    var morphIntoInterpolator: TimeInterpolator = Easing.STANDARD
+    var morphFromInterpolator: TimeInterpolator = Easing.STANDARD
+
+    var outgoingInterpolator: TimeInterpolator = Easing.OUTGOING
+    var incomingInterpolator: TimeInterpolator = Easing.INCOMING
 
     var useDeepChildSearch: Boolean = true
-    var useArcTranslator: Boolean = true
+    var useArcTranslator: Boolean = false
     var animateChildren: Boolean = true
     var morphChildren: Boolean = true
 
@@ -261,8 +270,8 @@ class Morpher(private val context: Context) {
 /*        morphIntoDescriptor.propertyAlpha.interpolateOffsetStart = 0.4f
         morphIntoDescriptor.propertyAlpha.interpolateOffsetEnd = MAX_OFFSET*/
 
-        morphIntoDescriptor.propertyScaleX.interpolator = morphIntoInterpolator
-        morphIntoDescriptor.propertyScaleY.interpolator = morphIntoInterpolator
+        morphIntoDescriptor.propertyScaleX.interpolator = incomingInterpolator
+        morphIntoDescriptor.propertyScaleY.interpolator = incomingInterpolator
        /* morphIntoDescriptor.propertyAlpha.interpolator = morphIntoInterpolator*/
 
         morphIntoDescriptor.morphStates = containers.map { MorphState(it).apply {
@@ -283,8 +292,8 @@ class Morpher(private val context: Context) {
         /*morphFromDescriptor.propertyAlpha.interpolateOffsetStart = MIN_OFFSET
         morphFromDescriptor.propertyAlpha.interpolateOffsetEnd = 0.3f*/
 
-        morphFromDescriptor.propertyScaleX.interpolator = morphFromInterpolator
-        morphFromDescriptor.propertyScaleY.interpolator = morphFromInterpolator
+        morphFromDescriptor.propertyScaleX.interpolator = outgoingInterpolator
+        morphFromDescriptor.propertyScaleY.interpolator = outgoingInterpolator
         //morphFromDescriptor.propertyAlpha.interpolator = morphFromInterpolator
 
         morphFromDescriptor.morphStates = containers.map { MorphState(it).apply {
@@ -312,9 +321,9 @@ class Morpher(private val context: Context) {
         morphIntoDescriptor.propertyAlpha.interpolateOffsetStart = MIN_OFFSET
         morphIntoDescriptor.propertyAlpha.interpolateOffsetEnd = 0.4f
 
-        morphIntoDescriptor.propertyScaleX.interpolator = morphIntoInterpolator
-        morphIntoDescriptor.propertyScaleY.interpolator = morphIntoInterpolator
-        morphIntoDescriptor.propertyAlpha.interpolator = morphIntoInterpolator
+        morphIntoDescriptor.propertyScaleX.interpolator = incomingInterpolator
+        morphIntoDescriptor.propertyScaleY.interpolator = incomingInterpolator
+        morphIntoDescriptor.propertyAlpha.interpolator = incomingInterpolator
 
         morphIntoDescriptor.morphStates = placeholders.map { MorphState(it).apply {
             children =  getAllChildren(morphView, false) { child -> child.tag == null }
@@ -332,9 +341,9 @@ class Morpher(private val context: Context) {
         morphFromDescriptor.propertyAlpha.interpolateOffsetStart = 0.3f
         morphFromDescriptor.propertyAlpha.interpolateOffsetEnd = MAX_OFFSET
 
-        morphFromDescriptor.propertyScaleX.interpolator = morphFromInterpolator
-        morphFromDescriptor.propertyScaleY.interpolator = morphFromInterpolator
-        morphFromDescriptor.propertyAlpha.interpolator = morphFromInterpolator
+        morphFromDescriptor.propertyScaleX.interpolator = outgoingInterpolator
+        morphFromDescriptor.propertyScaleY.interpolator = outgoingInterpolator
+        morphFromDescriptor.propertyAlpha.interpolator = outgoingInterpolator
 
         morphFromDescriptor.morphStates = placeholders.map { MorphState(it).apply {
             children =  getAllChildren(morphView, false) { child -> child.tag == null }
@@ -1448,10 +1457,10 @@ class Morpher(private val context: Context) {
                          ChildAnimationDescriptor(
                              type = type,
                              animateOnOffset = MIN_OFFSET,
-                             durationMultiplier = MIN_OFFSET,
+                             durationMultiplier = -0.2f,
                              defaultTranslateMultiplierX = 0.02f,
                              defaultTranslateMultiplierY = 0.02f,
-                             interpolator = DecelerateInterpolator(),
+                             interpolator = Easing.INCOMING,
                              stagger = AnimationStagger(0.12f),
                              startStateProps = AnimationProperties(alpha = MIN_OFFSET)
                         )
@@ -1463,8 +1472,8 @@ class Morpher(private val context: Context) {
                              durationMultiplier = -0.8f,
                              defaultTranslateMultiplierX = 0.1f,
                              defaultTranslateMultiplierY = 0.1f,
-                             interpolator = AccelerateInterpolator(),
-                             stagger = AnimationStagger(0.13f),
+                             interpolator = Easing.OUTGOING,
+                             stagger = AnimationStagger(0.11f),
                              reversed = true
                         )
                     }
@@ -1475,17 +1484,61 @@ class Morpher(private val context: Context) {
 
     data class AnimationDescriptor(
         var type: AnimationType,
-        var propertyTranslateX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_X, MIN_OFFSET, MIN_OFFSET),
-        var propertyTranslateY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.TRANSLATION_Y, MIN_OFFSET, MIN_OFFSET),
-        var propertyRotationX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION_X, MIN_OFFSET, MIN_OFFSET),
-        var propertyRotationY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION_Y, MIN_OFFSET, MIN_OFFSET),
-        var propertyRotation: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ROTATION, MIN_OFFSET, MIN_OFFSET),
-        var propertyScaleX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_X, MIN_OFFSET, MAX_OFFSET),
-        var propertyScaleY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.SCALE_Y, MIN_OFFSET, MAX_OFFSET),
-        var propertyAlpha: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.ALPHA, MIN_OFFSET, MAX_OFFSET),
-        var propertyColor: AnimatedIntValue = AnimatedIntValue(AnimatedValue.COLOR, 0, 255),
-        var propertyX: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.X, MIN_OFFSET, MIN_OFFSET),
-        var propertyY: AnimatedFloatValue = AnimatedFloatValue(AnimatedValue.Y, MIN_OFFSET, MIN_OFFSET)
+        var propertyTranslateX: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.TRANSLATION_X,
+            MIN_OFFSET,
+            MIN_OFFSET
+        ),
+        var propertyTranslateY: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.TRANSLATION_Y,
+            MIN_OFFSET,
+            MIN_OFFSET
+        ),
+        var propertyRotationX: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.ROTATION_X,
+            MIN_OFFSET,
+            MIN_OFFSET
+        ),
+        var propertyRotationY: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.ROTATION_Y,
+            MIN_OFFSET,
+            MIN_OFFSET
+        ),
+        var propertyRotation: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.ROTATION,
+            MIN_OFFSET,
+            MIN_OFFSET
+        ),
+        var propertyScaleX: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.SCALE_X,
+            MIN_OFFSET,
+            MAX_OFFSET
+        ),
+        var propertyScaleY: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.SCALE_Y,
+            MIN_OFFSET,
+            MAX_OFFSET
+        ),
+        var propertyAlpha: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.ALPHA,
+            MIN_OFFSET,
+            MAX_OFFSET
+        ),
+        var propertyColor: AnimatedIntValue = AnimatedIntValue(
+            AnimatedValue.COLOR,
+            0,
+            255
+        ),
+        var propertyX: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.X,
+            MIN_OFFSET,
+            MIN_OFFSET
+        ),
+        var propertyY: AnimatedFloatValue = AnimatedFloatValue(
+            AnimatedValue.Y,
+            MIN_OFFSET,
+            MIN_OFFSET
+        )
     ) {
         var animationContainer: Boolean = false
         var childrenRevealed: Boolean = false

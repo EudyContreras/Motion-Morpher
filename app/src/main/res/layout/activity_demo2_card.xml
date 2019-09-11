@@ -12,13 +12,13 @@
         android:layout_marginBottom="2dp"
         android:layout_gravity="center"
         app:cl_clipCorners="true"
-        app:cl_shapeType="CIRCULAR"
+        app:cl_shapeType="RECTANGULAR"
         app:cl_radius="6dp">
 
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
             android:tag="demo2Image"
             android:id="@+id/demo_2_image"
-            android:src="@drawable/background11"
+            android:src="@drawable/background13"
             android:scaleType="centerCrop"
             android:adjustViewBounds="true"
             android:layout_width="match_parent"
@@ -36,7 +36,7 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:textAlignment="center"
-            android:text="The Dark Knight"
+            android:text="Deadpool"
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:background="@color/overlay_dark"
