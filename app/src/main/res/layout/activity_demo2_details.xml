@@ -79,6 +79,8 @@
                 android:layout_width="65dp"
                 android:layout_height="65dp"
                 android:layout_marginTop="@dimen/margin_XL"
+                android:elevation="1dp"
+                android:translationZ="6dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
         <TextView
@@ -126,7 +128,7 @@
                 android:textSize="16sp"
                 android:textAlignment="textStart"
                 android:lineSpacingMultiplier="1.1"
-                android:text="When the menace known as The Joker emerges from his mysterious past, he wreaks havoc and chaos on the people of Gotham.."
+                android:text="A wisecracking mercenary gets experimented on and becomes immortal but ugly, and sets out to track down the man who ruined his looks..."
                 android:layout_marginTop="@dimen/margin_large"
                 android:layout_marginBottom="8dp"
                 android:layout_marginEnd="@dimen/margin_medium"

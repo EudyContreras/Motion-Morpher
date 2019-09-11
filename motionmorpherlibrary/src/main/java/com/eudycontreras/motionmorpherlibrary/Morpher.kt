@@ -12,6 +12,7 @@ import android.view.View.*
 import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.annotation.RestrictTo
 import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
@@ -839,6 +840,7 @@ class Morpher(private val context: Context) {
         return mappings
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY)
     fun applyProps(view: MorphLayout, props: Properties) {
         view.morphX = props.x
         view.morphY = props.y

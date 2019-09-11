@@ -27,7 +27,7 @@ import kotlinx.android.synthetic.main.activity_demo0_card.view.*
  */
  
  
-class DemoOne(var activity: MorphActivity) {
+class Demo1(var activity: MorphActivity) {
 
     lateinit var actions: MorphLayout
     lateinit var icon1: MorphLayout

@@ -9,8 +9,10 @@
         android:layout_margin="@dimen/fab_margin"
         android:elevation="1dp"
         android:translationZ="8dp"
-        app:fl_state="START"
-        app:fl_shapeType="CIRCULAR">
+        app:fl_placeholder="true"
+        app:fl_shapeType="CIRCULAR"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
     <View
             android:layout_gravity="center"

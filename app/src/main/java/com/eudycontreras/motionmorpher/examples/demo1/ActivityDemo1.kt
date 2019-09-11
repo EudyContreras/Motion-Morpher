@@ -208,7 +208,7 @@ class ActivityDemo1 : MorphActivity() {
          *  Set the starting startView to morph from. The startView
          *  must be a morphable layout/startView
          */
-        morpher.startView = fab as MorphLayout
+
 
         /**
          * When the resulting startView from a morph is a dialog
@@ -231,7 +231,8 @@ class ActivityDemo1 : MorphActivity() {
             val details = DetailsDemo1(this, dialog)
         }
 
-        fab.setOnClickListener {
+        fabLayout.setOnClickListener {
+            morpher.startView = fabLayout as MorphLayout
             dialog.show {
                 morpher.morphInto()
             }

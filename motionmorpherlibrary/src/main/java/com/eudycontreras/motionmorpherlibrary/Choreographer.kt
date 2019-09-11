@@ -263,7 +263,7 @@ class Choreographer(context: Context) {
 
         val properties = getProperties(choreography, *views)
 
-        tailChoreography = Choreography(this, *views).apply {
+        this.tailChoreography = Choreography(this, *views).apply {
             this.setStartProperties(properties)
             this.parent = choreography
             this.offset = offset
@@ -310,7 +310,7 @@ class Choreographer(context: Context) {
             }
         }
 
-        tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
+        this.tailChoreography = (oldChoreography?.clone(*views) ?: Choreography(this, *views)).apply {
             this.flipValues()
             this.offset = offset
             this.reverseToStartState = true

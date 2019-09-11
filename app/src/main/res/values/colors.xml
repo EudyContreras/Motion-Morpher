@@ -5,6 +5,7 @@
     <color name="colorPrimaryLight">#252525</color>
     <color name="colorPrimaryVeryLight">#333333</color>
 
+    <color name="colorSecondary">#0097A7</color>
     <color name="colorAccent">#ffffff</color>
 
     <color name="fab">#F9A825</color>

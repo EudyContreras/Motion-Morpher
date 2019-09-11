@@ -1,4 +1,4 @@
-package com.eudycontreras.motionmorpher.examples.demo3
+package com.eudycontreras.motionmorpher.testdata
 
 import android.graphics.drawable.Drawable
 
