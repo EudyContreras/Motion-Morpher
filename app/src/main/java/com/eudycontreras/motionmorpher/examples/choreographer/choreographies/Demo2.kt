@@ -106,8 +106,11 @@ class Demo2(var activity: MorphActivity) {
                 withDuration(500)
             }
             .then(0.3f) {
+                val reveal = Reveal(card.demo_0_image_2, 0.5f, 0.5f, 0f)
+
                 withDuration(600)
-                withReveal(Reveal(card.demo_0_image_2, 0.5f, 0.5f, 0f))
+                withInterpolator(AnticipateOvershootInterpolator())
+                withReveal(reveal)
                 anchorTo(Anchor.RIGHT, root, 30.dp)
                 rotateTo(35f)
             }

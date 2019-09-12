@@ -6,6 +6,7 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpher.R
 import com.eudycontreras.motionmorpher.examples.choreographer.choreographies.Demo1
 import com.eudycontreras.motionmorpher.examples.choreographer.choreographies.Demo2
+import com.eudycontreras.motionmorpher.examples.choreographer.choreographies.Demo3
 import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
@@ -23,11 +24,12 @@ class ActivityDemo0 : MorphActivity() {
         val interpolator = FastOutSlowInInterpolator()
 
         cardLayout.post {
-            var choreographyOne: Choreographer = Demo1(this).create(card, root, interpolator)
-            var choreographyTwo: Choreographer = Demo2(this).create(card, root, interpolator)
+            var choreography1: Choreographer = Demo1(this).create(card, root, interpolator)
+            var choreography2: Choreographer = Demo2(this).create(card, root, interpolator)
+            var choreography3: Choreographer = Demo3(this).create(card, root, interpolator)
 
             cardLayout.setOnClickListener {
-                choreographyTwo.play()
+                choreography1.play()
             }
         }
     }

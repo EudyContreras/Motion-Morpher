@@ -52,6 +52,8 @@ class Choreographer(context: Context) {
     private lateinit var headChoreography: Choreography
     private lateinit var tailChoreography: Choreography
 
+    private lateinit var lastViews: Array<out MorphLayout>
+
     private var animator: ValueAnimator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
 
     private var particleEffect: ParticleEffectDrawable = ParticleEffectDrawable()
@@ -258,23 +260,20 @@ class Choreographer(context: Context) {
      * @throws IllegalArgumentException Thrown when the offset is negative.
      * @return The created choreography.
      */
-    private fun animateFor(choreography: Choreography, offset: Float, allowInheritance: Boolean = this.allowInheritance, vararg views: MorphLayout): Choreographer {
+    private fun animateFor(choreography: Choreography, offset: Float, vararg views: MorphLayout): Choreographer {
         require(offset >= MIN_OFFSET) { "A duration offset may not be less than zero: $offset" }
 
         val properties = getProperties(choreography, *views)
 
         this.tailChoreography = Choreography(this, *views).apply {
             this.setStartProperties(properties)
+            this.withDeepInheritance(allowInheritance)
+
             this.parent = choreography
             this.offset = offset
             this.offsetDelayAlpha = (this.offset * choreography.duration).toLong()
             this.offsetDelayDelta = ((MAX_OFFSET - this.offset) * choreography.duration).toLong()
-            if (allowInheritance) {
-                this.duration = choreography.duration
-                this.interpolator = choreography.interpolator
-                this.pivotPoint = choreography.pivotPoint
-                this.controlPoint = choreography.controlPoint
-            }
+
             choreography.child = this
         }
         return this
@@ -378,6 +377,7 @@ class Choreographer(context: Context) {
 
             val choreography = Choreography(this, view).apply {
                 this.setStartProperties(properties)
+                this.withDeepInheritance(allowInheritance)
                 this.parent = tailChoreography
                 if (index == 0) {
                     this.offset = offset
@@ -386,12 +386,6 @@ class Choreographer(context: Context) {
                 }
                 this.offsetDelayAlpha = (this.offset * tailChoreography.duration).toLong()
                 this.offsetDelayDelta = ((MAX_OFFSET - this.offset) * tailChoreography.duration).toLong()
-                if (allowInheritance) {
-                    this.duration = tailChoreography.duration
-                    this.interpolator = tailChoreography.interpolator
-                    this.pivotPoint = tailChoreography.pivotPoint
-                    this.controlPoint = tailChoreography.controlPoint
-                }
                 tailChoreography.child = this
             }
             choreographies.add(choreography)
@@ -495,7 +489,7 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        animateFor(tailChoreography, offset, allowInheritance, *morphViews)
+        animateFor(tailChoreography, offset, *morphViews)
         block(tailChoreography)
         return this
     }
@@ -536,7 +530,7 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        animateFor(tailChoreography, MAX_OFFSET, allowInheritance, *morphViews)
+        animateFor(tailChoreography, MAX_OFFSET, *morphViews)
         block(tailChoreography)
         return this
     }
@@ -578,7 +572,7 @@ class Choreographer(context: Context) {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
-        animateFor(tailChoreography, MIN_OFFSET, allowInheritance, *morphViews)
+        animateFor(tailChoreography, MIN_OFFSET, *morphViews)
         block(tailChoreography)
         return this
     }
@@ -801,6 +795,28 @@ class Choreographer(context: Context) {
     fun andChildrenOf(view: MorphLayout, block: Choreography.() -> Unit): Choreographer {
         val children = getViews(view.getChildren().toArrayList().toTypedArray())
         return and(morphViews = *children, block = block)
+    }
+
+    /**
+     * Creates a group capsule which allows choreographies to play together.
+     *
+     * @param block The encapsulation block of the [GroupCapsule]
+     * @return This choreographer.
+     */
+    fun andTogether(block: GroupCapsule.() -> Unit): Choreographer {
+        block(GroupCapsule(MIN_OFFSET))
+        return this
+    }
+
+    /**
+     * Creates a group capsule which allows choreographies to play together.
+     *
+     * @param block The encapsulation block of the [GroupCapsule]
+     * @return This choreographer.
+     */
+    fun thenTogether(offset: Float = MAX_OFFSET, block: GroupCapsule.() -> Unit): Choreographer {
+        block(GroupCapsule(offset))
+        return this
     }
 
     /**
@@ -1535,12 +1551,14 @@ class Choreographer(context: Context) {
         currentPlayTime: Long
     ) {
 
-        val alphaFraction = choreography.alpha.interpolator?.getInterpolation(fraction) ?: fraction
-
         view.morphPivotX = choreography.pivotPoint.x
         view.morphPivotY = choreography.pivotPoint.y
 
-        view.morphAlpha = choreography.alpha.lerp(alphaFraction)
+        if (choreography.alpha.canInterpolate) {
+            val alphaFraction = choreography.alpha.interpolator?.getInterpolation(fraction) ?: fraction
+
+            view.morphAlpha = choreography.alpha.lerp(alphaFraction)
+        }
 
         if (choreography.scaleX.canInterpolate) {
             val scaleXFraction = choreography.scaleX.interpolator?.getInterpolation(fraction) ?: fraction
@@ -1664,8 +1682,6 @@ class Choreographer(context: Context) {
             view.updateCorners(5, choreography.cornerRadii.fromValue[5] + (choreography.cornerRadii.toValue[5] - choreography.cornerRadii.fromValue[5]) * cornersFraction)
             view.updateCorners(6, choreography.cornerRadii.fromValue[6] + (choreography.cornerRadii.toValue[6] - choreography.cornerRadii.fromValue[6]) * cornersFraction)
             view.updateCorners(7, choreography.cornerRadii.fromValue[7] + (choreography.cornerRadii.toValue[7] - choreography.cornerRadii.fromValue[7]) * cornersFraction)
-
-            boundsChanged = true
         }
 
         if (choreography.color.canInterpolate) {
@@ -4344,12 +4360,33 @@ class Choreographer(context: Context) {
          * Specifies the duration of the animation for this [Choreography]. Based on how this choreography was
          * created, if no duration is specified this choreography will use the duration of its parent.
          * In other cases the duration will be set to the default animation of the [Choreographer]
+         *
          * @param duration The duration of the choreography animation
+         *
          * @return this choreography.
          */
         fun withDuration(duration: Long): Choreography {
             require(duration >= MIN_DURATION) { "Choreographies cannot have negative durations: $duration" }
             this.duration = duration
+            return this
+        }
+
+        /**
+         * Determines if this choreography should inherit additional data from its parent. When this is
+         * used the [Choreographer.allowInheritance] flag is ignored since this superseeds that option.
+         * If this function is called after assigning the inherited properties the assigned properties will be
+         * overwritten.
+         */
+        fun withDeepInheritance(deepInteritance: Boolean = true): Choreography {
+            if (deepInteritance) {
+                parent?.let {
+                    this.delay = it.delay
+                    this.duration = it.duration
+                    this.interpolator = it.interpolator
+                    this.pivotPoint = it.pivotPoint
+                    this.controlPoint = it.controlPoint
+                }
+            }
             return this
         }
 
@@ -4850,6 +4887,28 @@ class Choreographer(context: Context) {
             const val REVERSE = 2
             const val INFINITE = -1
             const val DURATION_INFINITE = -1L
+        }
+    }
+
+    /**
+     * Class which encapsulates a group of [Choreography] which are
+     * to be played together. The order in which the choreograhies are
+     * created do not matter when the operation happens within this capsule
+     */
+    inner class GroupCapsule(private var offset: Float) {
+
+        fun with(morphView: MorphLayout, block: Choreography.() -> Unit) {
+            then(offset, morphView, block = block)
+            if (offset > 0) {
+                offset = MIN_OFFSET
+            }
+        }
+
+        fun with(view: View, block: Choreography.() -> Unit) {
+            then(offset, view, block = block)
+            if (offset > 0) {
+                offset = MIN_OFFSET
+            }
         }
     }
 

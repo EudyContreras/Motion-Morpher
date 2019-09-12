@@ -3,11 +3,13 @@ package com.eudycontreras.motionmorpher.examples.choreographer.choreographies
 import android.animation.TimeInterpolator
 import android.app.Activity
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
 import android.view.animation.DecelerateInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
+import com.eudycontreras.motionmorpherlibrary.dpValues
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
 import com.eudycontreras.motionmorpherlibrary.enumerations.Measurement
@@ -67,128 +69,138 @@ class Demo1(var activity: MorphActivity) {
 
             .allowChildInheritance(false)
             .withDefaultInterpolator(interpolator)
-            .withDefaultDuration(300)
+            .withDefaultDuration(500)
 
             .animate(card) {
+                withDuration(1000)
                 withPivot(0.5f, 0.5f)
                 rotateTo(360f)
-                withDuration(1000)
             }
             .then {
-                xTranslateBetween(0f, -(30.dp), (30.dp), -(70.dp), (70.dp), -(100.dp), (100.dp), -(70.dp), (70.dp), -(30.dp), (30.dp), 0f)
-                withDuration(500)
+                xTranslateBetween(*dpValues(0, -30, 30, -70, 70, -100, 100, -70, 70, -30, 30, 0))
             }
             .then {
                 withStartDelay(100)
-                yTranslateBetween(0f, -(30.dp), (30.dp), -(70.dp), (70.dp), -(100.dp), (100.dp), -(70.dp), (70.dp), -(30.dp), (30.dp), 0f)
-                withDuration(500)
+                yTranslateBetween(*dpValues(0, -30, 30, -70, 70, -100, 100, -70, 70, -30, 30, 0))
+            }
+            .thenTogether {
+                with(image) {
+                    withDuration(1500)
+                    withInterpolator(AccelerateDecelerateInterpolator())
+                    xScaleBetween(*dpValues(1, 0.3, 1))
+                }
+                with(actions) {
+                    withDuration(1500)
+                    withInterpolator(AccelerateDecelerateInterpolator())
+                    xScaleBetween(*dpValues(1, 0.3, 1))
+                }
+                with(text) {
+                    withDuration(1500)
+                    //withPivot(0.5f, 1f)
+                    withInterpolator(AccelerateDecelerateInterpolator())
+                    yScaleBetween(*dpValues(1, 0.3, 1))
+                }
             }
             .then {
                 withInterpolator(DecelerateInterpolator())
+                withDuration(1000)
                 cornerRadiusTo(Corner.ALL, 30.dp)
                 zTranslateTo(16.dp)
-                withDuration(1000)
             }
             .and(image){
                 withInterpolator(DecelerateInterpolator())
-                cornerRadiusTo(Corner.TOP_LEFT and Corner.TOP_RIGHT, 30.dp)
                 withDuration(1000)
+                cornerRadiusTo(Corner.TOP_LEFT and Corner.TOP_RIGHT, 30.dp)
             }
             .then(card) {
+                withDuration(1000)
                 resizeTo(root.viewBounds)
                 zTranslateTo(8.dp)
                 cornerRadiusTo(root.morphCornerRadii)
-                withDuration(1000)
             }
             .and(image) {
+                withDuration(1000)
                 withEvenRatio()
                 cornerRadiusTo(Corner.TOP_LEFT and Corner.TOP_RIGHT, 0.dp)
                 resizeTo(Measurement.WIDTH, root.viewBounds)
-                withDuration(1000)
             }
             .and(text) {
-                resizeTo(Measurement.WIDTH, root.viewBounds)
                 withDuration(1000)
+                resizeTo(Measurement.WIDTH, root.viewBounds)
             }
             .and(icon1, icon2, icon3) {
-                scaleTo(0f)
                 withDuration(1000)
+                scaleTo(0f)
             }
             .thenReversedWith(card, text, image, icon1, icon2, icon3) {
                 withDuration(1000)
             }
-            .then(card) {
-                withDuration(2000      )
-                withInterpolator(FastOutSlowInInterpolator())
+            .then(0.1f, card) {
+                withDuration(1500)
                 withStretch(Stretch(0.5f, 0.5f,0.2f))
+                withInterpolator(FastOutSlowInInterpolator())
                 anchorTo(Anchor.BOTTOM, root)
             }
             .then {
-                withDuration(2000)
-                withInterpolator(FastOutSlowInInterpolator())
+                withDuration(1500)
                 withStretch(Stretch(0.5f, 0.15f, 0.2f, 0f, 1f))
-                anchorTo(Anchor.TOP, root, 20.dp)
+                withInterpolator(FastOutSlowInInterpolator())
+                anchorTo(Anchor.TOP, root)
             }
             .then {
-                withDuration(500)
                 anchorTo(Anchor.CENTER, root)
             }
             .then {
-                withDuration(500)
                 anchorTo(Anchor.TOP_LEFT, root, 20.dp)
             }
             .then {
-                withDuration(500)
                 anchorTo(Anchor.RIGHT, root, 20.dp)
             }
             .then {
-                withDuration(500)
                 anchorTo(Anchor.BOTTOM, root, 20.dp)
             }
             .then {
-                withDuration(500)
                 anchorTo(Anchor.LEFT, root, 20.dp)
             }
             .then {
-                withDuration(500)
                 anchorArcTo(Anchor.TOP_RIGHT, root, 20.dp)
             }
             .then {
-                withDuration(500)
+                addRotation(-360f)
                 anchorTo(Anchor.CENTER, root)
             }
             .then {
-                rotateTo(0f)
                 withDuration(1000)
+                addRotation(360f)
             }
             .then {
+                withDuration(2000)
                 withPivot(0.5f, 0f)
                 yScaleTo(0.1f)
-                withDuration(2000)
             }
             .then {
+                withDuration(2000)
                 withPivot(0.5f, 0f)
                 withInterpolator(AnticipateOvershootInterpolator())
                 zTranslateTo(30.dp)
                 scaleTo(1.2f)
-                withDuration(2000)
             }
             .then {
-                withInterpolator(AnticipateOvershootInterpolator())
+                withDuration(1000)
                 withPivot(0.5f, 0f)
+                withInterpolator(AnticipateOvershootInterpolator())
                 zTranslateTo(0f)
                 alphaTo(0f)
                 scaleTo(1f)
-                withDuration(1000)
             }
             .then {
+                withDuration(7000)
                 zTranslateTo(10.dp)
                 alphaTo(1f)
-                withDuration(1000)
             }
-            .thenWith(card, image) {
+            .andWith(card, image) {
+                withDeepInheritance(true)
                 withInterpolator(DecelerateInterpolator())
-                withDuration(1000)
                 cornerRadiusTo(Corner.ALL, 6.dp)
             }
             .build()

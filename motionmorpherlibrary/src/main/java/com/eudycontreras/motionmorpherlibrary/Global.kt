@@ -3,6 +3,7 @@ package com.eudycontreras.motionmorpherlibrary
 import android.animation.TimeInterpolator
 import androidx.core.math.MathUtils.clamp
 import androidx.core.view.animation.PathInterpolatorCompat
+import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.IllegalStateException
@@ -96,6 +97,18 @@ val INCOMING: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
  */
 val OUTGOING: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
     PathInterpolatorCompat.create(0.4f, 0f, 1f, 1f)
+}
+
+fun dpValues(vararg values: Float): FloatArray{
+    return values.map { it.dp }.toFloatArray()
+}
+
+fun dpValues(vararg values: Int): FloatArray {
+    return values.map { it.dp }.toFloatArray()
+}
+
+fun <T: Number> dpValues(vararg values: T): FloatArray {
+    return values.map { it.toFloat() }.toFloatArray()
 }
 
 /**
@@ -307,8 +320,6 @@ inline fun <reified X,reified Y,reified Z> doWith(first: X?, second: Y?, third: 
 inline fun <reified T> Any.cast(): T{
     return this as T
 }
-
-
 
 /**
  * Throws an [IllegalStateException] with the result of calling [lazyMessage] if the [value] is false.
