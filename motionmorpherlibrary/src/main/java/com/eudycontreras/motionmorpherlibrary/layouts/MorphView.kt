@@ -16,7 +16,6 @@ import com.eudycontreras.motionmorpherlibrary.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.getProperties
-import com.eudycontreras.motionmorpherlibrary.extensions.setProperties
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape
@@ -422,12 +421,13 @@ class MorphView: MorphLayout {
             }
             if (view is FloatingActionButton) {
                 MorphView(view, MorphLayout.CIRCULAR).apply {
-                    (this.view as FloatingActionButton).setProperties(view.getProperties())
-                    this.view.layoutParams = view.layoutParams
-                    this.view.backgroundTintList = view.backgroundTintList
-                    this.view.supportImageTintList = view.supportImageTintList
-                    this.view.compatElevation = view.compatElevation
-                    this.view.customSize = view.customSize
+                    with(this.view as FloatingActionButton) {
+                        layoutParams = view.layoutParams
+                        backgroundTintList = view.backgroundTintList
+                        supportImageTintList = view.supportImageTintList
+                        compatElevation = view.compatElevation
+                        customSize = view.customSize
+                    }
                     this.isActionButton = true
                     this.applyDrawable(MorphLayout.CIRCULAR)
 

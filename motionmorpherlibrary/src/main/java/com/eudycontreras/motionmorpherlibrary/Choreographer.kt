@@ -29,6 +29,7 @@ import com.eudycontreras.motionmorpherlibrary.drawables.ParticleEffectDrawable
 import com.eudycontreras.motionmorpherlibrary.particles.data.Ripple
 import com.eudycontreras.motionmorpherlibrary.particles.effects.RippleEffect
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.*
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedProperties
 import kotlin.math.max
 
 
@@ -60,7 +61,7 @@ class Choreographer(context: Context) {
 
     private val defaultInterpolator: TimeInterpolator = AccelerateDecelerateInterpolator()
 
-    private val morphViewPool: HashMap<Int, MorphLayout> = HashMap()
+    private val morphViewPool: HashMap<Int, Pair<MorphLayout, AnimatedProperties>> = HashMap()
 
     private var interpolator: TimeInterpolator? = null
 
@@ -243,7 +244,7 @@ class Choreographer(context: Context) {
         this.headChoreography = Choreography(this, *morphViews)
         this.headChoreography.offset = MAX_OFFSET
         this.tailChoreography = headChoreography
-
+        this.lastViews = morphViews
         block(headChoreography)
 
         return this
@@ -276,6 +277,7 @@ class Choreographer(context: Context) {
 
             choreography.child = this
         }
+        this.lastViews = views
         return this
     }
 
@@ -317,6 +319,7 @@ class Choreographer(context: Context) {
             this.child = null
             choreography.child = this
         }
+        this.lastViews = views
         return this
     }
 
@@ -364,7 +367,7 @@ class Choreographer(context: Context) {
             choreographies.add(choreography)
             tailChoreography = choreography
         }
-
+        this.lastViews = views
         return choreographies
     }
 
@@ -391,6 +394,7 @@ class Choreographer(context: Context) {
             choreographies.add(choreography)
             tailChoreography = choreography
         }
+        this.lastViews = views
         return choreographies
     }
 
@@ -407,19 +411,19 @@ class Choreographer(context: Context) {
         return this
     }
 
-    fun thenWith(vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
+    fun thenWith(vararg morphViews: Any = lastViews, block: Choreography.() -> Unit): Choreographer {
         return with(MAX_OFFSET, morphViews = *morphViews, block = block)
     }
 
-    fun thenWith(offset: Float, vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
+    fun thenWith(offset: Float, vararg morphViews: Any = lastViews, block: Choreography.() -> Unit): Choreographer {
         return with(offset, morphViews = *morphViews, block = block)
     }
 
-    fun andWith(vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
+    fun andWith(vararg morphViews: Any = lastViews, block: Choreography.() -> Unit): Choreographer {
         return with(MIN_OFFSET, morphViews = *morphViews, block = block)
     }
 
-    private fun reversedWith(offset: Float, vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+    private fun reversedWith(offset: Float, vararg morphViews: Any, block: Choreography.() -> Unit): Choreographer {
         var allViews = ArrayList<MorphLayout>()
 
         val viewsOne = morphViews.filter { it is MorphLayout}.map { it as MorphLayout }
@@ -435,15 +439,15 @@ class Choreographer(context: Context) {
         return this
     }
 
-    fun thenReversedWith(vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+    fun thenReversedWith(vararg morphViews: Any = lastViews, block: Choreography.() -> Unit): Choreographer {
         return reversedWith(MAX_OFFSET, morphViews = *morphViews, block = block)
     }
 
-    fun thenReversedWith(offset: Float, vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+    fun thenReversedWith(offset: Float, vararg morphViews: Any = lastViews, block: Choreography.() -> Unit): Choreographer {
         return reversedWith(offset, morphViews = *morphViews, block = block)
     }
 
-    fun andReverseWith(vararg morphViews: Any = emptyArray(), block: Choreography.() -> Unit): Choreographer {
+    fun andReverseWith(vararg morphViews: Any = lastViews, block: Choreography.() -> Unit): Choreographer {
         return reversedWith(MIN_OFFSET, morphViews = *morphViews, block = block)
     }
 
@@ -457,7 +461,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun then(offset: Float, block: Choreography.() -> Unit): Choreographer {
-        return then(offset = offset, morphViews = *tailChoreography.morphViews, block = block)
+        return then(offset = offset, morphViews = *lastViews, block = block)
     }
 
     /**
@@ -471,7 +475,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun then(offset: Float, vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
-        val morphViews = getViews(views, tailChoreography.morphViews)
+        val morphViews = getViews(views, lastViews)
         return then(offset = offset, morphViews = *morphViews, block = block)
     }
 
@@ -485,7 +489,7 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography
      * @return This choreographer.
      */
-    fun then(offset: Float, vararg morphViews: MorphLayout = tailChoreography.morphViews, block: Choreography.() -> Unit): Choreographer {
+    fun then(offset: Float, vararg morphViews: MorphLayout = lastViews, block: Choreography.() -> Unit): Choreographer {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
@@ -501,7 +505,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun then(block: Choreography.() -> Unit): Choreographer {
-        return then(morphViews = *tailChoreography.morphViews, block = block)
+        return then(morphViews = *lastViews, block = block)
     }
 
     /**
@@ -514,7 +518,7 @@ class Choreographer(context: Context) {
      * @return this choreographer.
      */
     fun then(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
-        return then(morphViews = *getViews(views, tailChoreography.morphViews), block = block)
+        return then(morphViews = *getViews(views, lastViews), block = block)
     }
 
     /**
@@ -543,7 +547,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun and(block: Choreography.() -> Unit): Choreographer {
-        return and(morphViews = *tailChoreography.morphViews, block = block)
+        return and(morphViews = *lastViews, block = block)
     }
 
     /**
@@ -556,7 +560,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun and(vararg views: View? = emptyArray(), block: Choreography.() -> Unit): Choreographer {
-        return and(morphViews = *getViews(views, tailChoreography.morphViews), block = block)
+        return and(morphViews = *getViews(views, lastViews), block = block)
     }
 
     /**
@@ -588,7 +592,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun thenReverse(block: (Choreography.() -> Unit)? = null): Choreographer {
-        return thenReverse(morphViews = *tailChoreography.morphViews, block = block)
+        return thenReverse(morphViews = *lastViews, block = block)
     }
 
     /**
@@ -602,7 +606,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun thenReverse(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
-        val morphViews = getViews(views, tailChoreography.morphViews)
+        val morphViews = getViews(views, lastViews)
         return thenReverse(morphViews = *morphViews, block = block)
     }
 
@@ -616,7 +620,7 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography.
      * @return This choreographer.
      */
-    fun thenReverse(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+    fun thenReverse(vararg morphViews: MorphLayout = lastViews, block: (Choreography.() -> Unit)? = null): Choreographer {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
@@ -635,7 +639,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun andReverse(block: (Choreography.() -> Unit)? = null): Choreographer {
-        return andReverse(morphViews = *tailChoreography.morphViews, block = block)
+        return andReverse(morphViews = *lastViews, block = block)
     }
 
     /**
@@ -649,7 +653,7 @@ class Choreographer(context: Context) {
      * @return This choreographer.
      */
     fun andReverse(vararg views: View? = emptyArray(), block: (Choreography.() -> Unit)? = null): Choreographer {
-        val morphViews = getViews(views, tailChoreography.morphViews)
+        val morphViews = getViews(views, lastViews)
         return andReverse(morphViews = *morphViews, block = block)
     }
 
@@ -663,7 +667,7 @@ class Choreographer(context: Context) {
      * @param block The encapsulation block of the created choreography,
      * @return This choreographer.
      */
-    fun andReverse(vararg morphViews: MorphLayout = tailChoreography.morphViews, block: (Choreography.() -> Unit)? = null): Choreographer {
+    fun andReverse(vararg morphViews: MorphLayout = lastViews, block: (Choreography.() -> Unit)? = null): Choreographer {
         requireThat(::headChoreography.isInitialized) {
             "A choreography sequence must be intiated by using the the standard animate function of the choreographer"
         }
@@ -809,13 +813,17 @@ class Choreographer(context: Context) {
     }
 
     /**
-     * Creates a group capsule which allows choreographies to play together.
+     * Creates a group capsule which allows choreographies to be play together.
+     * The views which are animated within this capsule do not affect the order
+     * of the choreographies and their assigned views.
      *
      * @param block The encapsulation block of the [GroupCapsule]
      * @return This choreographer.
      */
     fun thenTogether(offset: Float = MAX_OFFSET, block: GroupCapsule.() -> Unit): Choreographer {
+        val views = lastViews
         block(GroupCapsule(offset))
+        this.lastViews = views
         return this
     }
 
@@ -959,12 +967,21 @@ class Choreographer(context: Context) {
             if (!morphViewPool.containsKey(id)) {
                 val morphView = if (view is MorphLayout) view else view.asMorphable()
                 newMorphViews.add(morphView)
-                morphViewPool[id] = morphView
+                morphViewPool[id] = Pair(morphView, morphView.getProperties())
             } else {
-                newMorphViews.add(morphViewPool.getValue(id))
+                newMorphViews.add(morphViewPool.getValue(id).first)
             }
         }
         return newMorphViews.toTypedArray()
+    }
+
+    private fun addToPool(vararg views: MorphLayout) {
+        for(view in views) {
+            val id = view.identity()
+            if (!morphViewPool.containsKey(id)) {
+                morphViewPool[id] = Pair(view, view.getProperties())
+            }
+        }
     }
 
     /**

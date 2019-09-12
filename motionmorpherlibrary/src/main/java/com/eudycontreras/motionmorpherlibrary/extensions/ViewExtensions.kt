@@ -6,7 +6,7 @@ import android.widget.TextView
 import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
-import com.eudycontreras.motionmorpherlibrary.properties.ViewProperties
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedProperties
 
 
 /**
@@ -70,6 +70,13 @@ fun View.identity(): Int {
     return id
 }
 
+fun MorphLayout.identity(): Int {
+    if (getView().id == View.NO_ID) {
+        getView().id  = getUniqueId()
+    }
+    return getView().id
+}
+
 fun MorphLayout.hide(duration: Long = MIN_DURATION, delay: Long = MIN_DURATION, onEnd: Action = null) {
     if (duration == MIN_DURATION) {
         morphAlpha = MIN_OFFSET
@@ -114,7 +121,7 @@ fun TextView.getTextSizeSp(): Float {
     return px/scaledDensity
 }
 
-fun MorphLayout.applyProps(props: Morpher.Properties) {
+fun MorphLayout.applyProps(props: AnimatedProperties) {
     morphX = props.x
     morphY = props.y
     morphAlpha = props.alpha
@@ -122,7 +129,7 @@ fun MorphLayout.applyProps(props: Morpher.Properties) {
     morphTranslationX = props.translationX
     morphTranslationY = props.translationY
     morphTranslationZ = props.translationZ
-    /*morphPivotX = morphWidth
+    /*morphPivotX = morphWidth™
     morphPivotY = morphHeight*/
     morphRotation = props.rotation
     morphRotationX = props.rotationX
@@ -147,7 +154,7 @@ fun MorphLayout.applyProps(props: Morpher.Properties) {
     updateLayout()
 }
 
-fun MorphLayout.getProperties(): Morpher.Properties {
+fun MorphLayout.getProperties(): AnimatedProperties {
     val x = this.morphX
     val y = this.morphY
     val width = this.morphWidth
@@ -169,12 +176,13 @@ fun MorphLayout.getProperties(): Morpher.Properties {
     val color = this.morphColor
     val stateList = this.morphStateList
     val cornerRadii = this.morphCornerRadii.getCopy()
+    val viewBounds = this.viewBounds
     val background = this.morphBackground?.constantState?.newDrawable()
     val hasVectorBackground = this.hasVectorDrawable()
     val hasBitmapBackground = this.hasBitmapDrawable()
     val hasGradientBackground = this.hasGradientDrawable()
     val tag = this.morphTag.toString()
-    return Morpher.Properties(
+    return AnimatedProperties(
         x,
         y,
         width,
@@ -194,6 +202,7 @@ fun MorphLayout.getProperties(): Morpher.Properties {
         color,
         stateList,
         cornerRadii,
+        viewBounds,
         locationX,
         locationY,
         background,
@@ -201,73 +210,5 @@ fun MorphLayout.getProperties(): Morpher.Properties {
         hasBitmapBackground,
         hasGradientBackground,
         tag
-    )
-}
-
-fun View.setProperties(properties: ViewProperties) {
-    this.x = properties.x
-    this.y = properties.y
-    this.z = properties.z
-    this.alpha = properties.alpha
-    this.elevation = properties.elevation
-    this.translationX = properties.translationX
-    this.translationY = properties.translationY
-    this.translationZ = properties.translationZ
-    this.pivotX = properties.pivotX
-    this.pivotY = properties.pivotY
-    this.rotation = properties.rotation
-    this.rotationX = properties.rotationX
-    this.rotationY = properties.rotationY
-    this.scaleX = properties.scaleX
-    this.scaleY = properties.scaleY
-    this.top = properties.top
-    this.left = properties.left
-    this.right = properties.right
-    this.bottom = properties.bottom
-    this.tag = properties.tag
-}
-
-fun View.getProperties(): ViewProperties {
-    val x = this.x
-    val y = this.y
-    val z = this.z
-    val alpha = this.alpha
-    val elevation = this.elevation
-    val translationX = this.translationX
-    val translationY = this.translationY
-    val translationZ = this.translationZ
-    val pivotX = this.pivotX
-    val pivotY = this.pivotY
-    val rotation = this.rotation
-    val rotationX = this.rotationX
-    val rotationY = this.rotationY
-    val scaleX = this.scaleX
-    val scaleY = this.scaleY
-    val top = this.top
-    val left = this.left
-    val right = this.right
-    val bottom = this.bottom
-    val tag = this.tag
-    return ViewProperties(
-        x,
-        y,
-        z,
-        alpha,
-        elevation,
-        translationX,
-        translationY,
-        translationZ,
-        pivotX,
-        pivotY,
-        rotation,
-        rotationX,
-        rotationY,
-        scaleX,
-        scaleY,
-        top,
-        left,
-        right,
-        bottom,
-        tag = tag?.toString() ?: ""
     )
 }

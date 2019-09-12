@@ -96,9 +96,9 @@ class Demo1(var activity: MorphActivity) {
                 }
                 with(text) {
                     withDuration(1500)
-                    //withPivot(0.5f, 1f)
+                    withPivot(0.5f, 1f)
                     withInterpolator(AccelerateDecelerateInterpolator())
-                    yScaleBetween(*dpValues(1, 0.3, 1))
+                    yScaleBetween(*dpValues(1, 1.5, 1))
                 }
             }
             .then {

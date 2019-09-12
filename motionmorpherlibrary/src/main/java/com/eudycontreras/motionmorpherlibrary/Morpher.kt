@@ -3,15 +3,11 @@ package com.eudycontreras.motionmorpherlibrary
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.DecelerateInterpolator
 import androidx.annotation.RestrictTo
 import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
@@ -28,6 +24,7 @@ import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedIntValue
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedProperties
 import com.eudycontreras.motionmorpherlibrary.utilities.ColorUtility
 import java.util.*
 import kotlin.collections.ArrayList
@@ -54,8 +51,8 @@ class Morpher(private val context: Context) {
     private lateinit var startingView: MorphLayout
     private lateinit var endingView: MorphLayout
 
-    private lateinit var startingState: Properties
-    private lateinit var endingState: Properties
+    private lateinit var startingState: AnimatedProperties
+    private lateinit var endingState: AnimatedProperties
 
     private lateinit var mappings: List<MorphMap>
 
@@ -253,8 +250,8 @@ class Morpher(private val context: Context) {
         containers: List<MorphLayout>,
         morphIntoDescriptor: AnimationDescriptor,
         morphFromDescriptor: AnimationDescriptor,
-        startingState: Properties,
-        endingState: Properties,
+        startingState: AnimatedProperties,
+        endingState: AnimatedProperties,
         container: Boolean
     ) {
         morphIntoDescriptor.childrenRevealed = false
@@ -306,8 +303,8 @@ class Morpher(private val context: Context) {
         placeholders: List<MorphLayout>,
         morphIntoDescriptor: AnimationDescriptor,
         morphFromDescriptor: AnimationDescriptor,
-        startingState: Properties,
-        endingState: Properties
+        startingState: AnimatedProperties,
+        endingState: AnimatedProperties
     ) {
 
         morphIntoDescriptor.propertyScaleX.toValue = (startingState.width) / (endingState.width)
@@ -673,8 +670,8 @@ class Morpher(private val context: Context) {
 
     private fun morph(
         endView: MorphLayout,
-        startingProps: Properties,
-        endingProps: Properties,
+        startingProps: AnimatedProperties,
+        endingProps: AnimatedProperties,
         mappings: List<MorphMap>,
         interpolator: TimeInterpolator?,
         curveTranslationHelper: ArcTranslationHelper,
@@ -782,8 +779,8 @@ class Morpher(private val context: Context) {
 
     private fun moveWithOffset(
         endView: MorphLayout,
-        startingProps: Properties,
-        endingProps: Properties,
+        startingProps: AnimatedProperties,
+        endingProps: AnimatedProperties,
         fraction: Float,
         curveTranslationHelper: ArcTranslationHelper,
         useArcTranslator: Boolean
@@ -841,7 +838,7 @@ class Morpher(private val context: Context) {
     }
 
     @RestrictTo(RestrictTo.Scope.LIBRARY)
-    fun applyProps(view: MorphLayout, props: Properties) {
+    fun applyProps(view: MorphLayout, props: AnimatedProperties) {
         view.morphX = props.x
         view.morphY = props.y
         view.morphAlpha = props.alpha
@@ -876,8 +873,8 @@ class Morpher(private val context: Context) {
 
     private fun animateProperties(
         morphView: MorphLayout,
-        startingProps: Properties,
-        endingProps: Properties,
+        startingProps: AnimatedProperties,
+        endingProps: AnimatedProperties,
         fraction: Float
     ) {
         morphView.morphAlpha = startingProps.alpha + (endingProps.alpha - startingProps.alpha) * fraction
@@ -1152,7 +1149,7 @@ class Morpher(private val context: Context) {
 
     class MorphState(
         val morphView: MorphLayout,
-        val stateProps: Properties
+        val stateProps: AnimatedProperties
     ){
         var children: List<View> = emptyList()
         constructor(morphView: MorphLayout):this(morphView, morphView.getProperties())
@@ -1162,50 +1159,9 @@ class Morpher(private val context: Context) {
         val startView: MorphLayout,
         val endView: MorphLayout,
 
-        val startProps: Properties,
-        val endProps: Properties
+        val startProps: AnimatedProperties,
+        val endProps: AnimatedProperties
     )
-
-    data class Properties(
-        val x: Float,
-        val y: Float,
-        val width: Float,
-        val height: Float,
-        var alpha: Float,
-        val elevation: Float,
-        var translationX: Float,
-        var translationY: Float,
-        val translationZ: Float,
-        val pivotX: Float,
-        val pivotY: Float,
-        val rotation: Float,
-        val rotationX: Float,
-        val rotationY: Float,
-        var scaleX: Float,
-        var scaleY: Float,
-        val color: Int,
-        val stateList: ColorStateList?,
-        var cornerRadii: CornerRadii,
-        val windowLocationX: Int,
-        val windowLocationY: Int,
-        val background: Drawable?,
-        val hasVectorBackground: Boolean,
-        val hasBitmapBackground: Boolean,
-        val hasGradientBackground: Boolean,
-        val tag: String
-    ) {
-        fun getDeltaCoordinates() = Coordinates(translationX, translationY)
-
-        fun getBounds(): Bounds {
-            return Bounds(
-                windowLocationX,
-                windowLocationY,
-                width,
-                height
-            )
-        }
-        override fun toString() = tag
-    }
 
     open class AnimationProperties (
         alpha: Float = MAX_OFFSET,

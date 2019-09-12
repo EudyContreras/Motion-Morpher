@@ -3,6 +3,7 @@ package com.eudycontreras.motionmorpherlibrary
 import android.graphics.Color
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
+import com.eudycontreras.motionmorpherlibrary.properties.AnimatedProperties
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 import java.util.*
 
@@ -31,7 +32,7 @@ typealias BackgroundDimListener = ((dimAmount: Float) -> Unit)?
 
 typealias ViewPropertyValueListener = (view: MorphLayout, value: Float) -> Unit
 
-typealias ComputedStatesListener = ((startState: Morpher.Properties, endState: Morpher.Properties) -> Unit)?
+typealias ComputedStatesListener = ((startState: AnimatedProperties, endState: AnimatedProperties) -> Unit)?
 
 typealias TranslationPositions = EnumSet<Morpher.TranslationPosition>
 
