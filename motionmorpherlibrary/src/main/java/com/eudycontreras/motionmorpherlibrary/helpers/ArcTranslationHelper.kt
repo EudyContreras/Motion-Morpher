@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.helpers
 
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.StrictMath.pow
 import kotlin.math.round

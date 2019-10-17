@@ -8,7 +8,7 @@ import android.graphics.Paint
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
-import com.eudycontreras.motionmorpherlibrary.Action
+import com.eudycontreras.motionmorpherlibrary.globals.Action
 import com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ConstraintLayout
 import com.eudycontreras.motionmorpherlibrary.listeners.DrawDispatchListener
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener

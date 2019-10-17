@@ -1,8 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
-import com.eudycontreras.motionmorpherlibrary.AndroidColor
-import com.eudycontreras.motionmorpherlibrary.MAX_COLOR
-import com.eudycontreras.motionmorpherlibrary.MIN_COLOR
+import com.eudycontreras.motionmorpherlibrary.globals.AndroidColor
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_COLOR
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_COLOR
 
 
 /**

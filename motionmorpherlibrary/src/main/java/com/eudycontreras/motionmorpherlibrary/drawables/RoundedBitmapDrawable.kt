@@ -1,12 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.drawables
 
-import android.content.res.Resources
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
-import com.eudycontreras.motionmorpherlibrary.extensions.dp
-import com.eudycontreras.motionmorpherlibrary.interfaces.Clipable
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 
 
@@ -117,7 +113,9 @@ class RoundedBitmapDrawable(
 
     override fun draw(canvas: Canvas) {
         path.rewind()
-        path.addRoundRect(MIN_OFFSET, MIN_OFFSET, viewWidth.toFloat(), viewHeight.toFloat(), corners.corners, Path.Direction.CCW)
+        path.addRoundRect(
+            MIN_OFFSET,
+            MIN_OFFSET, viewWidth.toFloat(), viewHeight.toFloat(), corners.corners, Path.Direction.CCW)
         path.close()
 
         canvas.drawPath(path, paint)

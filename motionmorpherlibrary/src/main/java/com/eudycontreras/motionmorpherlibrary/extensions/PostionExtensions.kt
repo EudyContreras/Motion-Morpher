@@ -1,7 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.extensions
 
 import com.eudycontreras.motionmorpherlibrary.Morpher
-import com.eudycontreras.motionmorpherlibrary.TranslationPositions
+import com.eudycontreras.motionmorpherlibrary.globals.TranslationPositions
 
 
 /**

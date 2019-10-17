@@ -1,16 +1,10 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
-import android.graphics.drawable.BitmapDrawable
 import android.view.View
-import android.widget.ImageView
-import androidx.annotation.DrawableRes
-import androidx.core.content.ContextCompat
-import com.eudycontreras.motionmorpherlibrary.*
-import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
 import com.eudycontreras.motionmorpherlibrary.enumerations.FadeType
+import com.eudycontreras.motionmorpherlibrary.globals.*
 import com.eudycontreras.motionmorpherlibrary.interpolators.Easing
-import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
 
 
 /**
@@ -43,22 +37,51 @@ class FadeMorph(
     }
 
     private fun fadeThrough(fraction: Float) {
-        val outgoingFraction = mapRange(fraction, MIN_OFFSET, onOffset, MIN_OFFSET, MAX_OFFSET)
-        val incomingFraction = mapRange(fraction, onOffset, MAX_OFFSET, MIN_OFFSET, MAX_OFFSET)
+        val outgoingFraction = mapRange(
+            fraction,
+            MIN_OFFSET,
+            onOffset,
+            MIN_OFFSET,
+            MAX_OFFSET
+        )
+        val incomingFraction = mapRange(
+            fraction,
+            onOffset,
+            MAX_OFFSET,
+            MIN_OFFSET,
+            MAX_OFFSET
+        )
 
-        val alphaFrom = lerp(MAX_COLOR, MIN_COLOR, outgoingFraction)
+        val alphaFrom = lerp(
+            MAX_COLOR,
+            MIN_COLOR,
+            outgoingFraction
+        )
 
-        val alphaTo = lerp(MIN_COLOR, MAX_COLOR, incomingFraction)
+        val alphaTo = lerp(
+            MIN_COLOR,
+            MAX_COLOR,
+            incomingFraction
+        )
     }
 
     private fun crossFade(fraction: Float) {
-        val alphaFrom = lerp(MAX_COLOR, MIN_COLOR, fraction)
+        val alphaFrom =
+            lerp(
+                MAX_COLOR,
+                MIN_COLOR, fraction)
 
-        val alphaTo = lerp(MIN_COLOR, MAX_COLOR, fraction)
+        val alphaTo =
+            lerp(
+                MIN_COLOR,
+                MAX_COLOR, fraction)
     }
 
     private fun dissolve(fraction: Float) {
-        val alphaTo = lerp(MAX_COLOR, MIN_COLOR, fraction)
+        val alphaTo =
+            lerp(
+                MAX_COLOR,
+                MIN_COLOR, fraction)
     }
 
     fun onEnd() {

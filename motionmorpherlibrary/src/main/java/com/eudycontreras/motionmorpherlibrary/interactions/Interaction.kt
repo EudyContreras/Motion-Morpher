@@ -4,6 +4,7 @@ import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
+import com.eudycontreras.motionmorpherlibrary.globals.*
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
@@ -28,7 +29,10 @@ abstract class Interaction {
     open var animationStaggerOut: AnimationStagger? = null
     open var animationStaggerIn: AnimationStagger? = null
 
-    private var animator: ValueAnimator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+    private var animator: ValueAnimator = ValueAnimator.ofFloat(
+        MIN_OFFSET,
+        MAX_OFFSET
+    )
 
     protected var morphUpdater: ((Float) -> Unit)? = null
 
@@ -55,7 +59,10 @@ abstract class Interaction {
                 applyStagger(animationStaggerIn, animationType)
             }
         }
-        this.animator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+        this.animator = ValueAnimator.ofFloat(
+            MIN_OFFSET,
+            MAX_OFFSET
+        )
         this.animator.duration = duration
         this.animator.addListener(MorphAnimationListener(onStart, onEnd))
         this.animator.addUpdateListener {

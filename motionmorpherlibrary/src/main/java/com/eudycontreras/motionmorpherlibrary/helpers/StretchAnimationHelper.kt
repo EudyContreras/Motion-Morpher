@@ -1,10 +1,10 @@
 package com.eudycontreras.motionmorpherlibrary.helpers
 
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.Direction
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
-import com.eudycontreras.motionmorpherlibrary.mapRange
+import com.eudycontreras.motionmorpherlibrary.globals.mapRange
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Stretch
 import kotlin.math.abs
@@ -53,16 +53,35 @@ class StretchAnimationHelper {
                 }
             }
 
-            val scaleMap: Float = mapRange(fraction, translationValue.fromValue, translationValue.toValue, MIN_OFFSET, MAX_OFFSET)
+            val scaleMap: Float = mapRange(
+                fraction,
+                translationValue.fromValue,
+                translationValue.toValue,
+                MIN_OFFSET,
+                MAX_OFFSET
+            )
 
-            val stretchMap: Float = mapRange(scaleMap, offsetStart, offsetEnd, MIN_OFFSET, MAX_OFFSET)
+            val stretchMap: Float = mapRange(
+                scaleMap,
+                offsetStart,
+                offsetEnd,
+                MIN_OFFSET,
+                MAX_OFFSET
+            )
 
             val scaleStart = MAX_OFFSET
             val squashEnd = MAX_OFFSET - squashAmount
 
             if (stretchMap < stretchOffset) {
 
-                val stretchFraction: Float = mapRange(stretchMap, MIN_OFFSET, stretchOffset, MIN_OFFSET, MAX_OFFSET)
+                val stretchFraction: Float =
+                    mapRange(
+                        stretchMap,
+                        MIN_OFFSET,
+                        stretchOffset,
+                        MIN_OFFSET,
+                        MAX_OFFSET
+                    )
 
                 if (direction == Direction.DOWN || direction == Direction.UP) {
 
@@ -87,7 +106,14 @@ class StretchAnimationHelper {
                 if (stretchOffset == MAX_OFFSET)
                     return
 
-                val unStretchFraction: Float = mapRange(stretchMap, stretchOffset, MAX_OFFSET, MIN_OFFSET, MAX_OFFSET)
+                val unStretchFraction: Float =
+                    mapRange(
+                        stretchMap,
+                        stretchOffset,
+                        MAX_OFFSET,
+                        MIN_OFFSET,
+                        MAX_OFFSET
+                    )
 
                 if (direction == Direction.DOWN || direction == Direction.UP) {
 

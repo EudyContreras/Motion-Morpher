@@ -3,14 +3,11 @@ package com.eudycontreras.motionmorpherlibrary.drawables
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.TransitionDrawable
 import android.os.Build
 import androidx.core.animation.doOnEnd
-import com.eudycontreras.motionmorpherlibrary.*
-import com.eudycontreras.motionmorpherlibrary.extensions.dp
+import com.eudycontreras.motionmorpherlibrary.globals.*
 
 /**
  * @Project MotionMorpher
@@ -187,7 +184,10 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     fun startTransition(durationMillis: Long, interpolator: TimeInterpolator? = null, onEnd: Action = null): ValueAnimator {
         setUpTransition(false)
 
-        val animator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+        val animator = ValueAnimator.ofFloat(
+            MIN_OFFSET,
+            MAX_OFFSET
+        )
         animator.interpolator = interpolator
         animator.duration = durationMillis
         animator.doOnEnd { onEnd?.invoke() }
@@ -206,7 +206,10 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     fun reverseTransition(durationMillis: Long, interpolator: TimeInterpolator? = null, onEnd: Action = null): ValueAnimator {
         setUpTransition(true)
 
-        val animator = ValueAnimator.ofFloat(MIN_OFFSET, MAX_OFFSET)
+        val animator = ValueAnimator.ofFloat(
+            MIN_OFFSET,
+            MAX_OFFSET
+        )
         animator.interpolator = interpolator
         animator.duration = durationMillis
         animator.doOnEnd { onEnd?.invoke() }
@@ -318,7 +321,15 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
     }
 
     fun updateTransition(inFraction: Float) {
-        fraction = mapRange(inFraction, mCrossfadePadding, MAX_OFFSET - mCrossfadePadding, MIN_OFFSET, MAX_OFFSET, MIN_OFFSET, MAX_OFFSET)
+        fraction = mapRange(
+            inFraction,
+            mCrossfadePadding,
+            MAX_OFFSET - mCrossfadePadding,
+            MIN_OFFSET,
+            MAX_OFFSET,
+            MIN_OFFSET,
+            MAX_OFFSET
+        )
 
         if (lastFraction > MIN_OFFSET && lastFraction < MAX_OFFSET) {
             invalidateSelf()
@@ -422,7 +433,8 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                 toMin = 0f,
                 toMax = 1f,
                 clampMin = 0f,
-                clampMax = 1.0f)
+                clampMax = 1.0f
+            )
 
             animateStartScale(value)
             animateStartFade(value)
@@ -453,7 +465,8 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                 toMin = 0f,
                 toMax = 1f,
                 clampMin = 0f,
-                clampMax = 1.0f)
+                clampMax = 1.0f
+            )
 
             animateEndScale(value)
             animateEndFade(value)
@@ -467,7 +480,8 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
                     toMin = 0f,
                     toMax = 1f,
                     clampMin = 0f,
-                    clampMax = 1.0f)
+                    clampMax = 1.0f
+                )
                 )
             }
         }
@@ -477,13 +491,17 @@ class MorphTransitionDrawable(vararg drawables: Drawable?) : TransitionDrawable(
         val drawableStart = getDrawable(0)
         val drawableEnd = getDrawable(1)
 
-        canvas.scale(MAX_OFFSET, MAX_OFFSET,drawableEnd.intrinsicWidth / 2f, drawableEnd.intrinsicHeight / 2f)
+        canvas.scale(
+            MAX_OFFSET,
+            MAX_OFFSET,drawableEnd.intrinsicWidth / 2f, drawableEnd.intrinsicHeight / 2f)
         canvas.rotate(MIN_OFFSET, drawableEnd.intrinsicWidth / 2f, drawableEnd.intrinsicHeight / 2f)
 
         drawableEnd.alpha = 0
         drawableEnd.draw(canvas)
 
-        canvas.scale(MAX_OFFSET, MAX_OFFSET,drawableStart.intrinsicWidth / 2f, drawableStart.intrinsicHeight / 2f)
+        canvas.scale(
+            MAX_OFFSET,
+            MAX_OFFSET,drawableStart.intrinsicWidth / 2f, drawableStart.intrinsicHeight / 2f)
         canvas.rotate(MIN_OFFSET, drawableStart.intrinsicWidth / 2f, drawableStart.intrinsicHeight / 2f)
 
         drawableStart.alpha = MAX_ALPHA

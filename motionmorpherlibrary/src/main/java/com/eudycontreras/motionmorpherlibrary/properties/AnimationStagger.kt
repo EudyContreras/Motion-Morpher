@@ -1,9 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
-import com.eudycontreras.motionmorpherlibrary.interactions.Explode
 
 /**
  * Class which holds information about the stagger effect

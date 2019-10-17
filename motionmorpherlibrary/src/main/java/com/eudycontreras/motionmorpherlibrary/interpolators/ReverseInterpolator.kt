@@ -1,7 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary.interpolators
 
 import android.animation.TimeInterpolator
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
 
 /**
  * @Project MotionMorpher

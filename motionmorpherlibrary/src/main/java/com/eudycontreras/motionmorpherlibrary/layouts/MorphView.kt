@@ -12,10 +12,9 @@ import android.view.ViewPropertyAnimator
 import android.widget.TextView
 import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
-import com.eudycontreras.motionmorpherlibrary.doWith
+import com.eudycontreras.motionmorpherlibrary.globals.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
-import com.eudycontreras.motionmorpherlibrary.extensions.getProperties
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.shapes.MorphShape

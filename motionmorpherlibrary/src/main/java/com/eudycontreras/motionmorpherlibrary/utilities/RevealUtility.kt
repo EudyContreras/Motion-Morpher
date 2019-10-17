@@ -3,8 +3,8 @@ package com.eudycontreras.motionmorpherlibrary.utilities
 import android.animation.TimeInterpolator
 import android.view.View
 import android.view.ViewAnimationUtils
-import com.eudycontreras.motionmorpherlibrary.Action
-import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
+import com.eudycontreras.motionmorpherlibrary.globals.Action
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_DURATION
 import com.eudycontreras.motionmorpherlibrary.listeners.MorphAnimationListener
 import com.eudycontreras.motionmorpherlibrary.properties.Conceal
 import com.eudycontreras.motionmorpherlibrary.properties.Reveal

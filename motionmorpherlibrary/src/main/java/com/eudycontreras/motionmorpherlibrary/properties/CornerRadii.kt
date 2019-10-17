@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
 import com.eudycontreras.motionmorpherlibrary.utilities.binding.Bindable
 
@@ -45,7 +45,12 @@ class CornerRadii(
 
     constructor(radii: Float): this(radii, radii, radii, radii)
 
-    constructor(): this(MIN_OFFSET, MIN_OFFSET, MIN_OFFSET, MIN_OFFSET)
+    constructor(): this(
+        MIN_OFFSET,
+        MIN_OFFSET,
+        MIN_OFFSET,
+        MIN_OFFSET
+    )
 
     fun apply(cornerRadii: CornerRadii) {
         for (index in 0 until cornerRadii.size) {

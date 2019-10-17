@@ -1,7 +1,6 @@
 package com.eudycontreras.motionmorpher.examples.choreographer.choreographies
 
 import android.animation.TimeInterpolator
-import android.app.Activity
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnticipateOvershootInterpolator
@@ -9,7 +8,7 @@ import android.view.animation.DecelerateInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.eudycontreras.motionmorpherlibrary.Choreographer
 import com.eudycontreras.motionmorpherlibrary.activities.MorphActivity
-import com.eudycontreras.motionmorpherlibrary.dpValues
+import com.eudycontreras.motionmorpherlibrary.globals.dpValues
 import com.eudycontreras.motionmorpherlibrary.enumerations.Anchor
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
 import com.eudycontreras.motionmorpherlibrary.enumerations.Measurement
@@ -77,28 +76,71 @@ class Demo1(var activity: MorphActivity) {
                 rotateTo(360f)
             }
             .then {
-                xTranslateBetween(*dpValues(0, -30, 30, -70, 70, -100, 100, -70, 70, -30, 30, 0))
+                xTranslateBetween(*dpValues(
+                    0,
+                    -30,
+                    30,
+                    -70,
+                    70,
+                    -100,
+                    100,
+                    -70,
+                    70,
+                    -30,
+                    30,
+                    0
+                )
+                )
             }
             .then {
                 withStartDelay(100)
-                yTranslateBetween(*dpValues(0, -30, 30, -70, 70, -100, 100, -70, 70, -30, 30, 0))
+                yTranslateBetween(*dpValues(
+                    0,
+                    -30,
+                    30,
+                    -70,
+                    70,
+                    -100,
+                    100,
+                    -70,
+                    70,
+                    -30,
+                    30,
+                    0
+                )
+                )
             }
             .thenTogether {
                 with(image) {
                     withDuration(1500)
                     withInterpolator(AccelerateDecelerateInterpolator())
-                    xScaleBetween(*dpValues(1, 0.3, 1))
+                    xScaleBetween(*dpValues(
+                        1,
+                        0.3,
+                        1
+                    )
+                    )
                 }
                 with(actions) {
                     withDuration(1500)
                     withInterpolator(AccelerateDecelerateInterpolator())
-                    xScaleBetween(*dpValues(1, 0.3, 1))
+                    xScaleBetween(*dpValues(
+                        1,
+                        0.3,
+                        1
+                    )
+                    )
                 }
                 with(text) {
                     withDuration(1500)
                     withPivot(0.5f, 1f)
                     withInterpolator(AccelerateDecelerateInterpolator())
-                    yScaleBetween(*dpValues(1, 1.5, 1))
+                    yScaleBetween(*dpValues(
+                        1,
+                        1.5,
+                        1
+                    )
+                    )
                 }
             }
             .then {
@@ -194,7 +236,7 @@ class Demo1(var activity: MorphActivity) {
                 scaleTo(1f)
             }
             .then {
-                withDuration(7000)
+                withDuration(2000)
                 zTranslateTo(10.dp)
                 alphaTo(1f)
             }

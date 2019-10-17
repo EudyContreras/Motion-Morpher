@@ -14,7 +14,7 @@ import android.view.ViewPropertyAnimator
 import android.widget.LinearLayout
 import androidx.core.view.children
 import com.eudycontreras.motionmorpherlibrary.R
-import com.eudycontreras.motionmorpherlibrary.doWith
+import com.eudycontreras.motionmorpherlibrary.globals.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList

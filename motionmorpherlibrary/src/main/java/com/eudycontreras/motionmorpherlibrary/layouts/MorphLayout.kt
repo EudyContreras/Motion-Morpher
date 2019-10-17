@@ -5,7 +5,7 @@ import android.graphics.drawable.*
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
-import com.eudycontreras.motionmorpherlibrary.doWith
+import com.eudycontreras.motionmorpherlibrary.globals.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList
 import com.eudycontreras.motionmorpherlibrary.properties.*

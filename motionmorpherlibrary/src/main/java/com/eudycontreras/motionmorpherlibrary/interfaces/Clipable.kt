@@ -2,7 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.interfaces
 
 import android.graphics.Canvas
 import android.graphics.Path
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 
 /**
  * @Project MotionMorpher

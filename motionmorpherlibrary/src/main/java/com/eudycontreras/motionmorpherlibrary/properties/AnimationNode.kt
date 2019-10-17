@@ -1,8 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_DURATION
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 

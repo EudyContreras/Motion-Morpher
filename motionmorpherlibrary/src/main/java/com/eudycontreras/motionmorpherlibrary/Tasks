@@ -8,3 +8,21 @@ Staggering:
 
     3. Allow the user to specified if the elements all share a same layout.
         If the elements all share a same layout the morphing animation doe not need to rebuild
+
+Other:
+    - Animates the stagger for rows. If various elements are stack horisontally
+    and a vertical stagger is used, stagger the elements at the same row with a
+    specified elipson at the same time.
+
+    - Adjust the system so that all stored views are weak references in order to
+    avoid memory leaks. Make the program more aware of the view lifecycle.
+
+    - When animating stagger with dynamically computated direction allow the
+    stagger to consider the growth direction as well for more accurate stagger directions
+    for elements that are insider containers that are both changing dimensions and
+    coordinates.
+
+    - Add animate text to the choreographer and check that stagger works for
+    list of views.
+
+    - Add meaningful exceptions to the choreographer

@@ -1,8 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.interfaces.Cloneable
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedIntValue
@@ -22,7 +22,8 @@ abstract class AnimatedValue<T>: Cloneable<AnimatedValue<T>> {
 
     abstract val propertyName: String
 
-    open var interpolateOffsetStart: Float = MIN_OFFSET
+    open var interpolateOffsetStart: Float =
+        MIN_OFFSET
     open var interpolateOffsetEnd: Float = MAX_OFFSET
 
     open var durationOffsetStart: Float = MIN_OFFSET

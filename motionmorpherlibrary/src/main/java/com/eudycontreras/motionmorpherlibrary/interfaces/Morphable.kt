@@ -1,8 +1,5 @@
 package com.eudycontreras.motionmorpherlibrary.interfaces
 
-import com.eudycontreras.motionmorpherlibrary.MIN_COLOR
-import com.eudycontreras.motionmorpherlibrary.enumerations.FadeType
-
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.

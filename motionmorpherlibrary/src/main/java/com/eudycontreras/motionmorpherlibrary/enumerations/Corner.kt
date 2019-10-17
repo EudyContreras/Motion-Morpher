@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.enumerations
 
-import com.eudycontreras.motionmorpherlibrary.CornersSet
+import com.eudycontreras.motionmorpherlibrary.globals.CornersSet
 
 /**
  * @Project MotionMorpher

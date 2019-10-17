@@ -2,8 +2,8 @@ package com.eudycontreras.motionmorpherlibrary.particles.data
 
 import android.animation.TimeInterpolator
 import android.graphics.Canvas
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_DURATION
 import com.eudycontreras.motionmorpherlibrary.properties.Color
 import com.eudycontreras.motionmorpherlibrary.properties.MutableColor
 

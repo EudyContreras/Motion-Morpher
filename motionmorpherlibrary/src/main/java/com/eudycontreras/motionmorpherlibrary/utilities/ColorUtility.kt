@@ -2,8 +2,8 @@ package com.eudycontreras.motionmorpherlibrary.utilities
 
 
 import androidx.annotation.ColorInt
-import com.eudycontreras.motionmorpherlibrary.AndroidColor
-import com.eudycontreras.motionmorpherlibrary.MAX_COLOR
+import com.eudycontreras.motionmorpherlibrary.globals.AndroidColor
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_COLOR
 import com.eudycontreras.motionmorpherlibrary.properties.Color
 import com.eudycontreras.motionmorpherlibrary.properties.MutableColor
 import kotlin.math.roundToInt

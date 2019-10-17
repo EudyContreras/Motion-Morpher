@@ -1,13 +1,13 @@
 package com.eudycontreras.motionmorpherlibrary.interactions
 
-import com.eudycontreras.motionmorpherlibrary.MAX_OFFSET
-import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_DURATION
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.enumerations.AnimationType
 import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
 import com.eudycontreras.motionmorpherlibrary.helpers.StretchAnimationHelper
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
-import com.eudycontreras.motionmorpherlibrary.mapRange
+import com.eudycontreras.motionmorpherlibrary.globals.mapRange
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
@@ -306,7 +306,13 @@ class Explode(
             if (fraction < node.startOffset || fraction > node.endOffset)
                 continue
 
-            val mappedRation = mapRange(fraction, node.startOffset, node.endOffset, MIN_OFFSET, MAX_OFFSET)
+            val mappedRation = mapRange(
+                fraction,
+                node.startOffset,
+                node.endOffset,
+                MIN_OFFSET,
+                MAX_OFFSET
+            )
 
             if (node.epicenter) {
                 morphUpdater?.invoke(mappedRation)

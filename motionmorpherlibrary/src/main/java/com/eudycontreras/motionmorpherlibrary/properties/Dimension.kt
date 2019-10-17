@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 
 /**
  * Class which holds information about a dimension.

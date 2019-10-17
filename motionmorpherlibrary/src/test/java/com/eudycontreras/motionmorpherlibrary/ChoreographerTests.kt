@@ -1,6 +1,7 @@
 package com.eudycontreras.motionmorpherlibrary
 
 import com.eudycontreras.motionmorpherlibrary.extensions.groupByAnd
+import com.eudycontreras.motionmorpherlibrary.globals.approximate
 import com.eudycontreras.motionmorpherlibrary.properties.Bounds
 import org.junit.Test
 import java.util.*
@@ -38,7 +39,13 @@ public class ChoreographerTests {
 
         nodes.sortBy { it.value }
 
-        val nodesGroups = nodes.groupByAnd( { it.value }, { it, other -> approximate(it.value, other.value, other.value * 0.3f) })
+        val nodesGroups = nodes.groupByAnd( { it.value }, { it, other ->
+            approximate(
+                it.value,
+                other.value,
+                other.value * 0.3f
+            )
+        })
 
         assert(nodesGroups.size == 6)
     }

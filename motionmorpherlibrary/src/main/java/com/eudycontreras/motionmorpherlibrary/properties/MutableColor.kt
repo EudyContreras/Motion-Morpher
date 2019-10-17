@@ -1,9 +1,9 @@
 package com.eudycontreras.motionmorpherlibrary.properties
 
 import androidx.annotation.ColorInt
-import com.eudycontreras.motionmorpherlibrary.AndroidColor
-import com.eudycontreras.motionmorpherlibrary.MAX_COLOR
-import com.eudycontreras.motionmorpherlibrary.MIN_COLOR
+import com.eudycontreras.motionmorpherlibrary.globals.AndroidColor
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_COLOR
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_COLOR
 import java.lang.StrictMath.round
 
 
@@ -211,13 +211,48 @@ class MutableColor(
 
     companion object {
 
-        val WHITE: Color = MutableColor(MAX_COLOR, MAX_COLOR, MAX_COLOR, MAX_COLOR)
-        val BLACK: Color = MutableColor(MAX_COLOR, MIN_COLOR, MIN_COLOR, MIN_COLOR)
-        val RED: Color = MutableColor(MAX_COLOR, MAX_COLOR, MIN_COLOR, MIN_COLOR)
-        val GREEN: Color = MutableColor(MAX_COLOR, MIN_COLOR, MAX_COLOR, MIN_COLOR)
-        val BLUE: Color = MutableColor(MAX_COLOR, MIN_COLOR, MIN_COLOR, MAX_COLOR)
-        val YELLOW: Color = MutableColor(MAX_COLOR, MAX_COLOR, MAX_COLOR, MIN_COLOR)
-        val PURPLE: Color = MutableColor(MAX_COLOR, MAX_COLOR, MIN_COLOR, MAX_COLOR)
+        val WHITE: Color = MutableColor(
+            MAX_COLOR,
+            MAX_COLOR,
+            MAX_COLOR,
+            MAX_COLOR
+        )
+        val BLACK: Color = MutableColor(
+            MAX_COLOR,
+            MIN_COLOR,
+            MIN_COLOR,
+            MIN_COLOR
+        )
+        val RED: Color = MutableColor(
+            MAX_COLOR,
+            MAX_COLOR,
+            MIN_COLOR,
+            MIN_COLOR
+        )
+        val GREEN: Color = MutableColor(
+            MAX_COLOR,
+            MIN_COLOR,
+            MAX_COLOR,
+            MIN_COLOR
+        )
+        val BLUE: Color = MutableColor(
+            MAX_COLOR,
+            MIN_COLOR,
+            MIN_COLOR,
+            MAX_COLOR
+        )
+        val YELLOW: Color = MutableColor(
+            MAX_COLOR,
+            MAX_COLOR,
+            MAX_COLOR,
+            MIN_COLOR
+        )
+        val PURPLE: Color = MutableColor(
+            MAX_COLOR,
+            MAX_COLOR,
+            MIN_COLOR,
+            MAX_COLOR
+        )
 
         val DEFAULT: Color = MutableColor()
 

@@ -1,8 +1,8 @@
 package com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues
 
 import android.animation.TimeInterpolator
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
-import com.eudycontreras.motionmorpherlibrary.lerp
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.lerp
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValue
 import kotlin.math.abs
 
@@ -51,7 +51,8 @@ class AnimatedFloatValue(
     var differenceRatio: Float = if (fromValue == MIN_OFFSET) MIN_OFFSET else toValue / fromValue
         private set
 
-    fun lerp(fraction: Float): Float = lerp(fromValue, toValue, fraction)
+    fun lerp(fraction: Float): Float =
+        lerp(fromValue, toValue, fraction)
 
     fun set(value: AnimatedFloatValue) {
         super.set(value)

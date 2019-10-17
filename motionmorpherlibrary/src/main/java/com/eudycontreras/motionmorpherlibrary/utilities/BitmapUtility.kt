@@ -9,16 +9,9 @@ import android.graphics.drawable.VectorDrawable
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import android.graphics.PorterDuffXfermode
-import android.graphics.RectF
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
 import android.graphics.Bitmap
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
-import com.eudycontreras.motionmorpherlibrary.extensions.dp
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
 import android.widget.ImageView
 import com.eudycontreras.motionmorpherlibrary.customViews.RoundedImageView
 import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable

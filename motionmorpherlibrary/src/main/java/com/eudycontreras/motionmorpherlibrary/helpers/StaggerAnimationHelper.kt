@@ -1,8 +1,10 @@
 package com.eudycontreras.motionmorpherlibrary.helpers
 
-import com.eudycontreras.motionmorpherlibrary.*
-import com.eudycontreras.motionmorpherlibrary.enumerations.Stagger
 import com.eudycontreras.motionmorpherlibrary.extensions.groupByAnd
+import com.eudycontreras.motionmorpherlibrary.globals.MAX_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.approximate
+import com.eudycontreras.motionmorpherlibrary.globals.distance
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.*
 import java.lang.StrictMath.round
@@ -30,7 +32,12 @@ class StaggerAnimationHelper {
                 epicenter.y
             )
 
-            val distanceB = distance(MIN_OFFSET, MIN_OFFSET, bounds.width, bounds.height)
+            val distanceB = distance(
+                MIN_OFFSET,
+                MIN_OFFSET,
+                bounds.width,
+                bounds.height
+            )
 
             val distanceFraction = distanceA / distanceB
 
@@ -88,7 +95,13 @@ class StaggerAnimationHelper {
 
             val nodesGroups = with(nodes) {
                 nodes = LinkedList(nodes.sortedBy { it.distance })
-                nodes.groupByAnd( { it.distance }, { it, other -> approximate(it.distance, other.distance, marginSelector(other.view)) })
+                nodes.groupByAnd( { it.distance }, { it, other ->
+                    approximate(
+                        it.distance,
+                        other.distance,
+                        marginSelector(other.view)
+                    )
+                })
             }
 
             val stagger = (duration * animationStagger.staggerOffset)

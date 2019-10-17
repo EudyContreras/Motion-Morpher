@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.utilities.binding
 
-import com.eudycontreras.motionmorpherlibrary.BindingChangeListener
+import com.eudycontreras.motionmorpherlibrary.globals.BindingChangeListener
 
 
 /**

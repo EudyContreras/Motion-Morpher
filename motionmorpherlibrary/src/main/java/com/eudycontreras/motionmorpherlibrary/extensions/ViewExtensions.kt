@@ -3,7 +3,7 @@ package com.eudycontreras.motionmorpherlibrary.extensions
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import android.widget.TextView
-import com.eudycontreras.motionmorpherlibrary.*
+import com.eudycontreras.motionmorpherlibrary.globals.*
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphView
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedProperties

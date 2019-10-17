@@ -1,6 +1,6 @@
 package com.eudycontreras.motionmorpherlibrary.extensions
 
-import com.eudycontreras.motionmorpherlibrary.CornersSet
+import com.eudycontreras.motionmorpherlibrary.globals.CornersSet
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
 
 

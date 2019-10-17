@@ -18,7 +18,7 @@ import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
 
 fun FloatArray.apply(other: FloatArray): FloatArray {
     if (this.size == other.size) {
-        for (index in 0 until other.size) {
+        for (index in other.indices) {
             this[index] = other[index]
         }
     }

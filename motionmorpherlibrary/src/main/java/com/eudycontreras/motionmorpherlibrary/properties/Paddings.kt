@@ -2,7 +2,7 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.view.View
 import androidx.core.view.updatePadding
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 
 /**
  * Class that holds information about the paddings

@@ -2,9 +2,9 @@ package com.eudycontreras.motionmorpherlibrary.properties
 
 import android.animation.TimeInterpolator
 import android.view.View
-import com.eudycontreras.motionmorpherlibrary.Action
-import com.eudycontreras.motionmorpherlibrary.MIN_DURATION
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
+import com.eudycontreras.motionmorpherlibrary.globals.Action
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_DURATION
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import kotlin.math.hypot
 
 

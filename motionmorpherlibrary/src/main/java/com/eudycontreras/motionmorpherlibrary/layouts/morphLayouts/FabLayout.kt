@@ -8,7 +8,7 @@ import android.util.AttributeSet
 import android.startView.View
 import android.startView.ViewGroup
 import android.startView.ViewPropertyAnimator
-import com.eudycontreras.motionmorpherlibrary.doWith
+import com.eudycontreras.motionmorpherlibrary.globals.doWith
 import com.eudycontreras.motionmorpherlibrary.drawables.MorphTransitionDrawable
 import com.eudycontreras.motionmorpherlibrary.extensions.getColor
 import com.eudycontreras.motionmorpherlibrary.extensions.toStateList

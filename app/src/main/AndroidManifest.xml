@@ -34,7 +34,7 @@
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         -->
-        <activity android:name=".examples.demo2.ActivityDemo2">
+        <activity android:name=".examples.choreographer.ActivityDemo0">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

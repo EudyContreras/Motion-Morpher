@@ -1,19 +1,14 @@
 package com.eudycontreras.motionmorpherlibrary.customViews
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
-import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
-import com.eudycontreras.motionmorpherlibrary.doWith
+import com.eudycontreras.motionmorpherlibrary.globals.MIN_OFFSET
 import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
-import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.extensions.toBitmap
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
@@ -42,7 +37,9 @@ open class RoundedImageView : ImageView {
     private fun setupAttributes(attrs: AttributeSet) {
         val typedArray = context.obtainStyledAttributes(attrs, com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView)
         try {
-            val radius = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_radius, MIN_OFFSET)
+            val radius = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_radius,
+                MIN_OFFSET
+            )
             val topLeft = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_topLeftCornerRadius, radius)
             val topRight = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_topRightCornerRadius, radius)
             val bottomRight = typedArray.getDimension(com.eudycontreras.motionmorpherlibrary.R.styleable.RoundedImageView_riv_bottomRightCornerRadius, radius)

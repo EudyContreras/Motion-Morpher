@@ -29,7 +29,7 @@ class ActivityDemo0 : MorphActivity() {
             var choreography3: Choreographer = Demo3(this).create(card, root, interpolator)
 
             cardLayout.setOnClickListener {
-                choreography1.play()
+                choreography2.play()
             }
         }
     }
