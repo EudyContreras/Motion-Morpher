@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import com.eudycontreras.motionmorpherlibrary.*
 import com.eudycontreras.motionmorpherlibrary.drawables.RoundedBitmapDrawable
 import com.eudycontreras.motionmorpherlibrary.enumerations.FadeType
+import com.eudycontreras.motionmorpherlibrary.interpolators.Easing
 import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
 
 
@@ -26,8 +27,8 @@ class FadeMorph(
 ) {
     var onOffset: Float = MID_OFFSET
 
-    var incomingInterpolator: TimeInterpolator = INCOMING
-    var outgoingInterpolator: TimeInterpolator = OUTGOING
+    var incomingInterpolator: TimeInterpolator = Easing.INCOMING
+    var outgoingInterpolator: TimeInterpolator = Easing.OUTGOING
 
     fun build() {
 

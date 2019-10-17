@@ -9,7 +9,6 @@ import com.eudycontreras.motionmorpherlibrary.BindingChangeListener
  * @since August 02 2019
  */
 
-
 abstract class Bindable<T> {
 
     val bindings: ArrayList<Binding<T>> = ArrayList()

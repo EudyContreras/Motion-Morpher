@@ -13,7 +13,6 @@ import java.util.*
  * @since July 12 2019
  */
 
-
 typealias Action = (()-> Unit)?
 
 typealias AndroidColor = Color

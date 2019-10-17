@@ -54,7 +54,7 @@ open class RoundedImageView : ImageView {
         }
     }
 
-    private fun applyCorners(topLeft: Float = MIN_OFFSET, topRight: Float = MIN_OFFSET, bottomRight: Float = MIN_OFFSET, bottomLeft: Float = MIN_OFFSET) {
+    private fun applyCorners(topLeft: Float = 0f, topRight: Float = 0f, bottomRight: Float = 0f, bottomLeft: Float = 0f) {
         corners.apply(topLeft, topRight, bottomRight, bottomLeft)
     }
 

@@ -43,6 +43,7 @@
             android:paddingTop="8dp"
             android:background="@color/overlay_dark"
             android:visibility="visible"
+            android:alpha="0"
             app:tl_placeholder="true"
             app:layout_constraintBottom_toBottomOf="@id/demo_2_image"
             app:layout_constraintStart_toStartOf="parent"

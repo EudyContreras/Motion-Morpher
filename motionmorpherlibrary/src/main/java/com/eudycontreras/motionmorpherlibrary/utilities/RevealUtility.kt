@@ -10,13 +10,11 @@ import com.eudycontreras.motionmorpherlibrary.properties.Conceal
 import com.eudycontreras.motionmorpherlibrary.properties.Reveal
 import kotlin.math.max
 
-
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since September 19 2018
  */
-
 
 object RevealUtility {
 

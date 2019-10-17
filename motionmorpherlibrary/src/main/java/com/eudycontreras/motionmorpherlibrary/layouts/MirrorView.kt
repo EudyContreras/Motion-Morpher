@@ -40,6 +40,7 @@ class MirrorView @JvmOverloads constructor(
     }
 
     private var _substance: View? = null
+
     var substance: View?
         get() = _substance
         set(value) {

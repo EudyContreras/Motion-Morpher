@@ -10,7 +10,6 @@ import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.CornerRadii
 import com.eudycontreras.motionmorpherlibrary.utilities.BitmapUtility
 
-
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.

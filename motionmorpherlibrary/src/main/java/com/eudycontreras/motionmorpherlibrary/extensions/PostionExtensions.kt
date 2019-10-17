@@ -10,7 +10,6 @@ import com.eudycontreras.motionmorpherlibrary.TranslationPositions
  * @since August 03 2019
  */
 
-
 infix fun TranslationPositions.and(other: Morpher.TranslationPosition): TranslationPositions = TranslationPositions.of(other, *this.toTypedArray())
 
 infix fun TranslationPositions.has(other: TranslationPositions) = this.containsAll(other)

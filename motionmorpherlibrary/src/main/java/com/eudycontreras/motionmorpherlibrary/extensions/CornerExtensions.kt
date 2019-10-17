@@ -10,7 +10,6 @@ import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
  * @since August 03 2019
  */
 
-
 infix fun CornersSet.and(other: Corner): CornersSet = CornersSet.of(other, *this.toTypedArray())
 
 infix fun CornersSet.has(other: CornersSet) = this.containsAll(other)

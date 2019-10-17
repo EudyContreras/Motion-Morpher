@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="MorphWrapper">
-        <attr name="mw_startLayout" format="reference"/>
-        <attr name="mw_endLayout" format="reference"/>
-        <attr name="mw_shapeType" format="enum">
-            <enum name="CIRCULAR" value="0"/>
-            <enum name="RECTANGULAR" value="1"/>
-        </attr>
-        <attr name="mw_radius" format="dimension"/>
-        <attr name="mw_topLeftCornerRadius" format="dimension" />
-        <attr name="mw_topRightCornerRadius" format="dimension" />
-        <attr name="mw_bottomLeftCornerRadius" format="dimension" />
-        <attr name="mw_bottomRightCornerRadius" format="dimension" />
-    </declare-styleable>
 
     <declare-styleable name="ViewGroup">
         <attr name="morphLayout_shapeType" format="enum">

@@ -15,14 +15,12 @@ import kotlin.math.roundToInt
 
 
 /**
+ * Would contain an image buffer running on a background thread. The buffer holds the n* numbers of next
+ * images to be rendered on a view. The images are prepared and can then be played using a 0 to 1 fraction.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since August 31 2019
- */
-
-/**
- * Would contain an image buffer running on a background thread. The buffer holds the n* numbers of next
- * images to be rendered on a view. The images are prepared and can then be played using a 0 to 1 fraction.
  */
 class FrameAnimationHelper(var context: Context) {
 

@@ -3,13 +3,11 @@ package com.eudycontreras.motionmorpherlibrary.interpolators
 import android.animation.TimeInterpolator
 import androidx.core.view.animation.PathInterpolatorCompat
 
-
 /**
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since September 08 2019
  */
-
 
 object Easing {
 

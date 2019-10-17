@@ -8,6 +8,7 @@ import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.Animated
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
 import java.lang.IllegalStateException
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.abs
 import kotlin.math.hypot
 
 /**
@@ -21,92 +22,26 @@ import kotlin.math.hypot
  */
 private var id = AtomicInteger(Int.MIN_VALUE)
 
-const val MID_OFFSET: Float = 0.5f
 /**
- * The global maximun offset for lerping interpolations. Value: `1F`
+ * Transforms a collections of values into dp values
+ * and returns it in the form of a FloatArray
  */
-const val MAX_OFFSET: Float = 1f
-
-/**
- * The global minimun offset for lerping interpolations. Value: `0F`
- */
-const val MIN_OFFSET: Float = 0f
-
-/**
- * The global maximun angle. Value: `360F`
- */
-const val MAX_ANGLE: Float = 360f
-
-/**
- * The global minumun angle. Value: `0F`
- */
-const val MIN_ANGLE: Float = 0f
-
-/**
- * The global maximun color range. Value: `255`
- */
-const val MAX_COLOR: Int = 255
-
-/**
- * The global minimun color range. Value: `0`
- */
-const val MIN_COLOR: Int = 0
-
-/**
- * The global minimun default duration. Value: `0L`
- */
-const val MIN_DURATION: Long = 0L
-
-/**
- * The global default color in hexadecimal. Value: `0x000000`
- */
-const val DEFAULT_COLOR: Int = 0x000000
-
-
-/**
- * Standard easing.
- *
- * Elements that begin and end at rest use standard easing. They speed up quickly and slow down
- * gradually, in order to emphasize the end of the transition.
- *
- * Copyright 2019 The Android Open Source Project.
- */
-val STANDARD: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
-    PathInterpolatorCompat.create(0.4f, 0f, 0.2f, 1f)
-}
-
-/**
- * Decelerate easing.
- *
- * Incoming elements are animated using deceleration easing, which starts a transition at peak
- * velocity (the fastest point of an element’s movement) and ends at rest.
- *
- * Copyright 2019 The Android Open Source Project.
- */
-val INCOMING: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
-    PathInterpolatorCompat.create(0f, 0f, 0.2f, 1f)
-}
-
-/**
- * Accelerate easing.
- *
- * Elements exiting a screen use acceleration easing, where they start at rest and end at peak
- * velocity.
- *
- * Copyright 2019 The Android Open Source Project.
- */
-val OUTGOING: TimeInterpolator by lazy(LazyThreadSafetyMode.NONE) {
-    PathInterpolatorCompat.create(0.4f, 0f, 1f, 1f)
-}
-
 fun dpValues(vararg values: Float): FloatArray{
     return values.map { it.dp }.toFloatArray()
 }
 
+/**
+ * Transforms a collections of values into dp values
+ * and returns it in the form of a FloatArray
+ */
 fun dpValues(vararg values: Int): FloatArray {
     return values.map { it.dp }.toFloatArray()
 }
 
+/**
+ * Transforms a collections of values into dp values
+ * and returns it in the form of a FloatArray
+ */
 fun <T: Number> dpValues(vararg values: T): FloatArray {
     return values.map { it.toFloat() }.toFloatArray()
 }
@@ -186,6 +121,17 @@ fun approximate(value: Int, target: Int, margin: Int): Boolean {
     return value <= (target + margin) && value > (target - margin)
 }
 
+/**
+ * Determines if a two values are within a specific range of
+ * one-another. If the values are within the [range] this function
+ * will return true.
+ * @param arg1 First value.
+ * @param arg2 Second value.
+ * @param range The range to compare against.
+ */
+fun inRange(arg1: Float, arg2: Float, range: Float): Boolean {
+    return abs(arg2 - arg1) <= range
+}
 /**
  * Maps the given value from the specified minimum to the specified
  * minimun and from the specified maximun to the specified maximun

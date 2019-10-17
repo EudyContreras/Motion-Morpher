@@ -6,8 +6,7 @@ package com.eudycontreras.motionmorpherlibrary.utilities.binding
  * @author Eudy Contreras.
  * @since August 02 2019
  */
- 
- 
+
 class Binder {
     companion object {
         fun <T> createBinding(bind: Bind, argOne: Bindable<T>, argTwo: Bindable<T>) {

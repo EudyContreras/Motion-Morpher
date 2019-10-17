@@ -6,14 +6,12 @@ import java.lang.StrictMath.pow
 import kotlin.math.round
 
 /**
+ * Facilitates arc translation between two points.
+ *
  * @Project MotionMorpher
  * @author Eudy Contreras.
  * @since July 19 2019
  *
- */
-
-/**
- * Facilitates arc translation between two points.
  */
 class ArcTranslationHelper(
     fromX: Float = MIN_OFFSET,

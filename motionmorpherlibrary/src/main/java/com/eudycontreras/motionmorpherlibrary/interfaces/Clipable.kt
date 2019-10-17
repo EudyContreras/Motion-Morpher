@@ -4,6 +4,12 @@ import android.graphics.Canvas
 import android.graphics.Path
 import com.eudycontreras.motionmorpherlibrary.MIN_OFFSET
 
+/**
+ * @Project MotionMorpher
+ * @author Eudy Contreras.
+ * @since September 08 2019
+ */
+
 @FunctionalInterface interface Clipable {
 
     fun clipChildren(clipPath: Path, canvas: Canvas, corners: FloatArray, width: Float, height: Float) {

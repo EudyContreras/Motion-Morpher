@@ -16,18 +16,18 @@
         app:cl_radius="6dp">
 
     <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.ImageLayout
-            android:tag="demo2Image"
             android:id="@+id/demo_2_image"
-            android:src="@drawable/background13"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/background13"
+            android:tag="demo2Image"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <com.eudycontreras.motionmorpherlibrary.layouts.morphLayouts.TextLayout
             android:id="@+id/demo_2_header"
             android:ellipsize="marquee"
             android:layout_width="0dp"
@@ -40,6 +40,7 @@
             android:paddingBottom="8dp"
             android:paddingTop="8dp"
             android:background="@color/overlay_dark"
+            app:tl_placeholder="true"
             app:layout_constraintBottom_toBottomOf="@id/demo_2_image"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
