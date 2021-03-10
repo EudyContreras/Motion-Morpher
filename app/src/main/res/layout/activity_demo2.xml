@@ -8,7 +8,7 @@
     <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:rowCount="3"
+            android:rowCount="1"
             android:columnCount="2"
             android:useDefaultMargins="true"
             android:id="@+id/grid"

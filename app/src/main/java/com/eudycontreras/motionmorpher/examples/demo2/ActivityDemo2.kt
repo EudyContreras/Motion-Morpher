@@ -48,8 +48,8 @@ class ActivityDemo2 : MorphActivity() {
     fun testMorphing() {
 
         val morpher = Morpher(this).apply {
-            this.morphIntoDuration = 600
-            this.morphFromDuration = 600
+            this.morphIntoDuration = 400
+            this.morphFromDuration = 400
         }
 
         val standardEasing = Easing.STANDARD
@@ -85,7 +85,7 @@ class ActivityDemo2 : MorphActivity() {
         morpher.placeholderStateOut.propertyAlpha.interpolateOffsetEnd = 1f
 
         morpher.containerChildStateIn.animateOnOffset = 0f
-        morpher.containerChildStateIn.durationMultiplier = -0.2f
+        morpher.containerChildStateIn.durationMultiplier = 0f
         morpher.containerChildStateIn.defaultTranslateMultiplierX = 0.02f
         morpher.containerChildStateIn.defaultTranslateMultiplierY = 0.02f
         morpher.containerChildStateIn.stagger?.staggerOffset = 0.1f
@@ -94,7 +94,7 @@ class ActivityDemo2 : MorphActivity() {
         // We assign sibbling interaction. In this case we use explode which creates
         // an explode effect to interact with the children. The explode interaction is powerful
         // and can be customized to create a large variety of effects.
-        morpher.siblingInteraction = Explode(Explode.Type.LOOSE, 0.5f).apply {
+        morpher.siblingInteraction = Explode(Explode.Type.LOOSE, 0.3f).apply {
             this.outInterpolator = standardEasing
             this.inInterpolator = incomingEasing
           /*  this.animationStaggerOut = AnimationStagger(0.1f, type = Stagger.INCREMENTAL)

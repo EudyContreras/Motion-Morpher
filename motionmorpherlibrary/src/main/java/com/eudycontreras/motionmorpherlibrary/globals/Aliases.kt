@@ -1,6 +1,8 @@
-package com.eudycontreras.motionmorpherlibrary
+package com.eudycontreras.motionmorpherlibrary.globals
 
 import android.graphics.Color
+import com.eudycontreras.motionmorpherlibrary.Choreographer
+import com.eudycontreras.motionmorpherlibrary.Morpher
 import com.eudycontreras.motionmorpherlibrary.enumerations.Corner
 import com.eudycontreras.motionmorpherlibrary.layouts.MorphLayout
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedProperties

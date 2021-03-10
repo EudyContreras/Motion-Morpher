@@ -1,8 +1,6 @@
-package com.eudycontreras.motionmorpherlibrary
+package com.eudycontreras.motionmorpherlibrary.globals
 
-import android.animation.TimeInterpolator
 import androidx.core.math.MathUtils.clamp
-import androidx.core.view.animation.PathInterpolatorCompat
 import com.eudycontreras.motionmorpherlibrary.extensions.dp
 import com.eudycontreras.motionmorpherlibrary.properties.AnimatedValues.AnimatedFloatValue
 import com.eudycontreras.motionmorpherlibrary.properties.Coordinates
@@ -153,8 +151,16 @@ fun inRange(arg1: Float, arg2: Float, range: Float): Boolean {
  * @param toMin the minimun value to map to
  * @param toMax the maximun value to map to
  */
-fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float): Float {
-    return mapRange(value, fromMin, fromMax, toMin, toMax, toMin, toMax)
+fun mapRange(value: Float, fromMin: Float, fromMax: Float, toMin: Float = MIN_OFFSET, toMax: Float = MAX_OFFSET): Float {
+    return mapRange(
+        value,
+        fromMin,
+        fromMax,
+        toMin,
+        toMax,
+        toMin,
+        toMax
+    )
 }
 
 /**
@@ -204,7 +210,12 @@ fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double {
  * @param locationTwo The [Coordinates] of the second point
  */
 fun distance(locationOne: Coordinates, locationTwo: Coordinates): Double {
-    return distance(locationOne.x, locationOne.y, locationTwo.x, locationTwo.y)
+    return distance(
+        locationOne.x,
+        locationOne.y,
+        locationTwo.x,
+        locationTwo.y
+    )
 }
 
 /**

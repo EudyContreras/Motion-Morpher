@@ -1093,10 +1093,8 @@ class Choreographer(context: Context) {
             transitionTo(choreography, fraction, traverse)
         }
         animator.addListener(
-            onStart = { transitionTo(choreography,
-                MIN_OFFSET, traverse) },
-            onEnd = { transitionTo(choreography,
-                MAX_OFFSET, traverse) }
+            onStart = { transitionTo(choreography,MIN_OFFSET, traverse) },
+            onEnd = { transitionTo(choreography, MAX_OFFSET, traverse) }
         )
 
         animator.start()
@@ -1370,9 +1368,7 @@ class Choreographer(context: Context) {
      */
     private fun createStagger(choreography: Choreography) {
         choreography.stagger?.let {
-            choreography.createStagger(
-                it
-            )
+            choreography.createStagger(it)
         }
     }
 
@@ -1547,13 +1543,7 @@ class Choreographer(context: Context) {
                 if (fraction < info.startOffset || fraction > info.endOffset)
                     continue
 
-                val mappedRation = mapRange(
-                    fraction,
-                    info.startOffset,
-                    info.endOffset,
-                    MIN_OFFSET,
-                    MAX_OFFSET
-                )
+                val mappedRation = mapRange(fraction, info.startOffset, info.endOffset)
 
                 animate(view, choreography, mappedRation, duration, currentPlayTime)
             }
@@ -1790,13 +1780,7 @@ class Choreographer(context: Context) {
             val start: Float = values[index]
             val end: Float = values[index + 1]
 
-            val mapFraction = mapRange(
-                playTime.toFloat(),
-                timeStart.toFloat(),
-                timeEnd.toFloat(),
-                MIN_OFFSET,
-                MAX_OFFSET
-            )
+            val mapFraction = mapRange(playTime.toFloat(), timeStart.toFloat(), timeEnd.toFloat())
 
             val valueFraction = valueHolder.interpolator?.getInterpolation(mapFraction) ?: mapFraction
 
@@ -1831,20 +1815,16 @@ class Choreographer(context: Context) {
         internal var delay: Long = MIN_DURATION
         internal var interval: Long = MIN_DURATION
         internal var duration: Long = MIN_DURATION
-        internal var offsetDelayAlpha: Long =
-            MIN_DURATION
-        internal var offsetDelayDelta: Long =
-            MIN_DURATION
+        internal var offsetDelayAlpha: Long = MIN_DURATION
+        internal var offsetDelayDelta: Long = MIN_DURATION
 
         internal var offset: Float = MIN_OFFSET
 
         internal var pivotValueX: Float = 0.5f
         internal var pivotValueY: Float = 0.5f
 
-        internal var fractionOffsetStart: Float =
-            MIN_OFFSET
-        internal var fractionOffsetEnd: Float =
-            MAX_OFFSET
+        internal var fractionOffsetStart: Float = MIN_OFFSET
+        internal var fractionOffsetEnd: Float = MAX_OFFSET
 
         internal var pivotValueTypeX: Pivot = Pivot.RELATIVE_TO_SELF
         internal var pivotValueTypeY: Pivot = Pivot.RELATIVE_TO_SELF

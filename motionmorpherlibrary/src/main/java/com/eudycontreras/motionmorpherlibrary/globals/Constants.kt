@@ -1,4 +1,4 @@
-package com.eudycontreras.motionmorpherlibrary
+package com.eudycontreras.motionmorpherlibrary.globals
 
 import java.util.concurrent.atomic.AtomicInteger
 
